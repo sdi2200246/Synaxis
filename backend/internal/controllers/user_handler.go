@@ -1,0 +1,45 @@
+package controllers
+
+import (
+    "errors"
+    "github.com/gin-gonic/gin"
+    "github.com/sdi2200246/synaxis/internal/services"
+    "github.com/sdi2200246/synaxis/internal/error"
+
+)
+type UserHandler struct {
+    userService *services.UserService
+}
+
+func NewUserHandler(userService *services.UserService) *UserHandler {
+    return &UserHandler{userService: userService}
+}
+
+func (h *UserHandler) Register(c *gin.Context) {
+    var input services.CandidateUser
+    if err := c.ShouldBindJSON(&input); err != nil {
+        c.JSON(400, gin.H{"error": "invalid input"})
+        return
+    }
+
+    err := h.userService.RegisterUser(c.Request.Context(), input)
+    if err != nil {
+        h.handleError(c, err)
+        return
+    }
+
+    c.JSON(201, gin.H{"message": "registration pending admin approval"})
+}
+
+func (h *UserHandler) handleError(c *gin.Context, err error) {
+    switch {
+    case errors.Is(err, apperr.ErrUsernameConflict):
+        c.JSON(409, gin.H{"error": err.Error(), "field": "username"})
+    case errors.Is(err, apperr.ErrEmailConflict):
+        c.JSON(409, gin.H{"error": err.Error(), "field": "email"})
+    case errors.Is(err, apperr.ErrBadInput):
+        c.JSON(400, gin.H{"error": err.Error()})
+    default:
+        apperr.Handle(c, err)
+    }
+}
