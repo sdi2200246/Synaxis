@@ -2,6 +2,8 @@ package middleware
 
 import (
     "errors"
+    "strings"
+    "net/http"
     "github.com/gin-gonic/gin"
     "github.com/sdi2200246/synaxis/internal/services"
     "github.com/sdi2200246/synaxis/internal/error"
@@ -31,6 +33,27 @@ func (h *AuthHandler)Login(c *gin.Context){
         return
     }
 	c.JSON(200, gin.H{"jwt_token": token})
+}
+
+func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        header := c.GetHeader("Authorization")
+        if header == "" || !strings.HasPrefix(header, "Bearer ") {
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+            return
+        }
+
+        tokenString := strings.TrimPrefix(header, "Bearer ")
+
+        claims, err := h.authService.ValidateToken(tokenString)
+        if err != nil {
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+            return
+        }
+        c.Set("userID", claims.UserID)
+        c.Set("role", claims.Role)
+        c.Next()
+    }
 }
 
 func (h *AuthHandler) handleError(c *gin.Context, err error) {
