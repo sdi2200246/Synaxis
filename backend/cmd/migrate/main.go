@@ -11,6 +11,12 @@ import (
 )
 
 func main() {
+
+	if len(os.Args) < 2 {
+    	log.Fatalf("usage: migrate [up|down]")
+	}
+
+	migration := os.Args[1];
 	godotenv.Load() 
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
@@ -26,9 +32,18 @@ func main() {
 	}
 	defer m.Close()
 
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("failed to run migrations: %v", err)
-	}
+	switch migration {
+		case "up":
+			if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+				log.Fatalf("failed to run up migration: %v", err)
+			}
+		case "down":
+			if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+				log.Fatalf("failed to run down migration: %v", err)
+			}
+		default:
+			log.Fatalf("unknown command %q, use 'up' or 'down'", migration)
+		}
 
 	log.Println("migrations applied successfully")
 }

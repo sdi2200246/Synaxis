@@ -22,7 +22,8 @@ CREATE TABLE "venue" (
   "city" varchar NOT NULL,
   "country" varchar NOT NULL,
   "latitude" decimal,
-  "longitude" decimal
+  "longitude" decimal,
+  "capacity" integer
 );
 
 CREATE TABLE "event" (
@@ -127,6 +128,9 @@ ALTER TABLE "tickettype" ADD CONSTRAINT tickettype_available_check CHECK (availa
 ALTER TABLE "booking" ADD CONSTRAINT booking_tickets_check CHECK (number_of_tickets > 0);
 ALTER TABLE "booking" ADD CONSTRAINT booking_cost_check CHECK (total_cost >= 0);
 ALTER TABLE "booking" ADD CONSTRAINT booking_status_check CHECK (status IN ('ACTIVE','COMPLETED','CANCELLED'));
+ALTER TABLE "venue" ADD CONSTRAINT venue_capacity_check CHECK (capacity > 0);
+
 
 -- UNIQUE on venue coordinates
 ALTER TABLE "venue" ADD CONSTRAINT venue_coordinates_unique UNIQUE (latitude, longitude);
+ALTER TABLE "event" ADD CONSTRAINT event_venue_time_unique UNIQUE (venue_id, start_datetime);
