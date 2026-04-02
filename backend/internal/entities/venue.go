@@ -10,4 +10,5 @@ type Venue struct {
     Country   string    `json:"country" db:"country"`
     Latitude  *float64  `json:"latitude" db:"latitude"`
     Longitude *float64  `json:"longitude" db:"longitude"`
+    Capacity  *int      `json:"capacity" db:"capacity"`
 }
