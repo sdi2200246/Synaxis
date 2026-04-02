@@ -7,9 +7,9 @@ import (
 )
 
 type EventRepository interface {
-    Create(ctx context.Context, event entities.Event) error
+    CreateWithCategories(ctx context.Context, event entities.Event ,categoryIDs []uuid.UUID) error
     GetByID(ctx context.Context, id uuid.UUID) (entities.Event, error)
-	GetByOrganizerID(ctx context.Context, organizerID uuid.UUID) ([]entities.Event, error) 
-	Publish(ctx context.Context, id uuid.UUID) error 
-	Cancel(ctx context.Context, id uuid.UUID) error
+    GetByOrganizerID(ctx context.Context, organizerID uuid.UUID) ([]entities.EventWithVenue, error) 
+	// Publish(ctx context.Context, id uuid.UUID) error 
+	// Cancel(ctx context.Context, id uuid.UUID) error
 }
