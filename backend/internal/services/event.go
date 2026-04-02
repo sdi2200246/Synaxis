@@ -1,11 +1,13 @@
 package services
 
-import(
-	"github.com/sdi2200246/synaxis/internal/interfaces"
-	"github.com/sdi2200246/synaxis/internal/entities"
+import (
 	"context"
-    "time"
-    "github.com/google/uuid"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/sdi2200246/synaxis/internal/entities"
+	apperr "github.com/sdi2200246/synaxis/internal/error"
+	"github.com/sdi2200246/synaxis/internal/interfaces"
 )
 
 type CandidateEvent struct {
@@ -40,7 +42,6 @@ func NewEventService(r interfaces.EventRepository)*EventService{
 	return  &EventService{eventRepo:r}
 }
 
-
 func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , event CandidateEvent)error{
 
 	newEvent := entities.Event{
@@ -56,14 +57,13 @@ func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , ev
 		EndDatetime:  event.EndDatetime,
         CreatedAt:    time.Now(),
     }	
+    err := s.eventRepo.CreateWithCategories(ctx , newEvent , event.CategoryIDs)
 
-	return s.eventRepo.Create(ctx , newEvent)
+    if err != nil{
+        return apperr.ErrInternal
+    }
+    return nil
 }
-
-func (s*EventService)PublishEvent(ctx context.Context ,id uuid.UUID)error{
-	return s.eventRepo.Publish(ctx , id)
-}
-
-func (s*EventService)CancelEvent(ctx context.Context ,id uuid.UUID)error{
-	return s.eventRepo.Cancel(ctx , id)
+func (s *EventService) GetOrganizerEvents(ctx context.Context, organizerID uuid.UUID) ([]entities.EventWithVenue ,error) {
+    return s.eventRepo.GetByOrganizerID(ctx, organizerID)
 }
