@@ -2,7 +2,14 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/layout/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { LoginPage, RegisterPage, EventsPage, EventDetailPage } from './pages'
+import { 
+  LoginPage,
+  RegisterPage,
+  EventsPage, 
+  EventDetailPage,
+  HomePage,
+  MyEventsPage,
+} from './pages'
 import './styles.css'
 
 function App() {
@@ -24,11 +31,29 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-events"
+              element={
+                <ProtectedRoute>
+                  <MyEventsPage />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/events/:id"
               element={
                 <ProtectedRoute>
-                  <EventDetailPage />
+                  <EventDetailPage/>
                 </ProtectedRoute>
               }
             />

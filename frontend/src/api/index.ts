@@ -1,3 +1,5 @@
 export { default as api } from './client'
 export * from './auth'
 export * from './events'
+export * from './venues'
+export * from './category'

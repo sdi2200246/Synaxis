@@ -1,32 +1,30 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+// frontend/src/components/layout/Layout.tsx
+import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { Sidebar } from './Sidebar'
 
 export function Layout() {
-  const { isAuthenticated, logout } = useAuth()
-  const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
 
-  function handleLogout() {
-    logout()
-    navigate('/login')
+  if (isAuthenticated) {
+    return (
+      <div className="app-authenticated">
+        <Sidebar />
+        <main className="main-content">
+          <Outlet />
+        </main>
+      </div>
+    )
   }
 
   return (
     <div className="app">
       <nav className="navbar">
-        <Link to="/" className="brand">Synaxis</Link>
+        <Link to="/home" className="brand">Synaxis</Link>
         
         <div className="nav-links">
-          {isAuthenticated ? (
-            <>
-              <Link to="/events">Events</Link>
-              <button onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login">Login</Link>
-              <Link to="/register">Register</Link>
-            </>
-          )}
+          <Link to="/login">Login</Link>
+          <Link to="/register">Register</Link>
         </div>
       </nav>
 

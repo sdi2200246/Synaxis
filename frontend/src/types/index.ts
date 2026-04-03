@@ -80,5 +80,11 @@ export interface RegisterPayload {
 }
 
 export interface LoginResponse {
-  token: string
+  jwt_token: string
+}
+
+export interface Category {
+  id: string
+  name: string
+  parent_id: string | null
 }

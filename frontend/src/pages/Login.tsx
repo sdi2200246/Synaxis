@@ -18,7 +18,7 @@ export function LoginPage() {
 
     try {
       await login({ username, password })
-      navigate('/events')
+      navigate('/home')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed')
     } finally {

@@ -3,7 +3,7 @@ import type { LoginCredentials, RegisterPayload, LoginResponse } from '../types'
 
 export async function login(credentials: LoginCredentials): Promise<string> {
   const response = await api.post<LoginResponse>('/auth/login', credentials)
-  return response.data.token
+  return response.data.jwt_token
 }
 
 export async function register(payload: RegisterPayload): Promise<void> {
