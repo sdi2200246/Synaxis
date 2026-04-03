@@ -18,3 +18,8 @@ type Event struct {
     EndDatetime   time.Time `json:"end_datetime"   db:"end_datetime"`
     CreatedAt     time.Time `json:"created_at"     db:"created_at"`
 }
+
+type EventWithVenue struct {
+    Event
+    Venue Venue `json:"venue"`
+}

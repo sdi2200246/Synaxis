@@ -66,3 +66,17 @@ func (s *AuthService)Login(ctx context.Context , credentials UserCridentials)(st
     return tokenString, nil
 
 }
+
+func (s *AuthService) ValidateToken(tokenString string) (*Claims, error) {
+    token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+        return []byte(s.secret), nil
+    })
+    if err != nil || !token.Valid {
+        return nil, apperr.ErrUnauthorized
+    }
+    claims, ok := token.Claims.(*Claims)
+    if !ok {
+        return nil, apperr.ErrUnauthorized
+    }
+    return claims, nil
+}

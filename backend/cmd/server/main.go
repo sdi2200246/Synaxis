@@ -30,12 +30,24 @@ func main() {
     userHandler := controllers.NewUserHandler(userService)
 
     authService := services.NewAuthService(userRepo , "jason_derullo") //TDO realsecret .
-    authHnadler := middleware.NewAuthHandler(authService)
+    authHandler := middleware.NewAuthHandler(authService)
+
+    eventRepo   := repos.NewEventRepo(pool)
+    eventsService := services.NewEventService(eventRepo)
+    eventsHandler := controllers.NewEventsHandler(eventsService)
 
     r := gin.Default()
 
     r.POST("/users", userHandler.Register)
-    r.GET("/auth/login" , authHnadler.Login)
+    r.POST("/auth/login" , authHandler.Login)
+
+    // authenticated
+    auth := r.Group("/")
+    auth.Use(authHandler.AuthMiddleware())
+    {
+        auth.POST("/events", eventsHandler.Create)
+        auth.GET("/events", eventsHandler.GetMyEvents)
+    }
 
     // start server
     r.Run(":8080")
