@@ -1,10 +1,9 @@
-// frontend/src/components/layout/Sidebar.tsx
 import { NavLink, useNavigate } from 'react-router-dom'
-import { FiHome, FiSearch, FiCalendar, FiCheckSquare, FiUser } from 'react-icons/fi'
+import { FiHome, FiSearch, FiCalendar, FiCheckSquare, FiUser, FiUsers, FiBell } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 
 export function Sidebar() {
-  const { logout } = useAuth()
+  const { logout, userRole } = useAuth()
   const navigate = useNavigate()
 
   function handleLogout() {
@@ -19,26 +18,45 @@ export function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        <NavLink to="/home" className="sidebar-link">
-          <FiHome size={20} />
-          <span>Home</span>
-        </NavLink>
-        <NavLink to="/browse" className="sidebar-link">
-          <FiSearch size={20} />
-          <span>Browse</span>
-        </NavLink>
-        <NavLink to="/my-events" className="sidebar-link">
-          <FiCalendar size={20} />
-          <span>My Events</span>
-        </NavLink>
-        <NavLink to="/attending" className="sidebar-link">
-          <FiCheckSquare size={20} />
-          <span>Attending</span>
-        </NavLink>
-        <NavLink to="/profile" className="sidebar-link">
-          <FiUser size={20} />
-          <span>Profile</span>
-        </NavLink>
+        {userRole == 'admin' ? (
+          <>
+            <NavLink to="/admin/users" className="sidebar-link">
+              <FiUsers size={20} />
+              <span>Users</span>
+            </NavLink>
+            <NavLink to="/admin/registrations" className="sidebar-link">
+              <FiCheckSquare size={20} />
+              <span>Registrations</span>
+            </NavLink>
+            <NavLink to="/admin/notifications" className="sidebar-link">
+              <FiBell size={20} />
+              <span>Notifications</span>
+            </NavLink>
+          </>
+        ) : (
+          <>
+            <NavLink to="/home" className="sidebar-link">
+              <FiHome size={20} />
+              <span>Home</span>
+            </NavLink>
+            <NavLink to="/browse" className="sidebar-link">
+              <FiSearch size={20} />
+              <span>Browse</span>
+            </NavLink>
+            <NavLink to="/my-events" className="sidebar-link">
+              <FiCalendar size={20} />
+              <span>My Events</span>
+            </NavLink>
+            <NavLink to="/attending" className="sidebar-link">
+              <FiCheckSquare size={20} />
+              <span>Attending</span>
+            </NavLink>
+            <NavLink to="/profile" className="sidebar-link">
+              <FiUser size={20} />
+              <span>Profile</span>
+            </NavLink>
+          </>
+        )}
       </nav>
 
       <div className="sidebar-footer">

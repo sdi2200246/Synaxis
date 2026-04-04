@@ -16,8 +16,8 @@ type UserCridentials struct{
 }
 
 type Claims struct {
-    UserID uuid.UUID 
-    Role   string
+    UserID uuid.UUID `json:"user_id"`
+    Role   string   `json:"role"`
     jwt.RegisteredClaims
 }
 
