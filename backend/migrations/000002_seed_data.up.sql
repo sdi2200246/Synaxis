@@ -26,3 +26,31 @@ VALUES (
     '000000000',
     'admin', 'approved'
 );
+
+-- user (password: user123)
+INSERT INTO "user" (id, username, password_hash, first_name, last_name, email, phone, address, city, country, tax_id, role, status)
+VALUES (
+    'a0000000-0000-0000-0000-000000000002',
+    'user',
+    '$2a$10$nrb/rZ08vT5Eky1bMXxSd.6qTPepKX0YdHqYpA2iE3ZYUyC1qEBbq',
+    'John', 'Doe',
+    'john@example.com',
+    '2109876543',
+    'Ermou 10', 'Athens', 'Greece',
+    '123456789',
+    'user', 'approved'
+);
+
+-- user (password: user124)
+INSERT INTO "user" (id, username, password_hash, first_name, last_name, email, phone, address, city, country, tax_id, role, status)
+VALUES (
+    'a0000000-0000-0000-0000-000000000003',
+    'pending_user',
+    '$2a$10$dEr0Gjk0HO7u9uvxDX0Zlep14G3kOWd9oM6Sh5qWFZpvhqApClt6q',
+    'Maria', 'Papadopoulou',
+    'maria@example.com',
+    '2107654321',
+    'Stadiou 15', 'Athens', 'Greece',
+    '987654321',
+    'user', 'pending'
+);

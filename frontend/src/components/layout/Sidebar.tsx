@@ -1,8 +1,12 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useState, useEffect ,} from 'react'
+import { NavLink, useNavigate , useLocation } from 'react-router-dom'
 import { FiHome, FiSearch, FiCalendar, FiCheckSquare, FiUser, FiUsers, FiBell } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
+import { getPendingUsers} from '../../api/users'
 
 export function Sidebar() {
+  const [pendingUsersCount, setPendingCount] = useState<number>(0)
+
   const { logout, userRole } = useAuth()
   const navigate = useNavigate()
 
@@ -10,6 +14,18 @@ export function Sidebar() {
     logout()
     navigate('/login')
   }
+  
+  useEffect(() => {
+    async function loadPendingUsers() {
+      const data = await getPendingUsers()
+      setPendingCount(data.count)
+    }
+
+    loadPendingUsers()
+      const interval = setInterval(loadPendingUsers, 30000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <aside className="sidebar">
@@ -24,13 +40,12 @@ export function Sidebar() {
               <FiUsers size={20} />
               <span>Users</span>
             </NavLink>
-            <NavLink to="/admin/registrations" className="sidebar-link">
-              <FiCheckSquare size={20} />
-              <span>Registrations</span>
-            </NavLink>
             <NavLink to="/admin/notifications" className="sidebar-link">
-              <FiBell size={20} />
-              <span>Notifications</span>
+              <span className="icon-badge">
+                <FiBell size={20} />
+                {pendingUsersCount > 0 && <span className="red-dot" />}
+              </span>
+              <span>Registrations</span>
             </NavLink>
           </>
         ) : (

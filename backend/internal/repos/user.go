@@ -6,12 +6,14 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/VauntDev/tqla"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sdi2200246/synaxis/internal/entities"
 	"github.com/sdi2200246/synaxis/internal/error"
-    "github.com/google/uuid"
+	"github.com/sdi2200246/synaxis/internal/types"
 )
 
 type UserRepo struct{
@@ -135,4 +137,48 @@ func (r *UserRepo)GetByUsername(ctx context.Context, username string) (entities.
         return entities.User{}, apperr.ErrInternal
     }
     return u, nil
+}
+func (r *UserRepo) ListUsers(ctx context.Context, f types.UserFilter) ([]entities.User, error) {
+    t, err := tqla.New(tqla.WithPlaceHolder(tqla.Dollar))
+    if err != nil {
+        return nil, apperr.ErrInternal
+    }
+
+    query, args, err := t.Compile(`
+        SELECT id, username, first_name, last_name,
+               email, phone, city, role, status, created_at
+        FROM "user"
+        WHERE 1=1
+        {{ if .Status }} AND status = {{ .Status }} {{ end }}
+        {{ if .City }} AND city = {{ .City }} {{ end }}
+        {{ if .Role }} AND role = {{ .Role }} {{ end }}
+    `, f)
+    if err != nil {
+        slog.Error("ListUsers template failed", "error", err)
+        return nil, apperr.ErrInternal
+    }
+
+    rows, err := r.db.Query(ctx, query, args...)
+    if err != nil {
+        slog.Error("ListUsers query failed", "error", err)
+        return nil, apperr.ErrInternal
+    }
+    defer rows.Close()
+
+    var users []entities.User
+    for rows.Next() {
+        var u entities.User
+        err := rows.Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName,
+            &u.Email, &u.Phone, &u.City, &u.Role, &u.Status, &u.CreatedAt)
+        if err != nil {
+            slog.Error("ListUsers scan failed", "error", err)
+            return nil, apperr.ErrInternal
+        }
+        users = append(users, u)
+    }
+    if err := rows.Err(); err != nil {
+        slog.Error("ListUsers iteration failed", "error", err)
+        return nil, apperr.ErrInternal
+    }
+    return users, nil
 }

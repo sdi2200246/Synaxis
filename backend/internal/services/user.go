@@ -1,13 +1,14 @@
 package services
 
-import(
-	"github.com/sdi2200246/synaxis/internal/interfaces"
-	"github.com/sdi2200246/synaxis/internal/entities"
-    "github.com/sdi2200246/synaxis/internal/error"
+import (
 	"context"
-    "time"
-    "github.com/google/uuid"
-    "golang.org/x/crypto/bcrypt"
+	"time"
+	"github.com/google/uuid"
+	"github.com/sdi2200246/synaxis/internal/entities"
+	"github.com/sdi2200246/synaxis/internal/error"
+	"github.com/sdi2200246/synaxis/internal/interfaces"
+	"github.com/sdi2200246/synaxis/internal/types"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CandidateUser struct {
@@ -56,5 +57,8 @@ func (s UserService)RegisterUser(ctx context.Context , user CandidateUser)error{
     }	
 
 	return s.userRepo.Create(ctx, newUser)
+}
 
+func (s UserService)GetUsers(ctx context.Context , f types.UserFilter)([]entities.User, error){
+	return s.userRepo.ListUsers(ctx , f)
 }

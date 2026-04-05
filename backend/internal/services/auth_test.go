@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 	"testing"
-	"golang.org/x/crypto/bcrypt"
+
 	"github.com/google/uuid"
 	"github.com/sdi2200246/synaxis/internal/entities"
 	apperr "github.com/sdi2200246/synaxis/internal/error"
+	"github.com/sdi2200246/synaxis/internal/types"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // MockUserRepo implements interfaces.UserRepository
@@ -29,6 +31,9 @@ func (m *MockUserRepo) GetByUsername(ctx context.Context, username string) (enti
 		}
 	}
 	return entities.User{}, apperr.ErrNotFound
+}
+func (m *MockUserRepo)ListUsers(ctx context.Context , filter types.UserFilter) ([]entities.User, error) {
+    return []entities.User{}, nil  // stub — not tested yet
 }
 
 func TestLogin_Success(t *testing.T) {

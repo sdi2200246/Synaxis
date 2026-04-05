@@ -641,3 +641,18 @@ button[type="submit"]:disabled {
   font-size: 0.9rem;
   margin-bottom: 1.5rem;
 }
+
+.icon-badge {
+  position: relative;
+  display: inline-flex;
+}
+
+.red-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 5px;
+  height: 5px;
+  background: #dc2626;
+  border-radius: 50%;
+}
