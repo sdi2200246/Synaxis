@@ -12,7 +12,8 @@ CREATE TABLE "user" (
   "tax_id" varchar NOT NULL,
   "role" varchar NOT NULL DEFAULT 'user',
   "status" varchar NOT NULL DEFAULT 'pending',
-  "created_at" timestamp NOT NULL DEFAULT (now())
+  "created_at" timestamp NOT NULL DEFAULT (now()),
+  "updated_at" timestamp
 );
 
 CREATE TABLE "venue" (
@@ -37,7 +38,8 @@ CREATE TABLE "event" (
   "capacity" integer NOT NULL,
   "start_datetime" timestamp NOT NULL,
   "end_datetime" timestamp NOT NULL,
-  "created_at" timestamp NOT NULL DEFAULT (now())
+  "created_at" timestamp NOT NULL DEFAULT (now()),
+  "updated_at" timestamp
 );
 
 CREATE TABLE "category" (

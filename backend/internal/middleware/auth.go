@@ -1,13 +1,14 @@
 package middleware
 
 import (
-    "errors"
-    "strings"
-    "net/http"
-    "github.com/gin-gonic/gin"
-    "github.com/sdi2200246/synaxis/internal/services"
-    "github.com/sdi2200246/synaxis/internal/error"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
 
+	"github.com/gin-gonic/gin"
+	"github.com/sdi2200246/synaxis/internal/error"
+	"github.com/sdi2200246/synaxis/internal/services"
 )
 
 type AuthHandler struct{
@@ -52,6 +53,18 @@ func (h *AuthHandler) AuthMiddleware() gin.HandlerFunc {
         }
         c.Set("userID", claims.UserID)
         c.Set("role", claims.Role)
+        c.Next()
+    }
+}
+
+func (h *AuthHandler)AdminOnly() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        if c.GetString("role") != "admin" {
+              role, exists := c.Get("role")
+              fmt.Printf("role: %v, type: %T, exists: %v\n", role, role, exists)
+              c.AbortWithStatusJSON(403, gin.H{"error": "forbidden"})
+            return
+        }
         c.Next()
     }
 }

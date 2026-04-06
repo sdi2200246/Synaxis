@@ -6,12 +6,13 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/VauntDev/tqla"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sdi2200246/synaxis/internal/entities"
 	"github.com/sdi2200246/synaxis/internal/error"
-    "github.com/google/uuid"
 )
 
 type UserRepo struct{
@@ -135,4 +136,106 @@ func (r *UserRepo)GetByUsername(ctx context.Context, username string) (entities.
         return entities.User{}, apperr.ErrInternal
     }
     return u, nil
+}
+func (r *UserRepo) ListUsers(ctx context.Context , filter entities.UserFilter) ([]entities.User, error) {
+    t, err := tqla.New(tqla.WithPlaceHolder(tqla.Dollar))
+    if err != nil {
+        return nil, apperr.ErrInternal
+    }
+
+    query, args, err := t.Compile(`
+        SELECT 
+            id, username, password_hash, first_name, last_name, 
+            email, phone, address, city, country, tax_id, 
+            role, status, created_at, updated_at
+        FROM "user"
+        WHERE 1=1
+        {{ if .Status }} AND status = {{ .Status }} {{ end }}
+        {{ if .Country }} AND country = {{ .Country }} {{ end }}
+        {{ if .CreatedAt }} AND created_at = {{ .CreatedAt }} {{ end }}
+    `, filter)
+    if err != nil {
+        slog.Error("ListUsers template failed", "error", err)
+        return nil, apperr.ErrInternal
+    }
+
+    rows, err := r.db.Query(ctx, query, args...)
+    if err != nil {
+        slog.Error("ListUsers query failed", "error", err)
+        return nil, apperr.ErrInternal
+    }
+    defer rows.Close()
+
+    var users []entities.User
+    for rows.Next() {
+        var u entities.User
+            err := rows.Scan(
+            &u.ID,
+            &u.Username,
+            &u.PasswordHash,
+            &u.FirstName,
+            &u.LastName,
+            &u.Email,
+            &u.Phone,
+            &u.Address,
+            &u.City,
+            &u.Country,
+            &u.TaxID,
+            &u.Role,
+            &u.Status,
+            &u.CreatedAt,
+            &u.UpdatedAt,
+        )
+        if err != nil {
+            slog.Error("ListUsers scan failed", "error", err)
+            return nil, apperr.ErrInternal
+        }
+        users = append(users, u)
+    }
+    if err := rows.Err(); err != nil {
+        slog.Error("ListUsers iteration failed", "error", err)
+        return nil, apperr.ErrInternal
+    }
+    return users, nil
+}
+func (r *UserRepo) UpdateUser(ctx context.Context, id uuid.UUID, u entities.UserUpdate) error {
+    t, err := tqla.New(tqla.WithPlaceHolder(tqla.Dollar))
+    if err != nil {
+        return apperr.ErrInternal
+    }
+
+    query, args, err := t.Compile(`
+        UPDATE "user" SET
+            {{ if .Update.FirstName }} first_name = {{ .Update.FirstName }}, {{ end }}
+            {{ if .Update.LastName }} last_name = {{ .Update.LastName }}, {{ end }}
+            {{ if .Update.Email }} email = {{ .Update.Email }}, {{ end }}
+            {{ if .Update.Phone }} phone = {{ .Update.Phone }}, {{ end }}
+            {{ if .Update.Address }} address = {{ .Update.Address }}, {{ end }}
+            {{ if .Update.City }} city = {{ .Update.City }}, {{ end }}
+            {{ if .Update.Country }} country = {{ .Update.Country }}, {{ end }}
+            {{ if .Update.TaxID }} tax_id = {{ .Update.TaxID }}, {{ end }}
+            {{ if .Update.Role }} role = {{ .Update.Role }}, {{ end }}
+            {{ if .Update.Status }} status = {{ .Update.Status }}, {{ end }}
+            updated_at = now()
+        WHERE id = {{ .ID }}
+    `, struct {
+        Update entities.UserUpdate
+        ID     uuid.UUID
+    }{u, id})
+    if err != nil {
+        slog.Error("UpdateUser template failed", "error", err)
+        return apperr.ErrInternal
+    }
+
+    result, err := r.db.Exec(ctx, query, args...)
+    if err != nil {
+        slog.Error("UpdateUser exec failed", "error", err)
+        return apperr.ErrInternal
+    }
+
+    if result.RowsAffected() == 0 {
+        return apperr.ErrNotFound
+    }
+
+    return nil
 }

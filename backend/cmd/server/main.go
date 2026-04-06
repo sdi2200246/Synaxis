@@ -41,10 +41,18 @@ func main() {
     r.POST("/users", userHandler.Register)
     r.POST("/auth/login" , authHandler.Login)
 
-    // authenticated
     auth := r.Group("/")
     auth.Use(authHandler.AuthMiddleware())
     {
+
+        admin := auth.Group("/admin")
+        admin.Use(authHandler.AdminOnly())
+        {
+            admin.GET("/users" , userHandler.GetUsers)
+            admin.POST("/users/:id/approve" , userHandler.ApproveUser)
+            admin.POST("/users/:id/reject" , userHandler.RejectUser)
+        }
+
         auth.POST("/events", eventsHandler.Create)
         auth.GET("/events", eventsHandler.GetMyEvents)
     }
