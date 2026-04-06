@@ -1,5 +1,5 @@
 import { useState, useEffect ,} from 'react'
-import { NavLink, useNavigate , useLocation } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { FiHome, FiSearch, FiCalendar, FiCheckSquare, FiUser, FiUsers, FiBell } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import { getPendingUsers} from '../../api/users'
@@ -40,7 +40,7 @@ export function Sidebar() {
               <FiUsers size={20} />
               <span>Users</span>
             </NavLink>
-            <NavLink to="/admin/notifications" className="sidebar-link">
+            <NavLink to="/admin/registrations" className="sidebar-link">
               <span className="icon-badge">
                 <FiBell size={20} />
                 {pendingUsersCount > 0 && <span className="red-dot" />}

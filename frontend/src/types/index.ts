@@ -15,6 +15,21 @@ export interface User {
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
 }
+export type UserSummary = {
+  id: string
+  username: string
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  address? :string
+  city?: string
+  country?: string
+  tax_id?:string
+  status?:string
+  created_at?: string
+  updated_at?:string
+}
 
 export interface Venue {
   id: string

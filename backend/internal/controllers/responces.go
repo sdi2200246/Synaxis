@@ -28,6 +28,23 @@ type EventResponse struct {
     Venue         VenueResponse `json:"venue"`
 }
 
+type AdminUserResponse struct {
+    ID        uuid.UUID `json:"id"`
+    Username  string    `json:"username"`
+    FirstName string    `json:"first_name"`
+    LastName  string    `json:"last_name"`
+    Email     string    `json:"email"`
+    Address   string    `json:"address"`
+    City      string    `json:"city"`
+    Country   string    `json:"country"`
+    TaxID     string    `json:"tax_id"`
+    Status    string    `json:"status"`
+    Phone     string    `json:"phone"`
+    CreatedAt time.Time `json:"created_at"`
+    UpdatedAt *time.Time `json:"updated_at"`
+}
+
+
 func ToEventResponse(ev entities.EventWithVenue) EventResponse {
     return EventResponse{
         ID:            ev.ID,
@@ -49,7 +66,6 @@ func ToEventResponse(ev entities.EventWithVenue) EventResponse {
         },
     }
 }
-
 func ToEventListResponse(events []entities.EventWithVenue) []EventResponse {
     result := make([]EventResponse, len(events))
     for i, ev := range events {

@@ -9,6 +9,8 @@ import {
   EventDetailPage,
   HomePage,
   MyEventsPage,
+  PendingRegistrations,
+  Users
 } from './pages'
 import './styles.css'
 
@@ -54,6 +56,23 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EventDetailPage/>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/registrations"
+              element={
+                <ProtectedRoute role="admin">
+                  <PendingRegistrations/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute role="admin">
+                  <Users/>
                 </ProtectedRoute>
               }
             />

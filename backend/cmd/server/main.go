@@ -49,8 +49,9 @@ func main() {
         admin.Use(authHandler.AdminOnly())
         {
             admin.GET("/users" , userHandler.GetUsers)
+            admin.POST("/users/:id/approve" , userHandler.ApproveUser)
+            admin.POST("/users/:id/reject" , userHandler.RejectUser)
         }
-
 
         auth.POST("/events", eventsHandler.Create)
         auth.GET("/events", eventsHandler.GetMyEvents)

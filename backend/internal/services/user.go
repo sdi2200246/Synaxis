@@ -7,22 +7,44 @@ import (
 	"github.com/sdi2200246/synaxis/internal/entities"
 	"github.com/sdi2200246/synaxis/internal/error"
 	"github.com/sdi2200246/synaxis/internal/interfaces"
-	"github.com/sdi2200246/synaxis/internal/types"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type CandidateUser struct {
-    Username  string `json:"username"   binding:"required"`
-    Password  string `json:"password"   binding:"required"`
-    FirstName string `json:"first_name" binding:"required"`
-    LastName  string `json:"last_name"  binding:"required"`
-    Email     string `json:"email"      binding:"required,email"`
-    Phone     string `json:"phone"      binding:"required"`
-    Address   string `json:"address"    binding:"required"`
-    City      string `json:"city"       binding:"required"`
-    Country   string `json:"country"    binding:"required"`
-    TaxID     string `json:"tax_id"     binding:"required"`
+    Username  string
+    Password  string
+    FirstName string
+    LastName  string
+    Email     string
+    Phone     string
+    Address   string
+    City      string
+    Country   string
+    TaxID     string
 }
+
+type User struct {
+    ID        uuid.UUID 
+    Username  string    
+    FirstName string    
+    LastName  string    
+    Email     string
+    Address    string    
+    City      string    
+    Country   string
+    TaxID     string
+    Status    string
+    Phone     string    
+    CreatedAt time.Time
+    UpdatedAt *time.Time
+}
+
+type UserFilter struct {
+    Country  *string
+    Status   *string
+    CreatedAt *time.Time
+}
+
 
 type UserService struct{
 	userRepo interfaces.UserRepository
@@ -59,6 +81,50 @@ func (s UserService)RegisterUser(ctx context.Context , user CandidateUser)error{
 	return s.userRepo.Create(ctx, newUser)
 }
 
-func (s UserService)GetUsers(ctx context.Context , f types.UserFilter)([]entities.User, error){
-	return s.userRepo.ListUsers(ctx , f)
+func (s *UserService) GetUsers(ctx context.Context, f UserFilter) ([]User, error) {
+    filter := entities.UserFilter{
+        Country:   f.Country,
+        Status:    f.Status,
+        CreatedAt: f.CreatedAt,
+    }
+
+    users, err := s.userRepo.ListUsers(ctx, filter)
+    if err != nil {
+        return nil, err
+    }
+
+    plain := make([]User, len(users))
+    for i, u := range users {
+        plain[i] = User{
+            ID:        u.ID,
+            Username:  u.Username,
+            FirstName: u.FirstName,
+            LastName:  u.LastName,
+            Email:     u.Email,
+            Phone:     u.Phone,
+            Address:   u.Address,
+            City:      u.City,
+            Country:   u.Country,
+            TaxID:     u.TaxID,
+            Status:    u.Status,
+            CreatedAt: u.CreatedAt,
+            UpdatedAt: u.UpdatedAt,
+        }
+    }
+
+    return plain, nil
+}
+
+func (s *UserService) ApproveUser(ctx context.Context, id uuid.UUID) error {
+    status := "approved"
+    return s.userRepo.UpdateUser(ctx, id, entities.UserUpdate{
+        Status: &status,
+    })
+}
+
+func (s *UserService) RejectUser(ctx context.Context, id uuid.UUID) error {
+    status := "rejected"
+    return s.userRepo.UpdateUser(ctx, id, entities.UserUpdate{
+        Status: &status,
+    })
 }
