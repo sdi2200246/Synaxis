@@ -3,7 +3,7 @@ package controllers
 import (
     "time"
     "github.com/google/uuid"
-    "github.com/sdi2200246/synaxis/internal/entities"
+    "github.com/sdi2200246/synaxis/internal/services"
 )
 
 type VenueResponse struct {
@@ -14,6 +14,12 @@ type VenueResponse struct {
     Country   string    `json:"country"`
     Latitude  *float64  `json:"latitude,omitempty"`
     Longitude *float64  `json:"longitude,omitempty"`
+    Capacity *int       `json:"capacity"`    
+}
+
+type CategoryResponce struct{
+    ID  uuid.UUID `json:"id"`
+    Name string   `json:"name"`
 }
 
 type EventResponse struct {
@@ -26,6 +32,7 @@ type EventResponse struct {
     StartDatetime time.Time     `json:"start_datetime"`
     EndDatetime   time.Time     `json:"end_datetime"`
     Venue         VenueResponse `json:"venue"`
+    Categories   *[]CategoryResponce `json:"categories"`
 }
 
 type AdminUserResponse struct {
@@ -45,7 +52,14 @@ type AdminUserResponse struct {
 }
 
 
-func ToEventResponse(ev entities.EventWithVenue) EventResponse {
+func ToEventResponse(ev services.DetailedEvent) EventResponse {
+
+    categories := make([]CategoryResponce , 0)
+
+    for _,c:= range ev.Categories{
+        categories = append(categories,  CategoryResponce{ID:c.ID,Name: c.Name})
+    }
+
     return EventResponse{
         ID:            ev.ID,
         Title:         ev.Title,
@@ -56,17 +70,19 @@ func ToEventResponse(ev entities.EventWithVenue) EventResponse {
         StartDatetime: ev.StartDatetime,
         EndDatetime:   ev.EndDatetime,
         Venue: VenueResponse{
-            ID:        ev.Venue.ID,
-            Name:      ev.Venue.Name,
-            Address:   ev.Venue.Address,
-            City:      ev.Venue.City,
-            Country:   ev.Venue.Country,
-            Latitude:  ev.Venue.Latitude,
-            Longitude: ev.Venue.Longitude,
+            ID:        ev.VenueID,
+            Name:      ev.VenueName,
+            Address:   ev.VenueAddress,
+            City:      ev.VenueCity,
+            Country:   ev.VenueCountry,
+            Latitude:  ev.VenueLatitude,
+            Longitude: ev.VenueLongitude,
         },
+        Categories: &categories,
     }
 }
-func ToEventListResponse(events []entities.EventWithVenue) []EventResponse {
+
+func ToEventListResponse(events []services.DetailedEvent) []EventResponse {
     result := make([]EventResponse, len(events))
     for i, ev := range events {
         result[i] = ToEventResponse(ev)

@@ -1,7 +1,5 @@
 export { LoginPage } from './Login'
 export { RegisterPage } from './Register'
-export { EventsPage } from './Events'
-export { EventDetailPage } from './EventDetail'
 export { HomePage } from './Home'
 export { BrowsePage } from './Browse'
 export { MyEventsPage} from './Myevents'

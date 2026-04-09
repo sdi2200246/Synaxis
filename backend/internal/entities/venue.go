@@ -3,12 +3,17 @@ package entities
 import "github.com/google/uuid"
 
 type Venue struct {
-    ID        uuid.UUID `json:"id" db:"id"`
-    Name      string    `json:"name" db:"name"`
-    Address   string    `json:"address" db:"address"`
-    City      string    `json:"city" db:"city"`
-    Country   string    `json:"country" db:"country"`
-    Latitude  *float64  `json:"latitude" db:"latitude"`
-    Longitude *float64  `json:"longitude" db:"longitude"`
-    Capacity  *int      `json:"capacity" db:"capacity"`
+    ID        uuid.UUID `db:"id"`
+    Name      string    `db:"name"`
+    Address   string    `db:"address"`
+    City      string    `db:"city"`
+    Country   string    `db:"country"`
+    Latitude  *float64  `db:"latitude"`
+    Longitude *float64  `db:"longitude"`
+    Capacity  *int      `db:"capacity"`
+}
+
+type VenuesFilter struct{
+    Name *string
+    Capacity *int
 }

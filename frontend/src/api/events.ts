@@ -12,12 +12,24 @@ export async function getEvent(id: string): Promise<Event> {
 }
 
 export async function createEvent(event: Partial<Event>): Promise<Event> {
+  if (event.start_datetime) {
+      event.start_datetime = new Date(event.start_datetime).toISOString();
+    }
+  
+  if (event.end_datetime) {
+    event.end_datetime = new Date(event.end_datetime).toISOString();
+  } 
+
+  if (event.capacity) {
+    event.capacity = Number(event.capacity);
+  }
+  console.log("sending event" , event)
   const response = await api.post<Event>('/events', event)
   return response.data
 }
 
 export async function updateEvent(id: string, event: Partial<Event>): Promise<Event> {
-  const response = await api.put<Event>(`/events/${id}`, event)
+  const response = await api.patch<Event>(`/events/${id}`, event)
   return response.data
 }
 

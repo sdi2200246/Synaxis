@@ -24,6 +24,8 @@ func main() {
         log.Fatal(err)
     }
     defer pool.Close()
+
+    categoryRepo:= repos.NewCategoryRepo(pool)
     
     userRepo    := repos.NewUserRepo(pool)
     userService := services.NewUserService(userRepo)
@@ -36,10 +38,25 @@ func main() {
     eventsService := services.NewEventService(eventRepo)
     eventsHandler := controllers.NewEventsHandler(eventsService)
 
+    venueRepo := repos.NewVenueRepo(pool)
+    venueService:=services.NewVenueService(venueRepo)
+    venueHandlers:=controllers.NewVenueHandler(venueService)
+
+
     r := gin.Default()
 
     r.POST("/users", userHandler.Register)
     r.POST("/auth/login" , authHandler.Login)
+
+    r.GET("/categories", func(c *gin.Context) {
+        categories, err := categoryRepo.GetAll(c.Request.Context())
+        if err != nil {
+            c.JSON(500, gin.H{"error": "failed to fetch categories"})
+            return
+        }
+        c.JSON(200, categories)
+    })
+
 
     auth := r.Group("/")
     auth.Use(authHandler.AuthMiddleware())
@@ -54,9 +71,11 @@ func main() {
         }
 
         auth.POST("/events", eventsHandler.Create)
-        auth.GET("/events", eventsHandler.GetMyEvents)
+        auth.PATCH("/events/:id" , eventsHandler.UpdateEvent)
+        auth.GET("/events", eventsHandler.GetOrganizerEvents)
+        auth.GET("/venues" , venueHandlers.GetVenues)
     }
-
+    
     // start server
     r.Run(":8080")
 }
