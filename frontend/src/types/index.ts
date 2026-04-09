@@ -30,15 +30,21 @@ export type UserSummary = {
   created_at?: string
   updated_at?:string
 }
+export interface Category {
+  id: string
+  name: string
+  parent_id?: string | null
+}
 
 export interface Venue {
   id: string
   name: string
-  address: string
-  city: string
-  country: string
+  address?: string
+  city?: string
+  country?: string
   latitude?: number
   longitude?: number
+  capacity?:number
 }
 
 export interface Event {
@@ -53,7 +59,10 @@ export interface Event {
   start_datetime: string
   end_datetime: string
   created_at: string
-  venue?: Venue
+  venue: Venue
+  booking_count?:number
+  categories?:Category[]
+  category_ids?:string[]
 }
 
 export interface TicketType {
@@ -101,5 +110,5 @@ export interface LoginResponse {
 export interface Category {
   id: string
   name: string
-  parent_id: string | null
+  parent_id?: string | null
 }

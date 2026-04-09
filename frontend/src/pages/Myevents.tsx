@@ -1,40 +1,86 @@
-// frontend/src/pages/MyEvents.tsx
-import { useState } from 'react'
-import { FiPlus } from 'react-icons/fi'
+import { useState, useEffect} from 'react'
+import type { Event } from '../types'
+import { getEvents } from '../api/events'
+import { OrganizerEventCard } from '../components/events/OganizerCard'
 import { CreateEventForm } from '../components/NewEventForm'
+import { EditEventForm } from '../components/EditEventForm'
 
 export function MyEventsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editTarget, setEditTarget] = useState<Event|null>(null)
+  const [events, setEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [successMessage , setSuccessMessage] = useState('')
 
-  function handleSuccess() {
-    setShowCreateForm(false)
-    // TODO: Refresh events list
-    alert('Event created successfully!')
+  async function fetchEvents() {
+    try {
+      const data = await getEvents()
+      setEvents(data)
+    } catch {
+      setError('Failed to load events')
+    } finally {
+      setLoading(false)
+    }
   }
 
+  useEffect(() => { fetchEvents() }, [])
+
   return (
-    <div className="my-events-page">
+    <div className="page">
       <div className="page-header">
-        <div>
-          <h1>My Events</h1>
-          <p>Events you're organizing</p>
-        </div>
-        <button className="create-event-btn" onClick={() => setShowCreateForm(true)}>
-          <FiPlus size={20} />
-          <span>Create Event</span>
+        <h1>My Events</h1>
+        <button className="btn-submit" onClick={() => setShowCreateForm(true)}>
+          New Event
         </button>
       </div>
 
+      {error && <div className="error-message">{error}</div>}
+      {loading && <p>Loading...</p>}
+
       <div className="events-list">
-        <p className="empty-state">No events yet. Create your first event!</p>
+        {events.map(event => (
+          <OrganizerEventCard
+            key={event.id}
+            event={event}
+            onEdit={e => setEditTarget(e)}
+            onPublish={e => console.log('publish', e.id)}
+            onCancel={e => console.log('cancel', e.id)}
+            onDelete={e => console.log('delete', e.id)}
+          />
+        ))}
       </div>
+
+      {successMessage && (
+        <div className="toast">{successMessage}</div>
+      )}
 
       {showCreateForm && (
         <CreateEventForm
           onClose={() => setShowCreateForm(false)}
-          onSuccess={handleSuccess}
+           onSuccess={() => {
+              setShowCreateForm(false)
+              setSuccessMessage('Event created successfully')
+              fetchEvents()
+              setTimeout(() => setSuccessMessage(''), 3000)
+            }}
         />
       )}
+
+      {editTarget && (
+        <EditEventForm
+          event={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSuccess={() => {
+              setEditTarget(null)
+              setSuccessMessage('Event updated successfully')
+              fetchEvents()
+              setTimeout(() => setSuccessMessage(''), 3000)
+            }}
+        />
+      )}
+
+
     </div>
   )
 }
