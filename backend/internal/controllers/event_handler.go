@@ -81,7 +81,7 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
 
    	eventID, err := uuid.Parse(c.Param("id"))
     if err != nil {
-        c.JSON(400, gin.H{"error": "invalid event_id"})
+        c.JSON(400, gin.H{"error": "invalid id"})
         return
     }
 	

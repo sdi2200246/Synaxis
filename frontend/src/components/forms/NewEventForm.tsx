@@ -1,8 +1,8 @@
 // frontend/src/components/CreateEventForm.tsx
 import { useState} from 'react'
 import { FiX } from 'react-icons/fi'
-import { createEvent } from '../api/events'
-import { useStaticData } from '../context/StaticData'
+import { createEvent } from '../../api/events'
+import { useStaticData } from '../../context/StaticData'
 
 interface CreateEventFormProps {
   onClose: () => void

@@ -145,4 +145,10 @@ func (s *EventService) GetOrganizerEvents(ctx context.Context, organizerID uuid.
     return eventsRes , nil
 }
 
-
+func (s *EventService) GetEventCapacity(ctx context.Context, id uuid.UUID) (int, error) {
+	event , err :=  s.eventRepo.GetByID(ctx, id)
+	if err != nil{
+		return -1 , err
+	}
+	return event.Capacity , nil
+}
