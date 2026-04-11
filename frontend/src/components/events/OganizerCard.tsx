@@ -8,9 +8,10 @@ interface EventCardProps {
   onPublish?: (event: Event) => void
   onCancel?: (event: Event) => void
   onDelete?: (event: Event) => void
+  onTickets?: (event: Event) => void
 }
 
-export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelete }: EventCardProps) {
+export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelete , onTickets }: EventCardProps) {
   const [expanded, setExpanded] = useState(false)
 
   const isDraft = event.status === 'DRAFT'
@@ -21,6 +22,7 @@ export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelet
   const canCancel = isPublished
   const canDelete = isDraft
   const canEdit = !isCancelled
+  const canRelease = !isCancelled
 
   const formatDate = (dt: string) =>
     new Date(dt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
@@ -65,6 +67,16 @@ export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelet
         </div>
 
         <div className="ec-actions" onClick={e => e.stopPropagation()}>
+
+          {canRelease &&(
+            <button className="ec-btn ec-btn--tickets" title="Tickets" onClick={() => onTickets?.(event)}>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <rect x="1" y="3" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                <path d="M5 3v9M10 3v9" stroke="currentColor" strokeWidth="1.2" strokeDasharray="1.5 1.5" />
+              </svg>
+            </button>
+          )}
+
           {canEdit && (
             <button className="ec-btn" title="Edit" onClick={() => onEdit?.(event)}>
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
@@ -79,6 +91,7 @@ export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelet
               </svg>
             </button>
           )}
+
           {canCancel && (
             <button className="ec-btn ec-btn--danger" title="Cancel" onClick={() => onCancel?.(event)}>
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none">

@@ -1,8 +1,8 @@
 import { useState} from 'react'
 import { FiX } from 'react-icons/fi'
-import { updateEvent } from '../api/events'
-import { useStaticData } from '../context/StaticData'
-import type {Event } from '../types'
+import { updateEvent } from '../../api/events'
+import { useStaticData } from '../../context/StaticData'
+import type {Event } from '../../types'
  
 interface EditEventFormProps {
   event: Event

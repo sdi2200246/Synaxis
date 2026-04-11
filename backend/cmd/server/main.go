@@ -15,10 +15,9 @@ import (
 )
 
 func main() {
-    // load .env
+
     godotenv.Load()
 
-    // connect to DB
     pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
     if err != nil {
         log.Fatal(err)
@@ -31,7 +30,7 @@ func main() {
     userService := services.NewUserService(userRepo)
     userHandler := controllers.NewUserHandler(userService)
 
-    authService := services.NewAuthService(userRepo , "jason_derullo") //TDO realsecret .
+    authService := services.NewAuthService(userRepo , "jason_derullo")
     authHandler := middleware.NewAuthHandler(authService)
 
     eventRepo   := repos.NewEventRepo(pool)
@@ -41,6 +40,12 @@ func main() {
     venueRepo := repos.NewVenueRepo(pool)
     venueService:=services.NewVenueService(venueRepo)
     venueHandlers:=controllers.NewVenueHandler(venueService)
+
+    ticketsRepo := repos.NewTicketTypeRepo(pool)
+    bookingService := services.NewBookingService(ticketsRepo)
+
+
+    ticketsHandler := controllers.NewTicketTypeHandler(bookingService , eventsService)
 
 
     r := gin.Default()
@@ -56,7 +61,7 @@ func main() {
         }
         c.JSON(200, categories)
     })
-
+    r.GET("/venues" , venueHandlers.GetVenues)
 
     auth := r.Group("/")
     auth.Use(authHandler.AuthMiddleware())
@@ -73,7 +78,11 @@ func main() {
         auth.POST("/events", eventsHandler.Create)
         auth.PATCH("/events/:id" , eventsHandler.UpdateEvent)
         auth.GET("/events", eventsHandler.GetOrganizerEvents)
-        auth.GET("/venues" , venueHandlers.GetVenues)
+
+        auth.POST("/events/:id/tickets" , ticketsHandler.Create)
+        auth.GET("/events/:id/tickets" , ticketsHandler.GetByEventID)
+        auth.PATCH("/events/:id/tickets/:ticket_id" , ticketsHandler.Update)
+               
     }
     
     // start server

@@ -213,6 +213,11 @@
   color: var(--color-text-secondary, #666);
   border: 0.5px solid var(--color-border-tertiary, #e8e8e8);
 }
+
+.ec-btn--tickets:hover {
+  background: #E6F1FB;
+  color: #0C447C;
+}
  
 @media (max-width: 540px) {
   .ec-grid {

@@ -1,0 +1,166 @@
+.tc-card {
+  background: var(--color-background-primary, #fff);
+  border: 0.5px solid var(--color-border-tertiary, #e8e8e8);
+  border-radius: 12px;
+  padding: 16px;
+  transition: border-color 0.15s;
+}
+
+.tc-card:hover {
+  border-color: var(--color-border-secondary, #ccc);
+}
+
+.tc-card--sold-out {
+  opacity: 0.6;
+}
+
+.tc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tc-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary, #111);
+}
+
+.tc-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary, #111);
+}
+
+.tc-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.tc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tc-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary, #aaa);
+}
+
+.tc-stat-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-primary, #111);
+}
+
+.tc-stat-value--zero {
+  color: #A32D2D;
+}
+
+/* Create form */
+.tc-form {
+  background: var(--color-background-primary, #fff);
+  border: 0.5px solid var(--color-border-tertiary, #e8e8e8);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.tc-form h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.tc-form-fields {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.tc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.tc-field label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary, #aaa);
+}
+
+.tc-field input {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-secondary, #ddd);
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+}
+
+.tc-field input:focus {
+  border-color: #111;
+}
+
+.tc-submit {
+  padding: 8px 20px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.tc-submit:hover {
+  background: #444;
+}
+
+.tc-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tc-empty {
+  text-align: center;
+  color: #999;
+  padding: 3rem;
+  font-size: 0.95rem;
+}
+.tc-edit-btn {
+  background: none;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tc-edit-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+@media (max-width: 600px) {
+  .tc-form-fields {
+    flex-direction: column;
+  }
+}

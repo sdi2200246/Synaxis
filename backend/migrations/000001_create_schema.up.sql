@@ -54,7 +54,9 @@ CREATE TABLE "tickettype" (
   "name" varchar NOT NULL,
   "price" decimal NOT NULL,
   "quantity" integer NOT NULL,
-  "available" integer NOT NULL
+  "available" integer NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (now()),
+  "updated_at" timestamp
 );
 
 CREATE TABLE "booking" (
