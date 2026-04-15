@@ -70,7 +70,7 @@ func (h *EventsHandler)Create(c *gin.Context) {
 
 	var input CreateEventRequest
     if err := c.ShouldBindJSON(&input); err != nil {
-		slog.Error("Invalid input:" , err)
+		slog.Error("Invalid input", "error", err)
 		c.JSON(400, gin.H{"error": "invalid input", "details": err.Error()})
         return
     }
@@ -101,7 +101,7 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
 	
 	var input UpdateEventRequest
     if err := c.ShouldBindJSON(&input); err != nil {
-		slog.Error("Invalid input:" , err)
+	    slog.Error("Invalid input", "error", err)
 		c.JSON(400, gin.H{"error": "invalid input", "details": err.Error()})
         return
     }
