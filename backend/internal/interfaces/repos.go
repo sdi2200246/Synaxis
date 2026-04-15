@@ -33,6 +33,7 @@ type EventRepository interface {
     GetByID(ctx context.Context, id uuid.UUID) (entities.Event, error)
     GetByOrganizerID(ctx context.Context, organizerID uuid.UUID) ([]entities.OrganizerEvent, error) 
     Update(ctx context.Context, eventID uuid.UUID, update entities.UpdateEvent) error
+	SearchPublished(ctx context.Context, filter entities.EventFilter) ([]entities.OrganizerEvent, bool, error)
 	// Publish(ctx context.Context, id uuid.UUID) error 
 	// Cancel(ctx context.Context, id uuid.UUID) error
 }

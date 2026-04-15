@@ -10,7 +10,9 @@ import {
   MyEventsPage,
   PendingRegistrations,
   Users,
-  EventTicketsPage
+  EventTicketsPage,
+  BrowsePage,
+  SearchPage
 } from './pages'
 import './styles.css'
 
@@ -35,6 +37,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/browse"
+                element={
+                    <BrowsePage/>
+                }
+              />
+
+              <Route path="/search" element={<SearchPage />} />
+
               <Route
                 path="/my-events"
                 element={

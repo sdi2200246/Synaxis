@@ -6,3 +6,4 @@ export { MyEventsPage} from './Myevents'
 export { PendingRegistrations } from './admin/Registrations'
 export { Users } from './admin/Users'
 export { EventTicketsPage } from "./EventTickets"
+export { SearchPage} from "./Search"

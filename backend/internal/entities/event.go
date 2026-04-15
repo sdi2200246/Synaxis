@@ -25,7 +25,6 @@ type OrganizerEvent struct {
     Categories []Category
 }
 
-
 type UpdateEvent struct{
 	EventType   *string
 	VenueID     *uuid.UUID
@@ -33,3 +32,18 @@ type UpdateEvent struct{
 	CategoryIDs *[]uuid.UUID
 	Status 		*string
 }
+
+type EventFilter struct {
+    CategoryIDs   []uuid.UUID
+    Title         *string
+    Description   *string
+    City          *string
+    Country       *string
+    StartAfter    *time.Time
+    StartBefore   *time.Time
+    MinPrice      *float64
+    MaxPrice      *float64
+    Limit         int
+    Offset        int
+}
+
