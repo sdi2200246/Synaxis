@@ -51,7 +51,7 @@ func main() {
     r := gin.Default()
 
     r.POST("/users", userHandler.Register)
-    r.POST("/auth/login" , authHandler.Login)
+    r.POST("/auth/login", authHandler.Login)
 
     r.GET("/categories", func(c *gin.Context) {
         categories, err := categoryRepo.GetAll(c.Request.Context())
@@ -61,28 +61,27 @@ func main() {
         }
         c.JSON(200, categories)
     })
-    r.GET("/venues" , venueHandlers.GetVenues)
+    r.GET("/venues", venueHandlers.GetVenues)
+    r.GET("/events", eventsHandler.SearchPublished)
 
     auth := r.Group("/")
     auth.Use(authHandler.AuthMiddleware())
     {
-
         admin := auth.Group("/admin")
         admin.Use(authHandler.AdminOnly())
         {
-            admin.GET("/users" , userHandler.GetUsers)
-            admin.POST("/users/:id/approve" , userHandler.ApproveUser)
-            admin.POST("/users/:id/reject" , userHandler.RejectUser)
+            admin.GET("/users", userHandler.GetUsers)
+            admin.POST("/users/:id/approve", userHandler.ApproveUser)
+            admin.POST("/users/:id/reject", userHandler.RejectUser)
         }
 
+        auth.GET("/my-events", eventsHandler.GetOrganizerEvents)
         auth.POST("/events", eventsHandler.Create)
-        auth.PATCH("/events/:id" , eventsHandler.UpdateEvent)
-        auth.GET("/events", eventsHandler.GetOrganizerEvents)
+        auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
 
-        auth.POST("/events/:id/tickets" , ticketsHandler.Create)
-        auth.GET("/events/:id/tickets" , ticketsHandler.GetByEventID)
-        auth.PATCH("/events/:id/tickets/:ticket_id" , ticketsHandler.Update)
-               
+        auth.POST("/events/:id/tickets", ticketsHandler.Create)
+        auth.GET("/events/:id/tickets", ticketsHandler.GetByEventID)
+        auth.PATCH("/events/:id/tickets/:ticket_id", ticketsHandler.Update)
     }
     
     // start server

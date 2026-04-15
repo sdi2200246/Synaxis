@@ -60,6 +60,21 @@ type DetailedEvent struct {
 
 }
 
+type EventFilterInput struct{
+	CategoryIDs   []uuid.UUID
+    Title         *string
+    Description   *string
+    City          *string
+    Country       *string
+    StartAfter    *time.Time
+    StartBefore   *time.Time
+    MinPrice      *float64
+    MaxPrice      *float64
+    Limit         int
+    Offset        int
+}
+
+
 type EventService struct{
 	eventRepo interfaces.EventRepository
 }
@@ -151,4 +166,64 @@ func (s *EventService) GetEventCapacity(ctx context.Context, id uuid.UUID) (int,
 		return -1 , err
 	}
 	return event.Capacity , nil
+}
+
+func (s *EventService) SearchEvents(ctx context.Context, input EventFilterInput) ([]DetailedEvent, bool, error) {
+    filter := entities.EventFilter{
+        CategoryIDs: input.CategoryIDs,
+        Title:       input.Title,
+        Description: input.Description,
+        City:        input.City,
+        Country:     input.Country,
+        StartAfter:  input.StartAfter,
+        StartBefore: input.StartBefore,
+        MinPrice:    input.MinPrice,
+        MaxPrice:    input.MaxPrice,
+        Limit:       input.Limit,
+        Offset:      input.Offset,
+    }
+
+    events, hasMore, err := s.eventRepo.SearchPublished(ctx, filter)
+    if err != nil {
+        return nil, false, err
+    }
+    result := make([]DetailedEvent, 0, len(events))
+    for _, e := range events {
+        result = append(result, toDetailedEvent(e))
+    }
+
+    return result, hasMore, nil
+}
+
+
+
+func toDetailedEvent(e entities.OrganizerEvent) DetailedEvent {
+    categories := make([]Category, 0, len(e.Categories))
+    for _, c := range e.Categories {
+        categories = append(categories, Category{ID: c.ID, Name: c.Name})
+    }
+
+    return DetailedEvent{
+        ID:            e.ID,
+        OrganizerID:   e.OrganizerID,
+        Title:         e.Title,
+        EventType:     e.EventType,
+        Status:        e.Status,
+        Description:   e.Description,
+        Capacity:      e.Capacity,
+        StartDatetime: e.StartDatetime,
+        EndDatetime:   e.EndDatetime,
+        CreatedAt:     e.CreatedAt,
+
+        VenueID:        e.Venue.ID,
+        VenueName:      e.Venue.Name,
+        VenueAddress:   e.Venue.Address,
+        VenueCity:      e.Venue.City,
+        VenueCountry:   e.Venue.Country,
+        VenueLatitude:  e.Venue.Latitude,
+        VenueLongitude: e.Venue.Longitude,
+        VenueCapacity:  e.Venue.Capacity,
+
+        Categories: categories,
+    }
 }

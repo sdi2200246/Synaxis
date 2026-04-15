@@ -32,6 +32,20 @@ type UpdateEventRequest struct{
     Status      *string      `json:"status,omitempty"`
 }
 
+type SearchEventRequest struct {
+    CategoryIDs []string `form:"category_id"`
+    Title       *string     `form:"title"`
+    Description *string     `form:"description"`
+    City        *string     `form:"city"`
+    Country     *string     `form:"country"`
+    StartAfter  *time.Time  `form:"start_after" time_format:"2006-01-02T15:04:05Z07:00"`
+    StartBefore *time.Time  `form:"start_before" time_format:"2006-01-02T15:04:05Z07:00"`
+    MinPrice    *float64    `form:"min_price"`
+    MaxPrice    *float64    `form:"max_price"`
+    Limit       int         `form:"limit,default=20"`
+    Offset      int         `form:"offset,default=0"`
+}
+
 type EventsHandler struct {
     eventsService *services.EventService
 }
@@ -139,4 +153,48 @@ func (h *EventsHandler) handleError(c *gin.Context, err error) {
     default:
         apperr.Handle(c, err)
     }
+}
+
+
+func (h *EventsHandler) SearchPublished(c *gin.Context) {
+    var req SearchEventRequest
+    if err := c.ShouldBindQuery(&req); err != nil {
+        c.JSON(400, gin.H{"error": err.Error()})
+        return
+    }
+
+    var categoryIDs []uuid.UUID
+    for _, s := range req.CategoryIDs {
+        id, err := uuid.Parse(s)
+        if err != nil {
+            c.JSON(400, gin.H{"error": "invalid category_id: " + s})
+            return
+        }
+        categoryIDs = append(categoryIDs, id)
+    }
+
+    filter := services.EventFilterInput{
+        CategoryIDs: categoryIDs,
+        Title:       req.Title,
+        Description: req.Description,
+        City:        req.City,
+        Country:     req.Country,
+        StartAfter:  req.StartAfter,
+        StartBefore: req.StartBefore,
+        MinPrice:    req.MinPrice,
+        MaxPrice:    req.MaxPrice,
+        Limit:       req.Limit,
+        Offset:      req.Offset,
+    }
+
+    events, hasMore, err := h.eventsService.SearchEvents(c.Request.Context(), filter)
+    if err != nil {
+        apperr.Handle(c, err)
+        return
+    }
+
+    c.JSON(200, gin.H{
+        "events":   ToEventListResponse(events),
+        "has_more": hasMore,
+    })
 }

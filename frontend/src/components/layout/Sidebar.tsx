@@ -50,13 +50,13 @@ export function Sidebar() {
           </>
         ) : (
           <>
-            <NavLink to="/home" className="sidebar-link">
+            <NavLink to="/browse" className="sidebar-link">
               <FiHome size={20} />
               <span>Home</span>
             </NavLink>
-            <NavLink to="/browse" className="sidebar-link">
+            <NavLink to="/search" className="sidebar-link">
               <FiSearch size={20} />
-              <span>Browse</span>
+              <span>Search</span>
             </NavLink>
             <NavLink to="/my-events" className="sidebar-link">
               <FiCalendar size={20} />

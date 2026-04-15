@@ -212,3 +212,108 @@ func (r *EventRepo) Update(ctx context.Context, eventID uuid.UUID, update entiti
     return nil
 
 }
+
+func (r *EventRepo) SearchPublished(ctx context.Context, filter entities.EventFilter) ([]entities.OrganizerEvent, bool, error) {
+    if filter.Limit == 0 {
+        filter.Limit = 20
+    }
+    if filter.Limit > 100 {
+        filter.Limit = 100
+    }
+
+    t, err := tqla.New(tqla.WithPlaceHolder(tqla.Dollar))
+    if err != nil {
+        return nil, false, apperr.ErrInternal
+    }
+
+    query, args, err := t.Compile(`
+        SELECT
+            e.id, e.organizer_id, e.venue_id, e.title, e.event_type,
+            e.status, e.description, e.capacity,
+            e.start_datetime, e.end_datetime, e.created_at,
+            v.id, v.name, v.address, v.city, v.country,
+            v.latitude, v.longitude, v.capacity,
+            array_agg(c.id) AS category_ids,
+            array_agg(c.name) AS category_names
+        FROM event e
+        JOIN venue v ON e.venue_id = v.id
+        JOIN eventcategory ec ON ec.event_id = e.id
+        JOIN category c ON c.id = ec.category_id
+        WHERE e.status = 'PUBLISHED'
+        {{ if or .Title .Description }}
+		AND (
+			1=0
+			{{ if .Title }} 
+				OR e.title ILIKE '%' || {{ .Title }} || '%' 
+			{{ end }}
+			{{ if .Description }} 
+				OR e.description ILIKE '%' || {{ .Description }} || '%' 
+			{{ end }}
+		)
+		{{ end }}
+        {{ if .City }} AND v.city ILIKE '%' || {{ .City }} || '%' {{ end }}
+        {{ if .Country }} AND v.country ILIKE '%' || {{ .Country }} || '%' {{ end }}
+        {{ if .StartAfter }} AND e.start_datetime >= {{ .StartAfter }} {{ end }}
+        {{ if .StartBefore }} AND e.start_datetime <= {{ .StartBefore }} {{ end }}
+        {{ if .CategoryIDs }} AND e.id IN (
+            SELECT event_id FROM eventcategory WHERE category_id = ANY({{ .CategoryIDs }})
+        ) {{ end }}
+        {{ if .MinPrice }} AND e.id IN (
+            SELECT event_id FROM tickettype WHERE price >= {{ .MinPrice }}
+        ) {{ end }}
+        {{ if .MaxPrice }} AND e.id IN (
+            SELECT event_id FROM tickettype WHERE price <= {{ .MaxPrice }}
+        ) {{ end }}
+        GROUP BY e.id, v.id
+        ORDER BY e.start_datetime ASC
+        LIMIT {{ .Limit }} OFFSET {{ .Offset }}
+    `, filter)
+    if err != nil {
+        slog.Error("SearchPublished template failed", "error", err)
+        return nil, false, apperr.ErrInternal
+    }
+
+    rows, err := r.db.Query(ctx, query, args...)
+    if err != nil {
+        slog.Error("SearchPublished query failed", "error", err)
+        return nil, false, apperr.ErrInternal
+    }
+    defer rows.Close()
+
+    var results []entities.OrganizerEvent
+    for rows.Next() {
+        var ev entities.OrganizerEvent
+        var categoryIDs []uuid.UUID
+        var categoryNames []string
+
+        err := rows.Scan(
+            &ev.ID, &ev.OrganizerID, &ev.VenueID, &ev.Title, &ev.EventType,
+            &ev.Status, &ev.Description, &ev.Capacity,
+            &ev.StartDatetime, &ev.EndDatetime, &ev.CreatedAt,
+            &ev.Venue.ID, &ev.Venue.Name, &ev.Venue.Address, &ev.Venue.City,
+            &ev.Venue.Country, &ev.Venue.Latitude, &ev.Venue.Longitude, &ev.Venue.Capacity,
+            &categoryIDs, &categoryNames,
+        )
+        if err != nil {
+            slog.Error("SearchPublished scan failed", "error", err)
+            return nil, false, apperr.ErrInternal
+        }
+
+        for i := range categoryIDs {
+            ev.Categories = append(ev.Categories, entities.Category{
+                ID:   categoryIDs[i],
+                Name: categoryNames[i],
+            })
+        }
+
+        results = append(results, ev)
+    }
+
+    if err := rows.Err(); err != nil {
+        slog.Error("SearchPublished iteration failed", "error", err)
+        return nil, false, apperr.ErrInternal
+    }
+
+    hasMore := len(results) == filter.Limit
+    return results, hasMore, nil
+}
