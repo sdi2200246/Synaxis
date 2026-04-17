@@ -7,3 +7,5 @@ export { PendingRegistrations } from './admin/Registrations'
 export { Users } from './admin/Users'
 export { EventTicketsPage } from "./EventTickets"
 export { SearchPage} from "./Search"
+export { AttendingPage } from './Attending'
+export {EventBookingsPage} from './EventBookings'

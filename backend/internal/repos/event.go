@@ -22,8 +22,8 @@ func NewEventRepo(db *pgxpool.Pool)*EventRepo{
 
 
 func (r *EventRepo) CreateWithCategories(ctx context.Context, event entities.Event, categoryIDs []uuid.UUID) error {
-tx, err := r.db.Begin(ctx)
-if err != nil {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
         return apperr.ErrInternal
     }
     defer tx.Rollback(ctx)
@@ -316,4 +316,66 @@ func (r *EventRepo) SearchPublished(ctx context.Context, filter entities.EventFi
 
     hasMore := len(results) == filter.Limit
     return results, hasMore, nil
+}
+
+
+
+
+func (r *EventRepo) GetAll(ctx context.Context) ([]entities.OrganizerEvent, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT
+			e.id, e.organizer_id, e.venue_id, e.title, e.event_type,
+			e.status, e.description, e.capacity,
+			e.start_datetime, e.end_datetime, e.created_at,
+			v.id, v.name, v.address, v.city, v.country,
+			v.latitude, v.longitude, v.capacity,
+			array_agg(c.id) as category_ids,
+			array_agg(c.name) as category_names
+		FROM event e
+		JOIN venue v ON e.venue_id = v.id
+		JOIN eventcategory ec ON ec.event_id = e.id
+		JOIN category c ON c.id = ec.category_id
+		GROUP BY e.id, v.id
+	`,)
+	if err != nil {
+		slog.Error("EventRepo.GetByOrganizerID failed", "error", err)
+		return nil, apperr.ErrInternal
+	}
+	defer rows.Close()
+
+	var results []entities.OrganizerEvent
+	for rows.Next() {
+		var ev entities.OrganizerEvent
+		var categoryIDs []uuid.UUID
+		var categoryNames []string
+
+		err := rows.Scan(
+			&ev.ID, &ev.OrganizerID, &ev.VenueID, &ev.Title, &ev.EventType,
+			&ev.Status, &ev.Description, &ev.Capacity,
+			&ev.StartDatetime, &ev.EndDatetime, &ev.CreatedAt,
+			&ev.Venue.ID, &ev.Venue.Name, &ev.Venue.Address, &ev.Venue.City,
+			&ev.Venue.Country, &ev.Venue.Latitude, &ev.Venue.Longitude, &ev.Venue.Capacity,
+			&categoryIDs, &categoryNames,
+		)
+		if err != nil {
+			slog.Error("EventRepo.GetByOrganizerID scan failed", "error", err)
+			return nil, apperr.ErrInternal
+		}
+
+		for i := range categoryIDs {
+			ev.Categories = append(ev.Categories, entities.Category{
+				ID:   categoryIDs[i],
+				Name: categoryNames[i],
+			})
+		}
+
+		results = append(results, ev)
+	}
+
+	if err := rows.Err(); err != nil {
+		slog.Error("EventRepo.GetByOrganizerID rows error", "error", err)
+		return nil, apperr.ErrInternal
+	}
+	
+	return results, nil
 }

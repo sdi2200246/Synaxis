@@ -9,9 +9,10 @@ interface EventCardProps {
   onCancel?: (event: Event) => void
   onDelete?: (event: Event) => void
   onTickets?: (event: Event) => void
+  onBookings?: (event: Event) => void
 }
 
-export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelete , onTickets }: EventCardProps) {
+export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelete , onTickets , onBookings }: EventCardProps) {
   const [expanded, setExpanded] = useState(false)
 
   const isDraft = event.status === 'DRAFT'
@@ -62,7 +63,15 @@ export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelet
             <span className="ec-sep">·</span>
             <span>{new Date(event.start_datetime).toLocaleDateString('en-US', { dateStyle: 'medium' })}</span>
             <span className="ec-sep">·</span>
-            <span>{event.booking_count ?? 0} bookings</span>
+            {!isDraft &&(<button
+                className="ec-btn-bookings"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onBookings?.(event)
+                }}
+              >
+                View bookings
+              </button>)}
           </div>
         </div>
 

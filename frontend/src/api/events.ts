@@ -41,7 +41,7 @@ export async function searchEvents(params: SearchEventsParams): Promise<SearchEv
 
 
 export async function getEvents(): Promise<Event[]> {
-  const response = await api.get<Event[]>('/events')
+  const response = await api.get<Event[]>('/my-events')
   return response.data
 }
 

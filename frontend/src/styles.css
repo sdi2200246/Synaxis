@@ -1159,3 +1159,207 @@ button[type="submit"]:disabled {
     width: 100%;
   }
 }
+
+
+/* ====================13.AttendingEventsPage==========================*/
+.ub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ub-empty {
+  color: var(--text);
+  font-size: 0.9rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+/* ── Stats row ── */
+.ub-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ub-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.ub-stat__value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.ub-stat__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+/* ── Next event highlight ── */
+.ub-next {
+  padding: 14px 16px;
+  background: #f0f7ff;
+  border: 1px solid #c8dff5;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.ub-next__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #3b82f6;
+}
+
+.ub-next__body {
+  margin-top: 6px;
+}
+
+.ub-next__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+  display: block;
+}
+
+.ub-next__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.ub-next__meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Section title ── */
+.ub-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 540px) {
+  .ub-stats {
+    flex-wrap: wrap;
+  }
+
+  .ub-stat {
+    min-width: calc(50% - 6px);
+  }
+}
+
+
+
+
+/* ====================14.EventsBookingsPage==========================*/
+
+/* ── Page-level styles ── */
+.eb-page-header {
+  margin-bottom: 20px;
+}
+
+.eb-back {
+  font-size: 0.8rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.eb-back:hover {
+  text-decoration: underline;
+}
+
+.eb-page-header h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 4px 0 0;
+}
+
+.eb-subtitle {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+/* ── Stats row ── */
+.eb-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.eb-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.eb-stat__value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.eb-stat__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+/* ── Section title + list ── */
+.eb-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-bottom: 12px;
+}
+
+.eb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eb-empty {
+  color: var(--text);
+  font-size: 0.9rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+@media (max-width: 540px) {
+  .eb-stats {
+    flex-wrap: wrap;
+  }
+
+  .eb-stat {
+    min-width: calc(50% - 6px);
+  }
+}

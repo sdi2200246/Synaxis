@@ -12,7 +12,9 @@ import {
   Users,
   EventTicketsPage,
   BrowsePage,
-  SearchPage
+  SearchPage,
+  AttendingPage,
+  EventBookingsPage
 } from './pages'
 import './styles.css'
 
@@ -55,6 +57,24 @@ function App() {
                 }
               />
               
+              <Route
+                path="/attending"
+                element={
+                  <ProtectedRoute>
+                    <AttendingPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/my-events/:id/bookings"
+                element={
+                  <ProtectedRoute>
+                    <EventBookingsPage />
+                  </ProtectedRoute>
+                }
+              />
+
               <Route
                 path="/admin/registrations"
                 element={

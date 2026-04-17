@@ -33,11 +33,11 @@ type TicketTypeResponse struct {
 
 type TicketTypeHandler struct {
 	bookingService   *services.BookingService
-	capacityProvider interfaces.EventCapacityProvider
+	eventsProvider interfaces.EventsProvider
 }
 
-func NewTicketTypeHandler(bs *services.BookingService, cp interfaces.EventCapacityProvider) *TicketTypeHandler {
-	return &TicketTypeHandler{bookingService: bs, capacityProvider: cp}
+func NewTicketTypeHandler(bs *services.BookingService, cp interfaces.EventsProvider) *TicketTypeHandler {
+	return &TicketTypeHandler{bookingService: bs, eventsProvider: cp}
 }
 
 func (h *TicketTypeHandler) Create(c *gin.Context) {
@@ -53,7 +53,7 @@ func (h *TicketTypeHandler) Create(c *gin.Context) {
 		return
 	}
 
-	capacity, err := h.capacityProvider.GetEventCapacity(c.Request.Context(), eventID)
+	capacity, err := h.eventsProvider.GetEventCapacity(c.Request.Context(), eventID)
 	if err != nil {
 		h.handleError(c, err)
 		return
@@ -92,7 +92,7 @@ func (h *TicketTypeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	capacity, err := h.capacityProvider.GetEventCapacity(c.Request.Context(), eventID)
+	capacity, err := h.eventsProvider.GetEventCapacity(c.Request.Context(), eventID)
 	if err != nil {
 		h.handleError(c, err)
 		return
