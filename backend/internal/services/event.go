@@ -168,6 +168,22 @@ func (s *EventService) GetEventCapacity(ctx context.Context, id uuid.UUID) (int,
 	return event.Capacity , nil
 }
 
+func (s* EventService) GetEventStatus(ctx context.Context , id uuid.UUID)(string , error){
+    event , err :=  s.eventRepo.GetByID(ctx, id)
+	if err != nil{
+		return "" , err
+	}
+	return event.Status , nil
+}
+
+func (s*EventService) GetEventOrganizer(ctx context.Context , id uuid.UUID)(uuid.UUID , error){
+    event , err :=  s.eventRepo.GetByID(ctx, id)
+	if err != nil{
+		return uuid.Nil , err
+	}
+	return event.OrganizerID , nil
+}
+
 func (s *EventService) SearchEvents(ctx context.Context, input EventFilterInput) ([]DetailedEvent, bool, error) {
     filter := entities.EventFilter{
         CategoryIDs: input.CategoryIDs,
@@ -226,4 +242,16 @@ func toDetailedEvent(e entities.OrganizerEvent) DetailedEvent {
 
         Categories: categories,
     }
+}
+
+func (s *EventService) GetAllEvents(ctx context.Context) ([]DetailedEvent, error) {
+	events, err := s.eventRepo.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]DetailedEvent, 0, len(events))
+	for _, e := range events {
+		result = append(result, toDetailedEvent(e))
+	}
+	return result, nil
 }

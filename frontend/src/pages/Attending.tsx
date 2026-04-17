@@ -1,0 +1,93 @@
+import { useState, useEffect, useMemo } from 'react'
+import { getUserBookings } from '../api/bookings'
+import { UserBookingCard } from '../components/bookings/UserBookingCard'
+import type { UserBooking } from '../api/bookings'
+import { FiCalendar, FiTag, FiMapPin } from 'react-icons/fi'
+
+export function AttendingPage() {
+  const [bookings, setBookings] = useState<UserBooking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    getUserBookings()
+      .then(setBookings)
+      .catch(() => setError('Failed to load bookings'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const stats = useMemo(() => {
+    if (bookings.length === 0) return null
+
+    const totalTickets = bookings.reduce((sum, b) => sum + b.number_of_tickets, 0)
+    const totalSpent = bookings.reduce((sum, b) => sum + b.total_cost, 0)
+
+    const upcoming = bookings
+      .filter(b => new Date(b.event_start) > new Date())
+      .sort((a, b) => new Date(a.event_start).getTime() - new Date(b.event_start).getTime())
+
+    const nextEvent = upcoming.length > 0 ? upcoming[0] : null
+
+    return { totalTickets, totalSpent, nextEvent, upcomingCount: upcoming.length }
+  }, [bookings])
+
+  if (loading) return <div className="page"><p>Loading bookings…</p></div>
+  if (error) return <div className="page"><div className="error-message">{error}</div></div>
+
+  return (
+    <div className="page">
+      <h1>My Bookings</h1>
+
+      {bookings.length === 0 ? (
+        <p className="ub-empty">You haven't booked any events yet.</p>
+      ) : (
+        <>
+          <div className="ub-stats">
+            <div className="ub-stat">
+              <span className="ub-stat__value">{bookings.length}</span>
+              <span className="ub-stat__label">Bookings</span>
+            </div>
+            <div className="ub-stat">
+              <span className="ub-stat__value">{stats!.totalTickets}</span>
+              <span className="ub-stat__label">Tickets</span>
+            </div>
+            <div className="ub-stat">
+              <span className="ub-stat__value">{stats!.upcomingCount}</span>
+              <span className="ub-stat__label">Upcoming</span>
+            </div>
+            <div className="ub-stat">
+              <span className="ub-stat__value">€{stats!.totalSpent.toFixed(0)}</span>
+              <span className="ub-stat__label">Total spent</span>
+            </div>
+          </div>
+
+          {stats!.nextEvent && (
+            <div className="ub-next">
+              <span className="ub-next__label">Next event</span>
+              <div className="ub-next__body">
+                <span className="ub-next__title">{stats!.nextEvent.event_title}</span>
+                <div className="ub-next__meta">
+                  <span><FiMapPin size={13} />{stats!.nextEvent.venue_name}, {stats!.nextEvent.venue_city}</span>
+                  <span>
+                    <FiCalendar size={13} />
+                    {new Date(stats!.nextEvent.event_start).toLocaleDateString('en-US', { dateStyle: 'medium' })}
+                    {' · '}
+                    {new Date(stats!.nextEvent.event_start).toLocaleTimeString('en-US', { timeStyle: 'short' })}
+                  </span>
+                  <span><FiTag size={13} />{stats!.nextEvent.ticket_name} ×{stats!.nextEvent.number_of_tickets}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <h2 className="ub-section-title">All bookings</h2>
+          <div className="ub-list">
+            {bookings.map(b => (
+              <UserBookingCard key={b.id} booking={b} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}

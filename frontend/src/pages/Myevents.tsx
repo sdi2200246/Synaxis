@@ -50,6 +50,9 @@ export function MyEventsPage() {
             onPublish={e => console.log('publish', e.id)}
             onCancel={e => console.log('cancel', e.id)}
             onDelete={e => console.log('delete', e.id)}
+            onBookings={e => navigate(`/my-events/${e.id}/bookings`, {
+                  state: { title: e.title, capacity: e.capacity, venue: e.venue?.name }
+            })}
           />
         ))}
       </div>
@@ -82,7 +85,6 @@ export function MyEventsPage() {
             }}
         />
       )}
-
 
     </div>
   )

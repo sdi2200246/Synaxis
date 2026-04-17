@@ -34,6 +34,16 @@ type EventRepository interface {
     GetByOrganizerID(ctx context.Context, organizerID uuid.UUID) ([]entities.OrganizerEvent, error) 
     Update(ctx context.Context, eventID uuid.UUID, update entities.UpdateEvent) error
 	SearchPublished(ctx context.Context, filter entities.EventFilter) ([]entities.OrganizerEvent, bool, error)
+	GetAll(ctx context.Context) ([]entities.OrganizerEvent, error)
 	// Publish(ctx context.Context, id uuid.UUID) error 
 	// Cancel(ctx context.Context, id uuid.UUID) error
+}
+
+
+type BookingRepository interface{
+	GetByTicketTypeID(ctx context.Context, ticketTypeID uuid.UUID) ([]entities.Booking, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID) ([]entities.UserBooking, error)
+	GetByEventID(ctx context.Context, eventID uuid.UUID) ([]entities.EventBooking, error)
+	GetForExport(ctx context.Context, eventID uuid.UUID) ([]entities.ExportBooking, error) 
+	Create(ctx context.Context, booking entities.Booking) error 
 }

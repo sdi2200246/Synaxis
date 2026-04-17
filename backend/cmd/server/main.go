@@ -41,11 +41,16 @@ func main() {
     venueService:=services.NewVenueService(venueRepo)
     venueHandlers:=controllers.NewVenueHandler(venueService)
 
+    bookingRepo := repos.NewBookingsRepo(pool)
     ticketsRepo := repos.NewTicketTypeRepo(pool)
-    bookingService := services.NewBookingService(ticketsRepo)
+
+    bookingService := services.NewBookingService(ticketsRepo , bookingRepo)
 
 
     ticketsHandler := controllers.NewTicketTypeHandler(bookingService , eventsService)
+    bookingHandler := controllers.NewBookingHandler(bookingService , eventsService)
+
+    adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 
     r := gin.Default()
@@ -73,15 +78,20 @@ func main() {
             admin.GET("/users", userHandler.GetUsers)
             admin.POST("/users/:id/approve", userHandler.ApproveUser)
             admin.POST("/users/:id/reject", userHandler.RejectUser)
+            admin.GET("/events" , adminExportHandler.Export)
         }
 
         auth.GET("/my-events", eventsHandler.GetOrganizerEvents)
+        auth.GET("/my-events/:id/bookings" , bookingHandler.GetEventBookings)
+        auth.GET("/my-bookings" , bookingHandler.GetUserBookings)
         auth.POST("/events", eventsHandler.Create)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
 
         auth.POST("/events/:id/tickets", ticketsHandler.Create)
         auth.GET("/events/:id/tickets", ticketsHandler.GetByEventID)
         auth.PATCH("/events/:id/tickets/:ticket_id", ticketsHandler.Update)
+
+        auth.POST("/events/:id/book" , bookingHandler.Create)
     }
     
     // start server

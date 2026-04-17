@@ -1,0 +1,229 @@
+/* ── User Booking Card ── */
+.ub-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ub-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.ub-event {
+  flex: 1;
+  min-width: 0;
+}
+
+.ub-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-h);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ub-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.ub-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ub-status {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.ub-status--active {
+  background: #EAF3DE;
+  color: #27500A;
+}
+
+.ub-status--completed {
+  background: #E6F1FB;
+  color: #0C447C;
+}
+
+.ub-status--cancelled {
+  background: #FCEBEB;
+  color: #791F1F;
+}
+
+/* ── Ticket details row ── */
+.ub-ticket {
+  display: flex;
+  gap: 16px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.ub-ticket-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ub-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.ub-value {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+/* ── Map toggle ── */
+.ub-map-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 16px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.ub-map-toggle:hover {
+  background: #2563eb;
+}
+
+/* ── Map spacing ── */
+.ub-map {
+  padding: 0 16px 16px;
+}
+
+.ub-map .event-map {
+  border-radius: 8px;
+}
+
+@media (max-width: 540px) {
+  .ub-ticket {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .ub-ticket-detail {
+    min-width: 60px;
+  }
+}
+
+/* ── Event Booking Card (Organizer view) ── */
+.eb-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.eb-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.eb-attendee {
+  flex: 1;
+  min-width: 0;
+}
+
+.eb-attendee__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-h);
+  display: block;
+}
+
+.eb-attendee__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.eb-attendee__contact span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.eb-date {
+  font-size: 0.75rem;
+  color: var(--text);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* ── Ticket details row ── */
+.eb-ticket {
+  display: flex;
+  gap: 16px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.eb-ticket-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eb-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.eb-value {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+@media (max-width: 540px) {
+  .eb-ticket {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .eb-ticket-detail {
+    min-width: 60px;
+  }
+}

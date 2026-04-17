@@ -21,7 +21,6 @@ export function BrowsePage() {
   const [rows, setRows] = useState<CategoryRow[]>([])
   const [initialLoading, setInitialLoading] = useState(true)
 
-  // Initialize rows and fetch first batch per category
   useEffect(() => {
     if (!categories.length) return
 
@@ -116,7 +115,7 @@ interface CategoryRowProps {
   onBook: (event: Event, ticket: TicketType) => void
 }
 
-function CategoryRowView({ row, onLoadMore, onBook }: CategoryRowProps) {
+function CategoryRowView({ row, onLoadMore}: CategoryRowProps) {
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -136,7 +135,7 @@ function CategoryRowView({ row, onLoadMore, onBook }: CategoryRowProps) {
       <h2 className="browse-section__title">{row.name}</h2>
       <div className="browse-section__row">
         {row.events.map(ev => (
-          <BrowseEventCard key={ev.id} event={ev} onBook={onBook} />
+          <BrowseEventCard key={ev.id} event={ev} />
         ))}
         {row.hasMore && <div ref={sentinelRef} className="browse-section__sentinel" />}
       </div>
