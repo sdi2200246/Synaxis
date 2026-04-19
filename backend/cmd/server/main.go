@@ -24,32 +24,27 @@ func main() {
     }
     defer pool.Close()
 
-    categoryRepo:= repos.NewCategoryRepo(pool)
     
-    userRepo    := repos.NewUserRepo(pool)
-    userService := services.NewUserService(userRepo)
-    userHandler := controllers.NewUserHandler(userService)
+    categoryRepo := repos.NewCategoryRepo(pool)
+    userRepo     := repos.NewUserRepo(pool)
+    eventRepo    := repos.NewEventRepo(pool)
+    venueRepo    := repos.NewVenueRepo(pool)
+    bookingRepo  := repos.NewBookingsRepo(pool)
+    ticketsRepo  := repos.NewTicketTypeRepo(pool)
 
-    authService := services.NewAuthService(userRepo , "jason_derullo")
-    authHandler := middleware.NewAuthHandler(authService)
+    userService  := services.NewUserService(userRepo)
+    authService  := services.NewAuthService(userRepo, "jason_derullo")
+    venueService := services.NewVenueService(venueRepo)
 
-    eventRepo   := repos.NewEventRepo(pool)
-    eventsService := services.NewEventService(eventRepo)
-    eventsHandler := controllers.NewEventsHandler(eventsService)
+    bookingService := services.NewBookingService(ticketsRepo, bookingRepo)
+    eventsService := services.NewEventService(eventRepo, bookingService)
 
-    venueRepo := repos.NewVenueRepo(pool)
-    venueService:=services.NewVenueService(venueRepo)
-    venueHandlers:=controllers.NewVenueHandler(venueService)
-
-    bookingRepo := repos.NewBookingsRepo(pool)
-    ticketsRepo := repos.NewTicketTypeRepo(pool)
-
-    bookingService := services.NewBookingService(ticketsRepo , bookingRepo)
-
-
-    ticketsHandler := controllers.NewTicketTypeHandler(bookingService , eventsService)
-    bookingHandler := controllers.NewBookingHandler(bookingService , eventsService)
-
+    userHandler        := controllers.NewUserHandler(userService)
+    authHandler        := middleware.NewAuthHandler(authService)
+    venueHandlers      := controllers.NewVenueHandler(venueService)
+    eventsHandler      := controllers.NewEventsHandler(eventsService)
+    ticketsHandler     := controllers.NewTicketTypeHandler(bookingService, eventsService)
+    bookingHandler     := controllers.NewBookingHandler(bookingService, eventsService)
     adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 
@@ -83,6 +78,7 @@ func main() {
 
         auth.GET("/my-events", eventsHandler.GetOrganizerEvents)
         auth.GET("/my-events/:id/bookings" , bookingHandler.GetEventBookings)
+        auth.DELETE("/my-events/:id" , eventsHandler.Delete)
         auth.GET("/my-bookings" , bookingHandler.GetUserBookings)
         auth.POST("/events", eventsHandler.Create)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)

@@ -232,6 +232,10 @@ func (s *BookingService) GetEventBookings(ctx context.Context, eventID uuid.UUID
 	return result, nil
 }
 
+func (s *BookingService) CountEventBookings(ctx context.Context, eventID uuid.UUID) (int, error) {
+	return s.bookingRepo.CountByEventID(ctx, eventID)
+}
+
 func (s *BookingService) GetExportBookings(ctx context.Context, eventID uuid.UUID) ([]ExportBookingDetail, error) {
 	bookings, err := s.bookingRepo.GetForExport(ctx, eventID)
 	if err != nil {

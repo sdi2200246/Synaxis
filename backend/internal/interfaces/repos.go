@@ -35,6 +35,7 @@ type EventRepository interface {
     Update(ctx context.Context, eventID uuid.UUID, update entities.UpdateEvent) error
 	SearchPublished(ctx context.Context, filter entities.EventFilter) ([]entities.OrganizerEvent, bool, error)
 	GetAll(ctx context.Context) ([]entities.OrganizerEvent, error)
+	Delete(ctx context.Context, eventID uuid.UUID) error
 	// Publish(ctx context.Context, id uuid.UUID) error 
 	// Cancel(ctx context.Context, id uuid.UUID) error
 }
@@ -45,5 +46,6 @@ type BookingRepository interface{
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]entities.UserBooking, error)
 	GetByEventID(ctx context.Context, eventID uuid.UUID) ([]entities.EventBooking, error)
 	GetForExport(ctx context.Context, eventID uuid.UUID) ([]entities.ExportBooking, error) 
+	CountByEventID(ctx context.Context, eventID uuid.UUID) (int, error)
 	Create(ctx context.Context, booking entities.Booking) error 
 }

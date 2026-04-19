@@ -55,6 +55,19 @@ func (r *EventRepo) CreateWithCategories(ctx context.Context, event entities.Eve
     return tx.Commit(ctx)
 }
 
+func (r *EventRepo) Delete(ctx context.Context, eventID uuid.UUID) error {
+    cmd, err := r.db.Exec(ctx, `DELETE FROM event WHERE id = $1`, eventID)
+    if err != nil {
+        return apperr.ErrInternal
+    }
+
+    if cmd.RowsAffected() == 0 {
+        return apperr.ErrNotFound
+    }
+
+    return nil
+}
+
 func (r *EventRepo)GetByID(ctx context.Context , id uuid.UUID)(entities.Event , error){
 	row := r.db.QueryRow(ctx, `
 		SELECT id, organizer_id, venue_id, title, event_type,

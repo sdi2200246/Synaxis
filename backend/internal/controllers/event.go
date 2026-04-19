@@ -119,9 +119,6 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
-
-
-
 func (h *EventsHandler) GetOrganizerEvents(c *gin.Context) {
    
 	val, exists := c.Get("userID")
@@ -197,4 +194,41 @@ func (h *EventsHandler) SearchPublished(c *gin.Context) {
         "events":   ToEventListResponse(events),
         "has_more": hasMore,
     })
+}
+
+
+func (h *EventsHandler) Delete(c *gin.Context) {
+    eventID, err := uuid.Parse(c.Param("id"))
+    if err != nil {
+        c.JSON(400, gin.H{"error": "invalid event id"})
+        return
+    }
+
+    val, exists := c.Get("userID")
+    if !exists {
+        c.JSON(401, gin.H{"error": "unauthorized"})
+        return
+    }
+    userID, ok := val.(uuid.UUID)
+    if !ok {
+        c.JSON(500, gin.H{"error": "invalid user ID in token"})
+        return
+    }
+
+    organizerID, err := h.eventsService.GetEventOrganizer(c.Request.Context(), eventID)
+    if err != nil {
+        apperr.Handle(c, err)
+        return
+    }
+    if organizerID != userID {
+        c.JSON(403, gin.H{"error": "forbidden"})
+        return
+    }
+
+    if err := h.eventsService.Delete(c.Request.Context(), eventID); err != nil {
+         c.JSON(403, gin.H{"error": "This event cannot be deleted"})
+        return
+    }
+
+    c.Status(204)
 }

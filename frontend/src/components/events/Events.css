@@ -689,3 +689,16 @@
   border-radius: 8px;
   margin-top: 12px;
 }
+
+/*Deletion dialogue*/
+.delete-modal {
+  max-width: 400px;
+}
+
+.browse-detail__confirm-btn--danger {
+  background: #ef4444;
+}
+
+.browse-detail__confirm-btn--danger:hover {
+  background: #dc2626;
+}

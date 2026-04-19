@@ -21,7 +21,7 @@ export function OrganizerEventCard({ event, onEdit, onPublish, onCancel, onDelet
 
   const canPublish = isDraft
   const canCancel = isPublished
-  const canDelete = isDraft
+  const canDelete = !isCancelled
   const canEdit = !isCancelled
   const canRelease = !isCancelled
 
