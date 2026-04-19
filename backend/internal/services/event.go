@@ -21,12 +21,14 @@ type CreateEventInput struct {
     CategoryIDs []uuid.UUID
 }
 
-type Category struct {
-    ID   uuid.UUID
-    Name string
+type EventCategory struct {
+	ID       uuid.UUID
+	Name     string
+	ParentID *uuid.UUID
 }
 
 type UpdateEventInput struct{
+	Title       *string
 	EventType   *string
 	VenueID     *uuid.UUID
 	Description *string
@@ -35,9 +37,10 @@ type UpdateEventInput struct{
 }
 
 
-type DetailedEvent struct {
+type Event struct {
     ID            uuid.UUID
     OrganizerID   uuid.UUID
+    VenueID       uuid.UUID
     Title         string
     EventType     string
     Status        string
@@ -46,21 +49,11 @@ type DetailedEvent struct {
     StartDatetime time.Time
     EndDatetime   time.Time
     CreatedAt     time.Time
-
-    VenueID        uuid.UUID
-    VenueName      string
-    VenueAddress   string
-    VenueCity      string
-    VenueCountry   string
-    VenueLatitude  *float64
-    VenueLongitude *float64
-    VenueCapacity  *int
-
-	Categories 	  []Category
-
 }
 
 type EventFilterInput struct{
+	OrganizerID   *uuid.UUID
+	Status		  *string
 	CategoryIDs   []uuid.UUID
     Title         *string
     Description   *string
@@ -77,11 +70,12 @@ type EventFilterInput struct{
 
 type EventService struct{
 	eventRepo interfaces.EventRepository
+    categoryProvider interfaces.CategoriesRepo
     bookingsProvider interfaces.BookingsProvider
 }
 
-func NewEventService(r interfaces.EventRepository , bp  interfaces.BookingsProvider)*EventService{
-	return  &EventService{eventRepo:r , bookingsProvider: bp}
+func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,bp  interfaces.BookingsProvider)*EventService{
+	return  &EventService{eventRepo:r , categoryProvider: cr, bookingsProvider: bp}
 }
 
 func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , event CreateEventInput)error{
@@ -110,6 +104,7 @@ func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , ev
 func (s*EventService)UpdateEvent(ctx context.Context ,eventID uuid.UUID , event UpdateEventInput)error{
 
 	updateEvent := entities.UpdateEvent{
+		Title: event.Title,
 		EventType: event.EventType,
 		VenueID:   event.VenueID,
 		Description: event.Description,
@@ -119,47 +114,6 @@ func (s*EventService)UpdateEvent(ctx context.Context ,eventID uuid.UUID , event 
 }
 
 
-func (s *EventService) GetOrganizerEvents(ctx context.Context, organizerID uuid.UUID) ([]DetailedEvent ,error) {
-
-	events , err := s.eventRepo.GetByOrganizerID(ctx, organizerID)
-
-	if err != nil{
-		return nil , err
-	}
-	eventsRes := make([]DetailedEvent , 0)
-	for _ , e := range(events){
-		categories := make([]Category , 0)
-
-		for _,c:= range e.Categories{
-			categories = append(categories,  Category{ID:c.ID,Name: c.Name})
-		}
-
-		event:= DetailedEvent{
-			ID: e.ID,
-			OrganizerID: e.OrganizerID,
-			Title: e.Title,
-			EventType: e.EventType,
-			Status: e.Status,
-			Description: e.Description,
-			Capacity: e.Capacity,
-			StartDatetime: e.StartDatetime,
-			EndDatetime: e.EndDatetime,
-			CreatedAt: e.CreatedAt,
-
-			VenueID: e.Venue.ID,
-			VenueName: e.Venue.Name,
-			VenueAddress: e.Venue.Address,
-			VenueCity: e.Venue.City,
-			VenueLatitude: e.Venue.Latitude,
-			VenueLongitude: e.Venue.Longitude,
-			VenueCapacity: e.Venue.Capacity,
-
-			Categories: categories,
-		}
-		eventsRes = append(eventsRes, event)
-	}
-    return eventsRes , nil
-}
 
 func (s *EventService) GetEventCapacity(ctx context.Context, id uuid.UUID) (int, error) {
 	event , err :=  s.eventRepo.GetByID(ctx, id)
@@ -185,8 +139,10 @@ func (s*EventService) GetEventOrganizer(ctx context.Context , id uuid.UUID)(uuid
 	return event.OrganizerID , nil
 }
 
-func (s *EventService) SearchEvents(ctx context.Context, input EventFilterInput) ([]DetailedEvent, bool, error) {
+func (s *EventService) List(ctx context.Context, input EventFilterInput) ([]Event, bool, error) {
     filter := entities.EventFilter{
+        OrganizerID: input.OrganizerID,
+        Status:      input.Status,
         CategoryIDs: input.CategoryIDs,
         Title:       input.Title,
         Description: input.Description,
@@ -200,61 +156,44 @@ func (s *EventService) SearchEvents(ctx context.Context, input EventFilterInput)
         Offset:      input.Offset,
     }
 
-    events, hasMore, err := s.eventRepo.SearchPublished(ctx, filter)
+    events, hasMore, err := s.eventRepo.GetbyFilter(ctx, filter)
     if err != nil {
         return nil, false, err
     }
-    result := make([]DetailedEvent, 0, len(events))
-    for _, e := range events {
-        result = append(result, toDetailedEvent(e))
-    }
 
+    result := make([]Event, len(events))
+    for i, e := range events {
+        result[i] = toEvent(e)
+    }
     return result, hasMore, nil
 }
 
-
-
-func toDetailedEvent(e entities.OrganizerEvent) DetailedEvent {
-    categories := make([]Category, 0, len(e.Categories))
-    for _, c := range e.Categories {
-        categories = append(categories, Category{ID: c.ID, Name: c.Name})
-    }
-
-    return DetailedEvent{
-        ID:            e.ID,
-        OrganizerID:   e.OrganizerID,
-        Title:         e.Title,
-        EventType:     e.EventType,
-        Status:        e.Status,
-        Description:   e.Description,
-        Capacity:      e.Capacity,
-        StartDatetime: e.StartDatetime,
-        EndDatetime:   e.EndDatetime,
-        CreatedAt:     e.CreatedAt,
-
-        VenueID:        e.Venue.ID,
-        VenueName:      e.Venue.Name,
-        VenueAddress:   e.Venue.Address,
-        VenueCity:      e.Venue.City,
-        VenueCountry:   e.Venue.Country,
-        VenueLatitude:  e.Venue.Latitude,
-        VenueLongitude: e.Venue.Longitude,
-        VenueCapacity:  e.Venue.Capacity,
-
-        Categories: categories,
-    }
-}
-
-func (s *EventService) GetAllEvents(ctx context.Context) ([]DetailedEvent, error) {
+func (s *EventService) GetAllEvents(ctx context.Context) ([]Event, error) {
 	events, err := s.eventRepo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]DetailedEvent, 0, len(events))
-	for _, e := range events {
-		result = append(result, toDetailedEvent(e))
+	result := make([]Event, len(events))
+	for i, e := range events {
+		result[i] = toEvent(e)
 	}
 	return result, nil
+}
+
+func toEvent(e entities.Event)Event {
+	return Event{
+		ID:            e.ID,
+		OrganizerID:   e.OrganizerID,
+		VenueID:       e.VenueID,
+		Title:         e.Title,
+		EventType:     e.EventType,
+		Status:        e.Status,
+		Description:   e.Description,
+		Capacity:      e.Capacity,
+		StartDatetime: e.StartDatetime,
+		EndDatetime:   e.EndDatetime,
+		CreatedAt:     e.CreatedAt,
+	}
 }
 
 func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
@@ -277,4 +216,21 @@ func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
     }
 
     return s.eventRepo.Delete(ctx, eventID)
+}
+
+func (s *EventService) GetEventCategories(ctx context.Context, eventID uuid.UUID) ([]EventCategory, error) {
+	categories, err := s.categoryProvider.GetByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]EventCategory, len(categories))
+	for i, c := range categories {
+		result[i] = EventCategory{
+			ID:       c.ID,
+			Name:     c.Name,
+			ParentID: c.ParentID,
+		}
+	}
+	return result, nil
 }

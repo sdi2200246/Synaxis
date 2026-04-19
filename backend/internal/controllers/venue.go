@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sdi2200246/synaxis/internal/error"
 	"github.com/sdi2200246/synaxis/internal/services"
 )
@@ -61,6 +62,23 @@ func (h *VenueHandler) GetVenues(c *gin.Context) {
 		}
 	}
 	c.JSON(200, gin.H{"count": len(venues), "venues": plain})
+}
+
+
+func (h *VenueHandler) GetVenue(c *gin.Context) {
+	venueID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid venue id"})
+		return
+	}
+
+	venue, err := h.venueService.GetVenue(c.Request.Context(), venueID)
+	if err != nil {
+		apperr.Handle(c, err)
+		return
+	}
+
+	c.JSON(200, ToVenueResponse(venue))
 }
 
 func (h *VenueHandler) handleError(c *gin.Context, err error) {

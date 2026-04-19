@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -65,6 +66,26 @@ func (h *AuthHandler)AdminOnly() gin.HandlerFunc {
               c.AbortWithStatusJSON(403, gin.H{"error": "forbidden"})
             return
         }
+        c.Next()
+    }
+}
+
+func (h *AuthHandler) OptionalAuth() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        header := c.GetHeader("Authorization")
+        if header == "" {
+            slog.Warn("there is not header")
+            c.Next()
+            return
+        }
+        tokenString := strings.TrimPrefix(header, "Bearer ")
+        claims, err := h.authService.ValidateToken(tokenString)
+        if err != nil {
+            c.Next() // invalid token on a semi-public endpoint → treat as guest
+            return
+        }
+        c.Set("userID", claims.UserID)
+        c.Set("role", claims.Role)
         c.Next()
     }
 }

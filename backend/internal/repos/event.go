@@ -20,7 +20,6 @@ func NewEventRepo(db *pgxpool.Pool)*EventRepo{
 	return  &EventRepo{db}
 }
 
-
 func (r *EventRepo) CreateWithCategories(ctx context.Context, event entities.Event, categoryIDs []uuid.UUID) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -102,66 +101,6 @@ func (r *EventRepo)GetByID(ctx context.Context , id uuid.UUID)(entities.Event , 
 }
 
 
-func (r *EventRepo) GetByOrganizerID(ctx context.Context, organizerID uuid.UUID) ([]entities.OrganizerEvent, error) {
-	rows, err := r.db.Query(ctx, `
-		SELECT
-			e.id, e.organizer_id, e.venue_id, e.title, e.event_type,
-			e.status, e.description, e.capacity,
-			e.start_datetime, e.end_datetime, e.created_at,
-			v.id, v.name, v.address, v.city, v.country,
-			v.latitude, v.longitude, v.capacity,
-			array_agg(c.id) as category_ids,
-			array_agg(c.name) as category_names
-		FROM event e
-		JOIN venue v ON e.venue_id = v.id
-		JOIN eventcategory ec ON ec.event_id = e.id
-		JOIN category c ON c.id = ec.category_id
-		WHERE e.organizer_id = $1
-		GROUP BY e.id, v.id
-	`, organizerID)
-	if err != nil {
-		slog.Error("EventRepo.GetByOrganizerID failed", "error", err)
-		return nil, apperr.ErrInternal
-	}
-	defer rows.Close()
-
-	var results []entities.OrganizerEvent
-	for rows.Next() {
-		var ev entities.OrganizerEvent
-		var categoryIDs []uuid.UUID
-		var categoryNames []string
-
-		err := rows.Scan(
-			&ev.ID, &ev.OrganizerID, &ev.VenueID, &ev.Title, &ev.EventType,
-			&ev.Status, &ev.Description, &ev.Capacity,
-			&ev.StartDatetime, &ev.EndDatetime, &ev.CreatedAt,
-			&ev.Venue.ID, &ev.Venue.Name, &ev.Venue.Address, &ev.Venue.City,
-			&ev.Venue.Country, &ev.Venue.Latitude, &ev.Venue.Longitude, &ev.Venue.Capacity,
-			&categoryIDs, &categoryNames,
-		)
-		if err != nil {
-			slog.Error("EventRepo.GetByOrganizerID scan failed", "error", err)
-			return nil, apperr.ErrInternal
-		}
-
-		for i := range categoryIDs {
-			ev.Categories = append(ev.Categories, entities.Category{
-				ID:   categoryIDs[i],
-				Name: categoryNames[i],
-			})
-		}
-
-		results = append(results, ev)
-	}
-
-	if err := rows.Err(); err != nil {
-		slog.Error("EventRepo.GetByOrganizerID rows error", "error", err)
-		return nil, apperr.ErrInternal
-	}
-	
-	return results, nil
-}
-
 func (r *EventRepo) Update(ctx context.Context, eventID uuid.UUID, update entities.UpdateEvent) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -176,6 +115,7 @@ func (r *EventRepo) Update(ctx context.Context, eventID uuid.UUID, update entiti
 
 	query, args, err := t.Compile(`
 		UPDATE event SET
+			{{ if .Title }} title = {{ .Title }}, {{ end }}
 			{{ if .EventType }} event_type = {{ .EventType }}, {{ end }}
 			{{ if .VenueID }} venue_id = {{ .VenueID }}, {{ end }}
 			{{ if .Description }} description = {{ .Description }}, {{ end }}
@@ -226,7 +166,7 @@ func (r *EventRepo) Update(ctx context.Context, eventID uuid.UUID, update entiti
 
 }
 
-func (r *EventRepo) SearchPublished(ctx context.Context, filter entities.EventFilter) ([]entities.OrganizerEvent, bool, error) {
+func (r *EventRepo) GetbyFilter(ctx context.Context, filter entities.EventFilter) ([]entities.Event, bool, error) {
     if filter.Limit == 0 {
         filter.Limit = 20
     }
@@ -240,86 +180,61 @@ func (r *EventRepo) SearchPublished(ctx context.Context, filter entities.EventFi
     }
 
     query, args, err := t.Compile(`
-        SELECT
-            e.id, e.organizer_id, e.venue_id, e.title, e.event_type,
-            e.status, e.description, e.capacity,
-            e.start_datetime, e.end_datetime, e.created_at,
-            v.id, v.name, v.address, v.city, v.country,
-            v.latitude, v.longitude, v.capacity,
-            array_agg(c.id) AS category_ids,
-            array_agg(c.name) AS category_names
-        FROM event e
-        JOIN venue v ON e.venue_id = v.id
-        JOIN eventcategory ec ON ec.event_id = e.id
-        JOIN category c ON c.id = ec.category_id
-        WHERE e.status = 'PUBLISHED'
-        {{ if or .Title .Description }}
+		SELECT e.id, e.organizer_id, e.venue_id, e.title, e.event_type,
+			e.status, e.description, e.capacity,
+			e.start_datetime, e.end_datetime, e.created_at
+		FROM event e
+		JOIN venue v ON e.venue_id = v.id
+		WHERE 1=1
+		{{ if .Status }} AND e.status = {{ .Status }} {{ end }}
+		{{ if .OrganizerID }} AND e.organizer_id = {{ .OrganizerID }} {{ end }}
+		{{ if or .Title .Description }}
 		AND (
 			1=0
-			{{ if .Title }} 
-				OR e.title ILIKE '%' || {{ .Title }} || '%' 
-			{{ end }}
-			{{ if .Description }} 
-				OR e.description ILIKE '%' || {{ .Description }} || '%' 
-			{{ end }}
+			{{ if .Title }} OR e.title ILIKE '%' || {{ .Title }} || '%' {{ end }}
+			{{ if .Description }} OR e.description ILIKE '%' || {{ .Description }} || '%' {{ end }}
 		)
 		{{ end }}
-        {{ if .City }} AND v.city ILIKE '%' || {{ .City }} || '%' {{ end }}
-        {{ if .Country }} AND v.country ILIKE '%' || {{ .Country }} || '%' {{ end }}
-        {{ if .StartAfter }} AND e.start_datetime >= {{ .StartAfter }} {{ end }}
-        {{ if .StartBefore }} AND e.start_datetime <= {{ .StartBefore }} {{ end }}
-        {{ if .CategoryIDs }} AND e.id IN (
-            SELECT event_id FROM eventcategory WHERE category_id = ANY({{ .CategoryIDs }})
-        ) {{ end }}
-        {{ if .MinPrice }} AND e.id IN (
-            SELECT event_id FROM tickettype WHERE price >= {{ .MinPrice }}
-        ) {{ end }}
-        {{ if .MaxPrice }} AND e.id IN (
-            SELECT event_id FROM tickettype WHERE price <= {{ .MaxPrice }}
-        ) {{ end }}
-        GROUP BY e.id, v.id
-        ORDER BY e.start_datetime ASC
-        LIMIT {{ .Limit }} OFFSET {{ .Offset }}
-    `, filter)
+		{{ if .City }} AND v.city ILIKE '%' || {{ .City }} || '%' {{ end }}
+		{{ if .Country }} AND v.country ILIKE '%' || {{ .Country }} || '%' {{ end }}
+		{{ if .StartAfter }} AND e.start_datetime >= {{ .StartAfter }} {{ end }}
+		{{ if .StartBefore }} AND e.start_datetime <= {{ .StartBefore }} {{ end }}
+		{{ if .CategoryIDs }} AND e.id IN (
+			SELECT event_id FROM eventcategory WHERE category_id = ANY({{ .CategoryIDs }})
+		) {{ end }}
+		{{ if .MinPrice }} AND e.id IN (
+			SELECT event_id FROM tickettype WHERE price >= {{ .MinPrice }}
+		) {{ end }}
+		{{ if .MaxPrice }} AND e.id IN (
+			SELECT event_id FROM tickettype WHERE price <= {{ .MaxPrice }}
+		) {{ end }}
+		ORDER BY e.start_datetime ASC
+		LIMIT {{ .Limit }} OFFSET {{ .Offset }}
+	`, filter)
     if err != nil {
-        slog.Error("SearchPublished template failed", "error", err)
+        slog.Error("GetbyFilter template failed", "error", err)
         return nil, false, apperr.ErrInternal
     }
 
     rows, err := r.db.Query(ctx, query, args...)
     if err != nil {
-        slog.Error("SearchPublished query failed", "error", err)
+        slog.Error("GetbyFilter query failed", "error", err)
         return nil, false, apperr.ErrInternal
     }
     defer rows.Close()
 
-    var results []entities.OrganizerEvent
+    var results []entities.Event
     for rows.Next() {
-        var ev entities.OrganizerEvent
-        var categoryIDs []uuid.UUID
-        var categoryNames []string
-
-        err := rows.Scan(
-            &ev.ID, &ev.OrganizerID, &ev.VenueID, &ev.Title, &ev.EventType,
-            &ev.Status, &ev.Description, &ev.Capacity,
-            &ev.StartDatetime, &ev.EndDatetime, &ev.CreatedAt,
-            &ev.Venue.ID, &ev.Venue.Name, &ev.Venue.Address, &ev.Venue.City,
-            &ev.Venue.Country, &ev.Venue.Latitude, &ev.Venue.Longitude, &ev.Venue.Capacity,
-            &categoryIDs, &categoryNames,
-        )
-        if err != nil {
-            slog.Error("SearchPublished scan failed", "error", err)
+        var e entities.Event
+        if err := rows.Scan(
+            &e.ID, &e.OrganizerID, &e.VenueID, &e.Title, &e.EventType,
+            &e.Status, &e.Description, &e.Capacity,
+            &e.StartDatetime, &e.EndDatetime, &e.CreatedAt,
+        ); err != nil {
+            slog.Error("GetbyFilter scan failed", "error", err)
             return nil, false, apperr.ErrInternal
         }
-
-        for i := range categoryIDs {
-            ev.Categories = append(ev.Categories, entities.Category{
-                ID:   categoryIDs[i],
-                Name: categoryNames[i],
-            })
-        }
-
-        results = append(results, ev)
+        results = append(results, e)
     }
 
     if err := rows.Err(); err != nil {
@@ -332,63 +247,37 @@ func (r *EventRepo) SearchPublished(ctx context.Context, filter entities.EventFi
 }
 
 
-
-
-func (r *EventRepo) GetAll(ctx context.Context) ([]entities.OrganizerEvent, error) {
+func (r *EventRepo) GetAll(ctx context.Context) ([]entities.Event, error) {
 	rows, err := r.db.Query(ctx, `
-		SELECT
-			e.id, e.organizer_id, e.venue_id, e.title, e.event_type,
-			e.status, e.description, e.capacity,
-			e.start_datetime, e.end_datetime, e.created_at,
-			v.id, v.name, v.address, v.city, v.country,
-			v.latitude, v.longitude, v.capacity,
-			array_agg(c.id) as category_ids,
-			array_agg(c.name) as category_names
-		FROM event e
-		JOIN venue v ON e.venue_id = v.id
-		JOIN eventcategory ec ON ec.event_id = e.id
-		JOIN category c ON c.id = ec.category_id
-		GROUP BY e.id, v.id
-	`,)
+		SELECT id, organizer_id, venue_id, title, event_type,
+			status, description, capacity,
+			start_datetime, end_datetime, created_at
+		FROM event
+	`)
 	if err != nil {
-		slog.Error("EventRepo.GetByOrganizerID failed", "error", err)
+		slog.Error("EventRepo.GetAll failed", "error", err)
 		return nil, apperr.ErrInternal
 	}
 	defer rows.Close()
 
-	var results []entities.OrganizerEvent
+	var results []entities.Event
 	for rows.Next() {
-		var ev entities.OrganizerEvent
-		var categoryIDs []uuid.UUID
-		var categoryNames []string
-
-		err := rows.Scan(
-			&ev.ID, &ev.OrganizerID, &ev.VenueID, &ev.Title, &ev.EventType,
-			&ev.Status, &ev.Description, &ev.Capacity,
-			&ev.StartDatetime, &ev.EndDatetime, &ev.CreatedAt,
-			&ev.Venue.ID, &ev.Venue.Name, &ev.Venue.Address, &ev.Venue.City,
-			&ev.Venue.Country, &ev.Venue.Latitude, &ev.Venue.Longitude, &ev.Venue.Capacity,
-			&categoryIDs, &categoryNames,
-		)
-		if err != nil {
-			slog.Error("EventRepo.GetByOrganizerID scan failed", "error", err)
+		var e entities.Event
+		if err := rows.Scan(
+			&e.ID, &e.OrganizerID, &e.VenueID, &e.Title, &e.EventType,
+			&e.Status, &e.Description, &e.Capacity,
+			&e.StartDatetime, &e.EndDatetime, &e.CreatedAt,
+		); err != nil {
+			slog.Error("EventRepo.GetAll scan failed", "error", err)
 			return nil, apperr.ErrInternal
 		}
-
-		for i := range categoryIDs {
-			ev.Categories = append(ev.Categories, entities.Category{
-				ID:   categoryIDs[i],
-				Name: categoryNames[i],
-			})
-		}
-
-		results = append(results, ev)
+		results = append(results, e)
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("EventRepo.GetByOrganizerID rows error", "error", err)
+		slog.Error("EventRepo.GetAll rows error", "error", err)
 		return nil, apperr.ErrInternal
 	}
-	
+
 	return results, nil
 }

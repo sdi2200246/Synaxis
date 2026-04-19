@@ -17,22 +17,23 @@ type VenueResponse struct {
     Capacity *int       `json:"capacity"`    
 }
 
-type CategoryResponce struct{
+type CategoryResponse struct{
     ID  uuid.UUID `json:"id"`
     Name string   `json:"name"`
 }
 
 type EventResponse struct {
-    ID            uuid.UUID     `json:"id"`
-    Title         string        `json:"title"`
-    EventType     string        `json:"event_type"`
-    Status        string        `json:"status"`
-    Description   string        `json:"description"`
-    Capacity      int           `json:"capacity"`
-    StartDatetime time.Time     `json:"start_datetime"`
-    EndDatetime   time.Time     `json:"end_datetime"`
-    Venue         VenueResponse `json:"venue"`
-    Categories   *[]CategoryResponce `json:"categories"`
+	ID            uuid.UUID `json:"id"`
+	OrganizerID   uuid.UUID `json:"organizer_id"`
+	VenueID       uuid.UUID `json:"venue_id"`
+	Title         string    `json:"title"`
+	EventType     string    `json:"event_type"`
+	Status        string    `json:"status"`
+	Description   string    `json:"description"`
+	Capacity      int       `json:"capacity"`
+	StartDatetime time.Time `json:"start_datetime"`
+	EndDatetime   time.Time `json:"end_datetime"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type AdminUserResponse struct {
@@ -80,38 +81,37 @@ type EventBookingResponse struct {
 	AttendeePhone   *string   `json:"attendee_phone,omitempty"`
 }
 
-
-func ToEventResponse(ev services.DetailedEvent) EventResponse {
-
-    categories := make([]CategoryResponce , 0)
-
-    for _,c:= range ev.Categories{
-        categories = append(categories,  CategoryResponce{ID:c.ID,Name: c.Name})
-    }
-
-    return EventResponse{
-        ID:            ev.ID,
-        Title:         ev.Title,
-        EventType:     ev.EventType,
-        Status:        ev.Status,
-        Description:   ev.Description,
-        Capacity:      ev.Capacity,
-        StartDatetime: ev.StartDatetime,
-        EndDatetime:   ev.EndDatetime,
-        Venue: VenueResponse{
-            ID:        ev.VenueID,
-            Name:      ev.VenueName,
-            Address:   ev.VenueAddress,
-            City:      ev.VenueCity,
-            Country:   ev.VenueCountry,
-            Latitude:  ev.VenueLatitude,
-            Longitude: ev.VenueLongitude,
-        },
-        Categories: &categories,
-    }
+func ToVenueResponse(v services.DetailedVenue) VenueResponse {
+	return VenueResponse{
+		ID:        v.ID,
+		Name:      v.Name,
+		Address:   v.Address,
+		City:      v.City,
+		Country:   v.Country,
+		Latitude:  v.Latitude,
+		Longitude: v.Longitude,
+		Capacity:  v.Capacity,
+	}
 }
 
-func ToEventListResponse(events []services.DetailedEvent) []EventResponse {
+
+func ToEventResponse(ev services.Event) EventResponse {
+	return EventResponse{
+		ID:            ev.ID,
+		OrganizerID:   ev.OrganizerID,
+		VenueID:       ev.VenueID,
+		Title:         ev.Title,
+		EventType:     ev.EventType,
+		Status:        ev.Status,
+		Description:   ev.Description,
+		Capacity:      ev.Capacity,
+		StartDatetime: ev.StartDatetime,
+		EndDatetime:   ev.EndDatetime,
+		CreatedAt:     ev.CreatedAt,
+	}
+}
+
+func ToEventListResponse(events []services.Event) []EventResponse {
     result := make([]EventResponse, len(events))
     for i, ev := range events {
         result[i] = ToEventResponse(ev)
@@ -158,64 +158,75 @@ func ToEventBookingListResponse(bookings []services.EventBookingDetail) []EventB
 	return result
 }
 
-
-func buildExportEvent(ev services.DetailedEvent,tickets []services.TicketType,bookings []services.ExportBookingDetail,) ExportEvent {
-	categories := make([]string, 0, len(ev.Categories))
-	for _, c := range ev.Categories {
-		categories = append(categories, c.Name)
-	}
-
-	var geo *ExportGeoLocation
-	if ev.VenueLatitude != nil && ev.VenueLongitude != nil {
-		geo = &ExportGeoLocation{
-			Latitude:  *ev.VenueLatitude,
-			Longitude: *ev.VenueLongitude,
+func ToCategoryListResponse(categories []services.EventCategory) []CategoryResponse {
+	result := make([]CategoryResponse, len(categories))
+	for i, c := range categories {
+		result[i] = CategoryResponse{
+			ID:       c.ID,
+			Name:     c.Name,
 		}
 	}
-
-	exportTickets := make([]ExportTicketType, len(tickets))
-	for i, t := range tickets {
-		exportTickets[i] = ExportTicketType{
-			TicketTypeID: t.ID,
-			Name:         t.Name,
-			Price:        t.Price,
-			Quantity:     t.Quantity,
-			Available:    t.Available,
-		}
-	}
-
-	exportBookings := make([]ExportBookingXML, len(bookings))
-	for i, b := range bookings {
-		exportBookings[i] = ExportBookingXML{
-			BookingID:       b.ID,
-			Attendee:        ExportAttendee{UserID: b.AttendeeID},
-			Time:            b.BookedAt,
-			TicketTypeRef:   b.TicketTypeID,
-			NumberOfTickets: b.NumberOfTickets,
-			TotalCost:       b.TotalCost,
-			BookingStatus:   b.Status,
-		}
-	}
-
-	result := ExportEvent{
-		EventID:       ev.ID,
-		Title:         ev.Title,
-		Categories:    categories,
-		EventType:     ev.EventType,
-		Venue:         ev.VenueName,
-		Address:       ev.VenueAddress,
-		City:          ev.VenueCity,
-		Country:       ev.VenueCountry,
-		GeoLocation:   geo,
-		StartDateTime: ev.StartDatetime,
-		EndDateTime:   ev.EndDatetime,
-		Capacity:      ev.Capacity,
-		Organizer:     ExportOrganizer{UserID: ev.OrganizerID},
-		Status:        ev.Status,
-		Description:   ev.Description,
-	}
-	result.TicketTypes.Items = exportTickets
-	result.Bookings.Items = exportBookings
-
 	return result
 }
+
+
+// func buildExportEvent(ev services.DetailedEvent,tickets []services.TicketType,bookings []services.ExportBookingDetail,) ExportEvent {
+// 	categories := make([]string, 0, len(ev.Categories))
+// 	for _, c := range ev.Categories {
+// 		categories = append(categories, c.Name)
+// 	}
+
+// 	var geo *ExportGeoLocation
+// 	if ev.VenueLatitude != nil && ev.VenueLongitude != nil {
+// 		geo = &ExportGeoLocation{
+// 			Latitude:  *ev.VenueLatitude,
+// 			Longitude: *ev.VenueLongitude,
+// 		}
+// 	}
+
+// 	exportTickets := make([]ExportTicketType, len(tickets))
+// 	for i, t := range tickets {
+// 		exportTickets[i] = ExportTicketType{
+// 			TicketTypeID: t.ID,
+// 			Name:         t.Name,
+// 			Price:        t.Price,
+// 			Quantity:     t.Quantity,
+// 			Available:    t.Available,
+// 		}
+// 	}
+
+// 	exportBookings := make([]ExportBookingXML, len(bookings))
+// 	for i, b := range bookings {
+// 		exportBookings[i] = ExportBookingXML{
+// 			BookingID:       b.ID,
+// 			Attendee:        ExportAttendee{UserID: b.AttendeeID},
+// 			Time:            b.BookedAt,
+// 			TicketTypeRef:   b.TicketTypeID,
+// 			NumberOfTickets: b.NumberOfTickets,
+// 			TotalCost:       b.TotalCost,
+// 			BookingStatus:   b.Status,
+// 		}
+// 	}
+
+// 	result := ExportEvent{
+// 		EventID:       ev.ID,
+// 		Title:         ev.Title,
+// 		Categories:    categories,
+// 		EventType:     ev.EventType,
+// 		Venue:         ev.VenueName,
+// 		Address:       ev.VenueAddress,
+// 		City:          ev.VenueCity,
+// 		Country:       ev.VenueCountry,
+// 		GeoLocation:   geo,
+// 		StartDateTime: ev.StartDatetime,
+// 		EndDateTime:   ev.EndDatetime,
+// 		Capacity:      ev.Capacity,
+// 		Organizer:     ExportOrganizer{UserID: ev.OrganizerID},
+// 		Status:        ev.Status,
+// 		Description:   ev.Description,
+// 	}
+// 	result.TicketTypes.Items = exportTickets
+// 	result.Bookings.Items = exportBookings
+
+// 	return result
+// }

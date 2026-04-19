@@ -37,7 +37,7 @@ func main() {
     venueService := services.NewVenueService(venueRepo)
 
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo)
-    eventsService := services.NewEventService(eventRepo, bookingService)
+    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingService)
 
     userHandler        := controllers.NewUserHandler(userService)
     authHandler        := middleware.NewAuthHandler(authService)
@@ -45,7 +45,7 @@ func main() {
     eventsHandler      := controllers.NewEventsHandler(eventsService)
     ticketsHandler     := controllers.NewTicketTypeHandler(bookingService, eventsService)
     bookingHandler     := controllers.NewBookingHandler(bookingService, eventsService)
-    adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
+    // adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 
     r := gin.Default()
@@ -62,7 +62,8 @@ func main() {
         c.JSON(200, categories)
     })
     r.GET("/venues", venueHandlers.GetVenues)
-    r.GET("/events", eventsHandler.SearchPublished)
+    r.GET("/venues/:id", venueHandlers.GetVenue)
+    r.GET("/events", authHandler.OptionalAuth(), eventsHandler.List)
 
     auth := r.Group("/")
     auth.Use(authHandler.AuthMiddleware())
@@ -73,20 +74,21 @@ func main() {
             admin.GET("/users", userHandler.GetUsers)
             admin.POST("/users/:id/approve", userHandler.ApproveUser)
             admin.POST("/users/:id/reject", userHandler.RejectUser)
-            admin.GET("/events" , adminExportHandler.Export)
+            // admin.GET("/events" , adminExportHandler.Export)
         }
 
-        auth.GET("/my-events", eventsHandler.GetOrganizerEvents)
-        auth.GET("/my-events/:id/bookings" , bookingHandler.GetEventBookings)
-        auth.DELETE("/my-events/:id" , eventsHandler.Delete)
-        auth.GET("/my-bookings" , bookingHandler.GetUserBookings)
         auth.POST("/events", eventsHandler.Create)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
+        auth.DELETE("/events/:id" , eventsHandler.Delete)
+        auth.GET("/events/:id/categories", eventsHandler.GetEventCategories)
+
 
         auth.POST("/events/:id/tickets", ticketsHandler.Create)
         auth.GET("/events/:id/tickets", ticketsHandler.GetByEventID)
         auth.PATCH("/events/:id/tickets/:ticket_id", ticketsHandler.Update)
 
+        auth.GET("/my-events/:id/bookings" , bookingHandler.GetEventBookings)
+        auth.GET("/my-bookings" , bookingHandler.GetUserBookings)
         auth.POST("/events/:id/book" , bookingHandler.Create)
     }
     

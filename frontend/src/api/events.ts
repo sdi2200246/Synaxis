@@ -1,7 +1,12 @@
 import api from './client'
-import type { Event } from '../types'
+import type { Event, Venue, Category } from '../types'
+
+
+type BareEvent = Omit<Event, 'venue' | 'categories' | 'category_ids'>
 
 export interface SearchEventsParams {
+  organizer_id?: string
+  status?: 'DRAFT' | 'PUBLISHED' | 'COMPLETED' | 'CANCELLED'
   category_id?: string[]
   title?: string
   description?: string
@@ -20,9 +25,18 @@ export interface SearchEventsResponse {
   has_more: boolean
 }
 
+async function hydrateEvent(bare: BareEvent): Promise<Event> {
+  const [venue, categories] = await Promise.all([
+    api.get<Venue>(`/venues/${bare.venue_id}`).then(r => r.data),
+    api.get<Category[]>(`/events/${bare.id}/categories`).then(r => r.data),
+  ])
+  return { ...bare, venue, categories }
+}
 
 export async function searchEvents(params: SearchEventsParams): Promise<SearchEventsResponse> {
   const query = new URLSearchParams()
+  if (params.organizer_id) query.append('organizer_id', params.organizer_id)
+  if (params.status) query.append('status', params.status)
   if (params.title) query.append('title', params.title)
   if (params.description) query.append('description', params.description)
   if (params.city) query.append('city', params.city)
@@ -35,43 +49,34 @@ export async function searchEvents(params: SearchEventsParams): Promise<SearchEv
   if (params.offset) query.append('offset', String(params.offset))
   params.category_id?.forEach(id => query.append('category_id', id))
 
-  const res = await api.get<SearchEventsResponse>(`/events?${query.toString()}`)
-  return res.data
+  const res = await api.get<{ events: BareEvent[]; has_more: boolean }>(
+    `/events?${query.toString()}`
+  )
+  const events = await Promise.all(res.data.events.map(hydrateEvent))
+  return { events, has_more: res.data.has_more }
 }
 
-
-export async function getEvents(): Promise<Event[]> {
-  const response = await api.get<Event[]>('/my-events')
-  return response.data
+export async function getOrganizerEvents(organizerID: string): Promise<Event[]> {
+  const { events } = await searchEvents({ organizer_id: organizerID })
+  return events
 }
 
 export async function getEvent(id: string): Promise<Event> {
-  const response = await api.get<Event>(`/events/${id}`)
-  return response.data
+  const response = await api.get<BareEvent>(`/events/${id}`)
+  return hydrateEvent(response.data)
 }
 
-export async function createEvent(event: Partial<Event>): Promise<Event> {
-  if (event.start_datetime) {
-      event.start_datetime = new Date(event.start_datetime).toISOString();
-    }
-  
-  if (event.end_datetime) {
-    event.end_datetime = new Date(event.end_datetime).toISOString();
-  } 
-
-  if (event.capacity) {
-    event.capacity = Number(event.capacity);
-  }
-  console.log("sending event" , event)
-  const response = await api.post<Event>('/events', event)
-  return response.data
+export async function createEvent(event: Partial<Event>): Promise<void> {
+  if (event.start_datetime) event.start_datetime = new Date(event.start_datetime).toISOString()
+  if (event.end_datetime) event.end_datetime = new Date(event.end_datetime).toISOString()
+  if (event.capacity) event.capacity = Number(event.capacity)
+  await api.post('/events', event)
 }
 
-export async function updateEvent(id: string, event: Partial<Event>): Promise<Event> {
-  const response = await api.patch<Event>(`/events/${id}`, event)
-  return response.data
+export async function updateEvent(id: string, event: Partial<Event>): Promise<void> {
+  await api.patch(`/events/${id}`, event)
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-  await api.delete(`/my-events/${id}`)
+  await api.delete(`/events/${id}`)
 }

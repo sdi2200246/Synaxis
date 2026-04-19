@@ -24,17 +24,21 @@ type UserRepository interface {
 }
 
 type VenuesRepository interface {
-    // GetByID(ctx context.Context, id uuid.UUID) (entities.Venue, error)
+	GetByID(ctx context.Context, id uuid.UUID) (entities.Venue, error)
 	ListVenues(ctx context.Context , filter entities.VenuesFilter) ([]entities.Venue , error)	
 }
+
+
+type CategoriesRepo interface{
+	GetByEventID(ctx context.Context, eventID uuid.UUID) ([]entities.Category, error)
+} 
 
 type EventRepository interface {
     CreateWithCategories(ctx context.Context, event entities.Event ,categoryIDs []uuid.UUID) error
     GetByID(ctx context.Context, id uuid.UUID) (entities.Event, error)
-    GetByOrganizerID(ctx context.Context, organizerID uuid.UUID) ([]entities.OrganizerEvent, error) 
     Update(ctx context.Context, eventID uuid.UUID, update entities.UpdateEvent) error
-	SearchPublished(ctx context.Context, filter entities.EventFilter) ([]entities.OrganizerEvent, bool, error)
-	GetAll(ctx context.Context) ([]entities.OrganizerEvent, error)
+	GetbyFilter(ctx context.Context, filter entities.EventFilter) ([]entities.Event, bool, error)
+	GetAll(ctx context.Context) ([]entities.Event, error)
 	Delete(ctx context.Context, eventID uuid.UUID) error
 	// Publish(ctx context.Context, id uuid.UUID) error 
 	// Cancel(ctx context.Context, id uuid.UUID) error
