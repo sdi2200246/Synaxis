@@ -19,6 +19,10 @@ type Event struct {
     CreatedAt     time.Time `db:"created_at"`
 }
 
+func (e Event) ApproveDeletion()bool{
+    return e.Status != "CANCELLED"
+}
+
 type OrganizerEvent struct {
     Event
     Venue Venue

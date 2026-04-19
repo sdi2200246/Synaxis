@@ -73,5 +73,5 @@ export async function updateEvent(id: string, event: Partial<Event>): Promise<Ev
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-  await api.delete(`/events/${id}`)
+  await api.delete(`/my-events/${id}`)
 }

@@ -10,3 +10,7 @@ type EventsProvider interface {
 	GetEventStatus(ctx context.Context , id uuid.UUID)(string , error)
 	GetEventOrganizer(ctx context.Context , id uuid.UUID)(uuid.UUID , error)
 }
+
+type BookingsProvider interface{
+	CountEventBookings(ctx context.Context, eventID uuid.UUID) (int, error)
+}

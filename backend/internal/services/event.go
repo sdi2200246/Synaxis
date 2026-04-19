@@ -77,10 +77,11 @@ type EventFilterInput struct{
 
 type EventService struct{
 	eventRepo interfaces.EventRepository
+    bookingsProvider interfaces.BookingsProvider
 }
 
-func NewEventService(r interfaces.EventRepository)*EventService{
-	return  &EventService{eventRepo:r}
+func NewEventService(r interfaces.EventRepository , bp  interfaces.BookingsProvider)*EventService{
+	return  &EventService{eventRepo:r , bookingsProvider: bp}
 }
 
 func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , event CreateEventInput)error{
@@ -254,4 +255,26 @@ func (s *EventService) GetAllEvents(ctx context.Context) ([]DetailedEvent, error
 		result = append(result, toDetailedEvent(e))
 	}
 	return result, nil
+}
+
+func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
+    event, err := s.eventRepo.GetByID(ctx, eventID)
+    if err != nil {
+        return err
+    }
+
+    bookingsCount , err := s.bookingsProvider.CountEventBookings(ctx , eventID)
+    if err != nil {
+        return apperr.ErrInternal
+    }
+
+    if bookingsCount > 0 {
+        return  apperr.ErrConflict
+    }
+
+    if !event.ApproveDeletion(){
+        return apperr.ErrConflict
+    }
+
+    return s.eventRepo.Delete(ctx, eventID)
 }

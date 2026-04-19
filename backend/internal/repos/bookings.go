@@ -138,6 +138,22 @@ func (r *BookingsRepo) GetByEventID(ctx context.Context, eventID uuid.UUID) ([]e
 	return bookings, nil
 }
 
+
+func (r *BookingsRepo) CountByEventID(ctx context.Context, eventID uuid.UUID) (int, error) {
+	var count int
+	err := r.db.QueryRow(ctx,
+		`SELECT COUNT(*)
+		 FROM booking b
+		 JOIN tickettype tt ON b.ticket_type_id = tt.id
+		 WHERE tt.event_id = $1`,
+		eventID,
+	).Scan(&count)
+	if err != nil {
+		return 0, apperr.ErrInternal
+	}
+	return count, nil
+}
+
 func (r *BookingsRepo) GetForExport(ctx context.Context, eventID uuid.UUID) ([]entities.ExportBooking, error) {
 	rows, err := r.db.Query(ctx,
 		`SELECT b.id, b.ticket_type_id, b.user_id, b.number_of_tickets, b.total_cost, b.status, b.booked_at
