@@ -34,8 +34,8 @@ type UpdateEventRequest struct{
 }
 
 type SearchEventRequest struct {
-    OrganizerID *string  `form:"organizer_id"`
-    Status      *string     `from:"status"`
+    OrganizerID *string     `form:"organizer_id"`
+    Status      *string     `form:"status"`
     CategoryIDs []string    `form:"category_id"`
     Title       *string     `form:"title"`
     Description *string     `form:"description"`
