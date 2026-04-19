@@ -22,6 +22,17 @@ type Venue struct{
     Capacity  *int
 } 
 
+type DetailedVenue struct {
+	ID        uuid.UUID
+	Name      string
+	Address   string
+	City      string
+	Country   string
+	Latitude  *float64
+	Longitude *float64
+	Capacity  *int
+}
+
 
 type VenueService struct{
 	venueRepo interfaces.VenuesRepository
@@ -55,4 +66,22 @@ func (s *VenueService) GetVenues(ctx context.Context, f VenueFilter) ([]Venue, e
     }
 
     return venues, nil
+}
+
+func (s *VenueService) GetVenue(ctx context.Context, id uuid.UUID) (DetailedVenue, error) {
+	v, err := s.venueRepo.GetByID(ctx, id)
+	if err != nil {
+		return DetailedVenue{}, err
+	}
+
+	return DetailedVenue{
+		ID:        v.ID,
+		Name:      v.Name,
+		Address:   v.Address,
+		City:      v.City,
+		Country:   v.Country,
+		Latitude:  v.Latitude,
+		Longitude: v.Longitude,
+		Capacity:  v.Capacity,
+	}, nil
 }

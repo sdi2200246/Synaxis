@@ -1,11 +1,12 @@
 // in pages/Myevents.tsx
 import { useState, useEffect } from 'react'
 import type { Event } from '../types'
-import { getEvents, deleteEvent } from '../api/events'
+import { getOrganizerEvents, deleteEvent } from '../api/events'
 import { OrganizerEventCard } from '../components/events/OganizerCard'
 import { CreateEventForm } from '../components/forms/NewEventForm'
 import { EditEventForm } from '../components/forms/EditEventForm'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export function MyEventsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -15,14 +16,15 @@ export function MyEventsPage() {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const navigate = useNavigate()
+  const {userId} = useAuth()
 
-  // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState<Event | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
 
   async function fetchEvents() {
     try {
-      const data = await getEvents()
+      if (!userId) return
+      const data = await getOrganizerEvents(userId)
       setEvents(data)
     } catch {
       setError('Failed to load events')

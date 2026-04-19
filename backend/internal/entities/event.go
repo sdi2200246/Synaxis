@@ -23,13 +23,8 @@ func (e Event) ApproveDeletion()bool{
     return e.Status != "CANCELLED"
 }
 
-type OrganizerEvent struct {
-    Event
-    Venue Venue
-    Categories []Category
-}
-
 type UpdateEvent struct{
+    Title       *string
 	EventType   *string
 	VenueID     *uuid.UUID
 	Description *string
@@ -38,6 +33,8 @@ type UpdateEvent struct{
 }
 
 type EventFilter struct {
+    OrganizerID   *uuid.UUID
+	Status		  *string
     CategoryIDs   []uuid.UUID
     Title         *string
     Description   *string

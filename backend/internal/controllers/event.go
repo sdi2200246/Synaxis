@@ -25,6 +25,7 @@ type CreateEventRequest struct {
 }
 
 type UpdateEventRequest struct{
+    Title       *string      `json:"title,omitempty"`
     EventType   *string      `json:"event_type,omitempty"`
     VenueID     *uuid.UUID   `json:"venue_id,omitempty"`
     Description *string      `json:"description,omitempty"`
@@ -33,7 +34,9 @@ type UpdateEventRequest struct{
 }
 
 type SearchEventRequest struct {
-    CategoryIDs []string `form:"category_id"`
+    OrganizerID *string     `form:"organizer_id"`
+    Status      *string     `form:"status"`
+    CategoryIDs []string    `form:"category_id"`
     Title       *string     `form:"title"`
     Description *string     `form:"description"`
     City        *string     `form:"city"`
@@ -107,6 +110,7 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
     }
 
     err = h.eventsService.UpdateEvent(c.Request.Context(), eventID , services.UpdateEventInput{
+        Title:     input.Title,
 		EventType: input.EventType,
 		VenueID: input.VenueID,
 		Description: input.Description,
@@ -119,48 +123,43 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
-func (h *EventsHandler) GetOrganizerEvents(c *gin.Context) {
-   
-	val, exists := c.Get("userID")
-	if !exists {
-		c.JSON(401, gin.H{"error": "unauthorized"})
-		return
-	}
-	
-	organizerID, ok := val.(uuid.UUID)
-	if !ok {
-		c.JSON(500, gin.H{"error": "invalid user ID in token"})
-		return
-	}
 
-    events, err := h.eventsService.GetOrganizerEvents(c.Request.Context(), organizerID)
-    if err != nil {
-        apperr.Handle(c, err)
-        return
-    }
-
-    c.JSON(200, ToEventListResponse(events))
-}
-
-
-func (h *EventsHandler) handleError(c *gin.Context, err error) {
-    switch {
-    case errors.Is(err, apperr.ErrConflict):
-        c.JSON(409, gin.H{"error": err.Error(), "fields": "starting_time"})
-    default:
-        apperr.Handle(c, err)
-    }
-}
-
-
-func (h *EventsHandler) SearchPublished(c *gin.Context) {
+func (h *EventsHandler) List(c *gin.Context) {
     var req SearchEventRequest
     if err := c.ShouldBindQuery(&req); err != nil {
         c.JSON(400, gin.H{"error": err.Error()})
         return
     }
 
-    var categoryIDs []uuid.UUID
+
+    var organizerID *uuid.UUID
+    if req.OrganizerID != nil && *req.OrganizerID != "" {
+        id, err := uuid.Parse(*req.OrganizerID)
+        if err != nil {
+            c.JSON(400, gin.H{"error": "invalid organizer_id"})
+            return
+        }
+        organizerID = &id
+    }
+
+    var callerID uuid.UUID
+    if val, exists := c.Get("userID"); exists {
+        if id, ok := val.(uuid.UUID); ok {
+            callerID = id
+        }
+    }
+
+    isOwner := organizerID != nil && *organizerID == callerID
+
+    var status *string
+    if isOwner {
+        status = req.Status
+    } else {
+        published := "PUBLISHED"
+        status = &published
+    }
+
+    categoryIDs := make([]uuid.UUID, 0, len(req.CategoryIDs))
     for _, s := range req.CategoryIDs {
         id, err := uuid.Parse(s)
         if err != nil {
@@ -171,6 +170,8 @@ func (h *EventsHandler) SearchPublished(c *gin.Context) {
     }
 
     filter := services.EventFilterInput{
+        OrganizerID: organizerID,
+        Status:      status,
         CategoryIDs: categoryIDs,
         Title:       req.Title,
         Description: req.Description,
@@ -184,7 +185,7 @@ func (h *EventsHandler) SearchPublished(c *gin.Context) {
         Offset:      req.Offset,
     }
 
-    events, hasMore, err := h.eventsService.SearchEvents(c.Request.Context(), filter)
+    events, hasMore, err := h.eventsService.List(c.Request.Context(), filter)
     if err != nil {
         apperr.Handle(c, err)
         return
@@ -195,8 +196,6 @@ func (h *EventsHandler) SearchPublished(c *gin.Context) {
         "has_more": hasMore,
     })
 }
-
-
 func (h *EventsHandler) Delete(c *gin.Context) {
     eventID, err := uuid.Parse(c.Param("id"))
     if err != nil {
@@ -231,4 +230,29 @@ func (h *EventsHandler) Delete(c *gin.Context) {
     }
 
     c.Status(204)
+}
+
+func (h *EventsHandler) GetEventCategories(c *gin.Context) {
+	eventID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid event id"})
+		return
+	}
+
+	categories, err := h.eventsService.GetEventCategories(c.Request.Context(), eventID)
+	if err != nil {
+		apperr.Handle(c, err)
+		return
+	}
+
+	c.JSON(200, ToCategoryListResponse(categories))
+}
+
+func (h *EventsHandler) handleError(c *gin.Context, err error) {
+    switch {
+    case errors.Is(err, apperr.ErrConflict):
+        c.JSON(409, gin.H{"error": err.Error(), "fields": "starting_time"})
+    default:
+        apperr.Handle(c, err)
+    }
 }
