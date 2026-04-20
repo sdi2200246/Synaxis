@@ -16,34 +16,6 @@ type Booking struct {
     BookedAt        time.Time `db:"booked_at"`
 }
 
-type UserBooking struct {
-	ID              uuid.UUID
-	TicketTypeID    uuid.UUID
-	TicketName      string
-	NumberOfTickets int
-	TotalCost       float64
-	Status          string
-	BookedAt        time.Time
-	EventID         uuid.UUID
-	EventTitle      string
-	EventStart      time.Time
-	VenueName       string
-	VenueCity       string
-	VenueLatitude   *float64
-	VenueLongitude  *float64
-}
-
-type EventBooking struct {
-	ID              uuid.UUID
-	TicketName      string
-	NumberOfTickets int
-	TotalCost       float64
-	BookedAt        time.Time
-	AttendeeName    string
-	AttendeeEmail   string
-	AttendeePhone   *string
-}
-
 type ExportBooking struct {
 	ID              uuid.UUID
 	TicketTypeID    uuid.UUID

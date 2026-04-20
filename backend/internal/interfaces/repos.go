@@ -47,8 +47,8 @@ type EventRepository interface {
 
 type BookingRepository interface{
 	GetByTicketTypeID(ctx context.Context, ticketTypeID uuid.UUID) ([]entities.Booking, error)
-	GetByUserID(ctx context.Context, userID uuid.UUID) ([]entities.UserBooking, error)
-	GetByEventID(ctx context.Context, eventID uuid.UUID) ([]entities.EventBooking, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID) ([]entities.Booking, error)
+	GetByEventID(ctx context.Context, eventID uuid.UUID) ([]entities.Booking, error)
 	GetForExport(ctx context.Context, eventID uuid.UUID) ([]entities.ExportBooking, error) 
 	CountByEventID(ctx context.Context, eventID uuid.UUID) (int, error)
 	Create(ctx context.Context, booking entities.Booking) error 

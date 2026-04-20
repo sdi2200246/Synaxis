@@ -39,6 +39,15 @@ type User struct {
     UpdatedAt *time.Time
 }
 
+type PublicUser struct {
+	ID        uuid.UUID
+	Username  string
+	FirstName string
+	LastName  string
+	Email     string
+	Phone     string
+}
+
 type UserFilter struct {
     Country  *string
     Status   *string
@@ -114,6 +123,22 @@ func (s *UserService) GetUsers(ctx context.Context, f UserFilter) ([]User, error
 
     return plain, nil
 }
+
+func (s *UserService) GetPublicByID(ctx context.Context, id uuid.UUID) (PublicUser, error) {
+	user, err := s.userRepo.GetByID(ctx, id)
+	if err != nil {
+		return PublicUser{}, err
+	}
+	return PublicUser{
+		ID:        user.ID,
+		Username:  user.Username,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Phone:     user.Phone,
+	}, nil
+}
+
 
 func (s *UserService) ApproveUser(ctx context.Context, id uuid.UUID) error {
     status := "approved"

@@ -23,7 +23,6 @@ func main() {
         log.Fatal(err)
     }
     defer pool.Close()
-
     
     categoryRepo := repos.NewCategoryRepo(pool)
     userRepo     := repos.NewUserRepo(pool)
@@ -36,15 +35,16 @@ func main() {
     authService  := services.NewAuthService(userRepo, "jason_derullo")
     venueService := services.NewVenueService(venueRepo)
 
-    bookingService := services.NewBookingService(ticketsRepo, bookingRepo)
-    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingService)
+    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo)
+    bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
+    ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
 
     userHandler        := controllers.NewUserHandler(userService)
     authHandler        := middleware.NewAuthHandler(authService)
     venueHandlers      := controllers.NewVenueHandler(venueService)
     eventsHandler      := controllers.NewEventsHandler(eventsService)
-    ticketsHandler     := controllers.NewTicketTypeHandler(bookingService, eventsService)
-    bookingHandler     := controllers.NewBookingHandler(bookingService, eventsService)
+    ticketsHandler     := controllers.NewTicketTypeHandler(ticketTypeService)
+    bookingHandler     := controllers.NewBookingHandler(bookingService)
     // adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 
@@ -64,6 +64,7 @@ func main() {
     r.GET("/venues", venueHandlers.GetVenues)
     r.GET("/venues/:id", venueHandlers.GetVenue)
     r.GET("/events", authHandler.OptionalAuth(), eventsHandler.List)
+    r.GET("/events/:id", eventsHandler.GetByID)
 
     auth := r.Group("/")
     auth.Use(authHandler.AuthMiddleware())
@@ -76,6 +77,7 @@ func main() {
             admin.POST("/users/:id/reject", userHandler.RejectUser)
             // admin.GET("/events" , adminExportHandler.Export)
         }
+        auth.GET("/users/:id", userHandler.GetByID)
 
         auth.POST("/events", eventsHandler.Create)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
@@ -86,10 +88,12 @@ func main() {
         auth.POST("/events/:id/tickets", ticketsHandler.Create)
         auth.GET("/events/:id/tickets", ticketsHandler.GetByEventID)
         auth.PATCH("/events/:id/tickets/:ticket_id", ticketsHandler.Update)
+        auth.GET("/tickets/:id", ticketsHandler.GetByID)
 
-        auth.GET("/my-events/:id/bookings" , bookingHandler.GetEventBookings)
-        auth.GET("/my-bookings" , bookingHandler.GetUserBookings)
-        auth.POST("/events/:id/book" , bookingHandler.Create)
+
+        auth.GET("/events/:id/bookings", bookingHandler.GetEventBookings)
+        auth.POST("/events/:id/bookings", bookingHandler.Create)
+        auth.GET("/users/:id/bookings", bookingHandler.GetUserBookings)
     }
     
     // start server

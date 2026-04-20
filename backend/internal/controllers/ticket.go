@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	apperr "github.com/sdi2200246/synaxis/internal/error"
-	"github.com/sdi2200246/synaxis/internal/interfaces"
 	"github.com/sdi2200246/synaxis/internal/services"
 )
 
@@ -32,12 +31,11 @@ type TicketTypeResponse struct {
 }
 
 type TicketTypeHandler struct {
-	bookingService   *services.BookingService
-	eventsProvider interfaces.EventsProvider
+	ticketsService   *services.TicketTypeService
 }
 
-func NewTicketTypeHandler(bs *services.BookingService, cp interfaces.EventsProvider) *TicketTypeHandler {
-	return &TicketTypeHandler{bookingService: bs, eventsProvider: cp}
+func NewTicketTypeHandler(ts *services.TicketTypeService) *TicketTypeHandler {
+	return &TicketTypeHandler{ticketsService: ts}
 }
 
 func (h *TicketTypeHandler) Create(c *gin.Context) {
@@ -53,18 +51,12 @@ func (h *TicketTypeHandler) Create(c *gin.Context) {
 		return
 	}
 
-	capacity, err := h.eventsProvider.GetEventCapacity(c.Request.Context(), eventID)
-	if err != nil {
-		h.handleError(c, err)
-		return
-	}
-
-	err = h.bookingService.CreateTicketType(c.Request.Context(), services.CreateTicketInput{
+	err = h.ticketsService.CreateTicketType(c.Request.Context(), services.CreateTicketInput{
 		EventID:  eventID,
 		Name:     input.Name,
 		Price:    input.Price,
 		Quantity: input.Quantity,
-	}, capacity)
+	})
 	if err != nil {
 		h.handleError(c, err)
 		return
@@ -92,17 +84,11 @@ func (h *TicketTypeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	capacity, err := h.eventsProvider.GetEventCapacity(c.Request.Context(), eventID)
-	if err != nil {
-		h.handleError(c, err)
-		return
-	}
-
-	err = h.bookingService.UpdateTicketType(c.Request.Context(), ticketID, eventID, services.UpdateTicketTypeInput{
+	err = h.ticketsService.UpdateTicketType(c.Request.Context(), ticketID, eventID, services.UpdateTicketTypeInput{
 		Name:     input.Name,
 		Price:    input.Price,
 		Quantity: input.Quantity,
-	}, capacity)
+	})
 	if err != nil {
 		h.handleError(c, err)
 		return
@@ -118,7 +104,7 @@ func (h *TicketTypeHandler) GetByEventID(c *gin.Context) {
 		return
 	}
 
-	tickets, err := h.bookingService.GetTicketTypesByEventID(c.Request.Context(), eventID)
+	tickets, err := h.ticketsService.GetTicketTypesByEventID(c.Request.Context(), eventID)
 	if err != nil {
 		h.handleError(c, err)
 		return
@@ -139,20 +125,28 @@ func (h *TicketTypeHandler) GetByEventID(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// func (h *TicketTypeHandler) Delete(c *gin.Context) {
-// 	ticketID, err := uuid.Parse(c.Param("ticket_id"))
-// 	if err != nil {
-// 		c.JSON(400, gin.H{"error": "invalid ticket_id"})
-// 		return
-// 	}
+func (h *TicketTypeHandler) GetByID(c *gin.Context) {
+	ticketID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid ticket id"})
+		return
+	}
 
-// 	if err := h.bookingService.DeleteTicketType(c.Request.Context(), ticketID); err != nil {
-// 		h.handleError(c, err)
-// 		return
-// 	}
+	tt, err := h.ticketsService.GetByID(c.Request.Context(), ticketID)
+	if err != nil {
+		h.handleError(c, err)
+		return
+	}
 
-// 	c.Status(http.StatusNoContent)
-// }
+	c.JSON(200, TicketTypeResponse{
+		ID:        tt.ID,
+		EventID:   tt.EventID,
+		Name:      tt.Name,
+		Price:     tt.Price,
+		Quantity:  tt.Quantity,
+		Available: tt.Available,
+	})
+}
 
 func (h *TicketTypeHandler) handleError(c *gin.Context, err error) {
 	switch {

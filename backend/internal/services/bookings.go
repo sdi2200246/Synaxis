@@ -10,63 +10,23 @@ import (
 	"github.com/sdi2200246/synaxis/internal/interfaces"
 )
 
-type CreateTicketInput struct {
-	EventID  uuid.UUID
-	Name     string
-	Price    float64
-	Quantity int
-}
-
 type CreateBookingInput struct{
 	TicketTypeID uuid.UUID
 	UserID		 uuid.UUID
 	Quantity	 int
 }
 
-type UpdateTicketTypeInput struct {
-	Name     *string
-	Price    *float64
-	Quantity *int
-}
 
-type TicketType struct {
-	ID        uuid.UUID
-	EventID   uuid.UUID
-	Name      string
-	Price     float64
-	Quantity  int
-	Available int
-	CreatedAt time.Time
-}
-
-
-type UserBookingDetail struct {
+type Booking struct {
 	ID              uuid.UUID
+	UserID          uuid.UUID
 	TicketTypeID    uuid.UUID
-	TicketName      string
 	NumberOfTickets int
 	TotalCost       float64
 	Status          string
 	BookedAt        time.Time
-	EventID         uuid.UUID
-	EventTitle      string
-	EventStart      time.Time
-	VenueName       string
-	VenueCity       string
-	VenueLatitude   *float64
-	VenueLongitude  *float64
 }
 
-type EventBookingDetail struct {
-	ID              uuid.UUID
-	TicketName      string
-	NumberOfTickets int
-	TotalCost       float64
-	BookedAt        time.Time
-	AttendeeName    string
-	AttendeeEmail   string
-	AttendeePhone   *string
-}
 
 type ExportBookingDetail struct {
 	ID              uuid.UUID
@@ -79,83 +39,14 @@ type ExportBookingDetail struct {
 }
 
 type BookingService struct {
-	ticketTypeRepo interfaces.TicketTypeRepository
+	ticketTypeRepo 	interfaces.TicketTypeRepository
 	bookingRepo 	interfaces.BookingRepository
+	eventsRepo 		interfaces.EventRepository
 }
 
-func NewBookingService(r interfaces.TicketTypeRepository , rb interfaces.BookingRepository) *BookingService {
-	return &BookingService{ticketTypeRepo: r , bookingRepo: rb}
+func NewBookingService(r interfaces.TicketTypeRepository , rb interfaces.BookingRepository , er interfaces.EventRepository) *BookingService {
+	return &BookingService{ticketTypeRepo: r , bookingRepo: rb , eventsRepo: er}
 }
-
-func (s *BookingService) CreateTicketType(ctx context.Context, input CreateTicketInput, eventCapacity int) error {
-	currentSum, err := s.ticketTypeRepo.SumQuantityByEventID(ctx, input.EventID)
-	if err != nil {
-		return err
-	}
-	if currentSum+input.Quantity > eventCapacity {
-		return apperr.ErrConflict
-	}
-
-	tt := entities.TicketType{
-		ID:        uuid.New(),
-		EventID:   input.EventID,
-		Name:      input.Name,
-		Price:     input.Price,
-		Quantity:  input.Quantity,
-		Available: input.Quantity,
-		CreatedAt: time.Now(),
-	}
-
-	return s.ticketTypeRepo.Create(ctx, tt)
-}
-
-func (s *BookingService) UpdateTicketType(ctx context.Context, id uuid.UUID, eventID uuid.UUID, input UpdateTicketTypeInput, eventCapacity int) error {
-	if input.Quantity != nil {
-		currentSum, err := s.ticketTypeRepo.SumQuantityByEventID(ctx, eventID)
-		if err != nil {
-			return err
-		}
-		existing, err := s.ticketTypeRepo.GetByID(ctx, id)
-		if err != nil {
-			return err
-		}
-		if currentSum-existing.Quantity+*input.Quantity > eventCapacity {
-			return apperr.ErrConflict
-		}
-	}
-
-	return s.ticketTypeRepo.Update(ctx, id, entities.UpdateTicketType{
-		Name:     input.Name,
-		Price:    input.Price,
-		Quantity: input.Quantity,
-	})
-}
-
-func (s *BookingService) GetTicketTypesByEventID(ctx context.Context, eventID uuid.UUID) ([]TicketType, error) {
-	tickets, err := s.ticketTypeRepo.GetByEventID(ctx, eventID)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]TicketType, len(tickets))
-	for i, tt := range tickets {
-		result[i] = TicketType{
-			ID:        tt.ID,
-			EventID:   tt.EventID,
-			Name:      tt.Name,
-			Price:     tt.Price,
-			Quantity:  tt.Quantity,
-			Available: tt.Available,
-			CreatedAt: tt.CreatedAt,
-		}
-	}
-	return result, nil
-}
-
-// func (s *BookingService) DeleteTicketType(ctx context.Context, id uuid.UUID) error {
-// 	return s.ticketTypeRepo.Delete(ctx, id)
-// }
-
 
 func (s *BookingService) CreateBooking(ctx context.Context, input CreateBookingInput) error {
 
@@ -163,8 +54,16 @@ func (s *BookingService) CreateBooking(ctx context.Context, input CreateBookingI
 	if err != nil {
 		return err
 	}
+	event, err := s.eventsRepo.GetByID(ctx, ticket.EventID)
+    if err != nil {
+        return err
+    }
 
-	if ticket.Available < input.Quantity {
+	if !event.IsBookingAvailable(){
+		return apperr.ErrConflict
+	}
+
+	if !ticket.HasAvailability(input.Quantity) {
 		return apperr.ErrConflict
 	}
 	totalCost := ticket.Price * float64(input.Quantity)
@@ -182,54 +81,40 @@ func (s *BookingService) CreateBooking(ctx context.Context, input CreateBookingI
 	return s.bookingRepo.Create(ctx, booking)
 }
 
-func (s *BookingService) GetUserBookings(ctx context.Context, userID uuid.UUID) ([]UserBookingDetail, error) {
+func (s *BookingService) GetUserBookings(ctx context.Context, userID uuid.UUID) ([]Booking, error) {
 	bookings, err := s.bookingRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]UserBookingDetail, len(bookings))
+	result := make([]Booking, len(bookings))
 	for i, b := range bookings {
-		result[i] = UserBookingDetail{
-			ID:              b.ID,
-			TicketTypeID:    b.TicketTypeID,
-			TicketName:      b.TicketName,
-			NumberOfTickets: b.NumberOfTickets,
-			TotalCost:       b.TotalCost,
-			Status:          b.Status,
-			BookedAt:        b.BookedAt,
-			EventID:         b.EventID,
-			EventTitle:      b.EventTitle,
-			EventStart:      b.EventStart,
-			VenueName:       b.VenueName,
-			VenueCity:       b.VenueCity,
-			VenueLatitude:   b.VenueLatitude,
-			VenueLongitude:  b.VenueLongitude,
-		}
+		result[i] = toBooking(b)
 	}
 	return result, nil
 }
 
-func (s *BookingService) GetEventBookings(ctx context.Context, eventID uuid.UUID) ([]EventBookingDetail, error) {
+func (s *BookingService) GetEventBookings(ctx context.Context, eventID uuid.UUID) ([]Booking, error) {
 	bookings, err := s.bookingRepo.GetByEventID(ctx, eventID)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]EventBookingDetail, len(bookings))
+	result := make([]Booking, len(bookings))
 	for i, b := range bookings {
-		result[i] = EventBookingDetail{
-			ID:              b.ID,
-			TicketName:      b.TicketName,
-			NumberOfTickets: b.NumberOfTickets,
-			TotalCost:       b.TotalCost,
-			BookedAt:        b.BookedAt,
-			AttendeeName:    b.AttendeeName,
-			AttendeeEmail:   b.AttendeeEmail,
-			AttendeePhone:   b.AttendeePhone,
-		}
+		result[i] = toBooking(b)
 	}
 	return result, nil
+}
+
+func toBooking(b entities.Booking) Booking {
+	return Booking{
+		ID:              b.ID,
+		UserID:          b.UserID,
+		TicketTypeID:    b.TicketTypeID,
+		NumberOfTickets: b.NumberOfTickets,
+		TotalCost:       b.TotalCost,
+		Status:          b.Status,
+		BookedAt:        b.BookedAt,
+	}
 }
 
 func (s *BookingService) CountEventBookings(ctx context.Context, eventID uuid.UUID) (int, error) {

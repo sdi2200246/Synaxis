@@ -16,6 +16,10 @@ type TicketType struct {
     CreatedAt time.Time `db:"created_at"`
 }
 
+func (t TicketType) HasAvailability(requested int) bool {
+    return t.Available >= requested
+}
+
 type UpdateTicketType struct {
 	Name     *string
 	Price    *float64

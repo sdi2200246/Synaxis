@@ -256,3 +256,19 @@ func (h *EventsHandler) handleError(c *gin.Context, err error) {
         apperr.Handle(c, err)
     }
 }
+
+func (h *EventsHandler) GetByID(c *gin.Context) {
+	eventID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid event id"})
+		return
+	}
+
+	event, err := h.eventsService.GetByID(c.Request.Context(), eventID)
+	if err != nil {
+		apperr.Handle(c, err)
+		return
+	}
+
+	c.JSON(200, ToEventResponse(event))
+}
