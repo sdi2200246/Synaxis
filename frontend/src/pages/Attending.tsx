@@ -3,14 +3,17 @@ import { getUserBookings } from '../api/bookings'
 import { UserBookingCard } from '../components/bookings/UserBookingCard'
 import type { UserBooking } from '../api/bookings'
 import { FiCalendar, FiTag, FiMapPin } from 'react-icons/fi'
+import { useAuth } from '../context/AuthContext'
 
 export function AttendingPage() {
   const [bookings, setBookings] = useState<UserBooking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const {userId} = useAuth()
 
   useEffect(() => {
-    getUserBookings()
+    if (!userId) return
+    getUserBookings(userId)
       .then(setBookings)
       .catch(() => setError('Failed to load bookings'))
       .finally(() => setLoading(false))

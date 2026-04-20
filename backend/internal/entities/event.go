@@ -23,6 +23,18 @@ func (e Event) ApproveDeletion()bool{
     return e.Status != "CANCELLED"
 }
 
+func (e Event) IsBookingAvailable()bool{
+    return e.Status == "PUBLISHED"
+}
+
+func (e Event) AllowsTicketModification() bool {
+    return e.Status == "DRAFT" || e.Status == "PUBLISHED"
+}
+
+func (e Event) HasCapacityFor(currentSum, additional int) bool {
+    return currentSum + additional <= e.Capacity
+}
+
 type UpdateEvent struct{
     Title       *string
 	EventType   *string

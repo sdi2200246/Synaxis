@@ -115,6 +115,23 @@ func (h *UserHandler)GetUsers(c *gin.Context) {
     c.JSON(200, gin.H{"count": len(users), "users": plain})
 }
 
+func (h *UserHandler) GetByID(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	user, err := h.userService.GetPublicByID(c.Request.Context(), userID)
+	if err != nil {
+		apperr.Handle(c, err)
+		return
+	}
+
+	c.JSON(200, ToPublicUserResponse(user))
+}
+
+
 func (h *UserHandler) ApproveUser(c *gin.Context) {
     id, err := uuid.Parse(c.Param("id"))
     if err != nil {

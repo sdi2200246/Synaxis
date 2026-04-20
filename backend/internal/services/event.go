@@ -71,11 +71,11 @@ type EventFilterInput struct{
 type EventService struct{
 	eventRepo interfaces.EventRepository
     categoryProvider interfaces.CategoriesRepo
-    bookingsProvider interfaces.BookingsProvider
+    bookingsProvider interfaces.BookingRepository
 }
 
-func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,bp  interfaces.BookingsProvider)*EventService{
-	return  &EventService{eventRepo:r , categoryProvider: cr, bookingsProvider: bp}
+func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,bk  interfaces.BookingRepository)*EventService{
+	return  &EventService{eventRepo:r , categoryProvider: cr, bookingsProvider: bk}
 }
 
 func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , event CreateEventInput)error{
@@ -202,7 +202,7 @@ func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
         return err
     }
 
-    bookingsCount , err := s.bookingsProvider.CountEventBookings(ctx , eventID)
+    bookingsCount , err := s.bookingsProvider.CountByEventID(ctx , eventID)
     if err != nil {
         return apperr.ErrInternal
     }
@@ -216,6 +216,14 @@ func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
     }
 
     return s.eventRepo.Delete(ctx, eventID)
+}
+
+func (s *EventService) GetByID(ctx context.Context, id uuid.UUID) (Event, error) {
+	event, err := s.eventRepo.GetByID(ctx, id)
+	if err != nil {
+		return Event{}, err
+	}
+	return toEvent(event), nil
 }
 
 func (s *EventService) GetEventCategories(ctx context.Context, eventID uuid.UUID) ([]EventCategory, error) {

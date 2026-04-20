@@ -118,42 +118,32 @@ func ToEventListResponse(events []services.Event) []EventResponse {
     }
     return result
 }
-func ToUserBookingListResponse(bookings []services.UserBookingDetail) []UserBookingResponse {
-	result := make([]UserBookingResponse, len(bookings))
-	for i, b := range bookings {
-		result[i] = UserBookingResponse{
-			ID:              b.ID,
-			TicketTypeID:    b.TicketTypeID,
-			TicketName:      b.TicketName,
-			NumberOfTickets: b.NumberOfTickets,
-			TotalCost:       b.TotalCost,
-			Status:          b.Status,
-			BookedAt:        b.BookedAt,
-			EventID:         b.EventID,
-			EventTitle:      b.EventTitle,
-			EventStart:      b.EventStart,
-			VenueName:       b.VenueName,
-			VenueCity:       b.VenueCity,
-			VenueLatitude:   b.VenueLatitude,
-			VenueLongitude:  b.VenueLongitude,
-		}
-	}
-	return result
+type BookingResponse struct {
+	ID              uuid.UUID `json:"id"`
+	UserID          uuid.UUID `json:"user_id"`
+	TicketTypeID    uuid.UUID `json:"ticket_type_id"`
+	NumberOfTickets int       `json:"number_of_tickets"`
+	TotalCost       float64   `json:"total_cost"`
+	Status          string    `json:"status"`
+	BookedAt        time.Time `json:"booked_at"`
 }
 
-func ToEventBookingListResponse(bookings []services.EventBookingDetail) []EventBookingResponse {
-	result := make([]EventBookingResponse, len(bookings))
+func ToBookingResponse(b services.Booking) BookingResponse {
+	return BookingResponse{
+		ID:              b.ID,
+		UserID:          b.UserID,
+		TicketTypeID:    b.TicketTypeID,
+		NumberOfTickets: b.NumberOfTickets,
+		TotalCost:       b.TotalCost,
+		Status:          b.Status,
+		BookedAt:        b.BookedAt,
+	}
+}
+
+func ToBookingListResponse(bookings []services.Booking) []BookingResponse {
+	result := make([]BookingResponse, len(bookings))
 	for i, b := range bookings {
-		result[i] = EventBookingResponse{
-			ID:              b.ID,
-			TicketName:      b.TicketName,
-			NumberOfTickets: b.NumberOfTickets,
-			TotalCost:       b.TotalCost,
-			BookedAt:        b.BookedAt,
-			AttendeeName:    b.AttendeeName,
-			AttendeeEmail:   b.AttendeeEmail,
-			AttendeePhone:   b.AttendeePhone,
-		}
+		result[i] = ToBookingResponse(b)
 	}
 	return result
 }
@@ -168,6 +158,27 @@ func ToCategoryListResponse(categories []services.EventCategory) []CategoryRespo
 	}
 	return result
 }
+
+type PublicUserResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Username  string    `json:"username"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+}
+
+func ToPublicUserResponse(u services.PublicUser) PublicUserResponse {
+	return PublicUserResponse{
+		ID:        u.ID,
+		Username:  u.Username,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		Email:     u.Email,
+		Phone:     u.Phone,
+	}
+}
+
 
 
 // func buildExportEvent(ev services.DetailedEvent,tickets []services.TicketType,bookings []services.ExportBookingDetail,) ExportEvent {
