@@ -30,6 +30,7 @@ func main() {
     venueRepo    := repos.NewVenueRepo(pool)
     bookingRepo  := repos.NewBookingsRepo(pool)
     ticketsRepo  := repos.NewTicketTypeRepo(pool)
+    messagesRepo := repos.NewMessagesRepo(pool)
 
     userService  := services.NewUserService(userRepo)
     authService  := services.NewAuthService(userRepo, "jason_derullo")
@@ -38,6 +39,7 @@ func main() {
     eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo)
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
     ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
+    messagesService := services.NewMessageService(messagesRepo , bookingRepo , eventRepo)
 
     userHandler        := controllers.NewUserHandler(userService)
     authHandler        := middleware.NewAuthHandler(authService)
@@ -45,6 +47,7 @@ func main() {
     eventsHandler      := controllers.NewEventsHandler(eventsService)
     ticketsHandler     := controllers.NewTicketTypeHandler(ticketTypeService)
     bookingHandler     := controllers.NewBookingHandler(bookingService)
+    messagesHandler    := controllers.NewMessagesHandler(messagesService)
     // adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 
@@ -65,6 +68,7 @@ func main() {
     r.GET("/venues/:id", venueHandlers.GetVenue)
     r.GET("/events", authHandler.OptionalAuth(), eventsHandler.List)
     r.GET("/events/:id", eventsHandler.GetByID)
+    r.GET("/events/:id/categories", eventsHandler.GetEventCategories)
 
     auth := r.Group("/")
     auth.Use(authHandler.AuthMiddleware())
@@ -82,18 +86,22 @@ func main() {
         auth.POST("/events", eventsHandler.Create)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
         auth.DELETE("/events/:id" , eventsHandler.Delete)
-        auth.GET("/events/:id/categories", eventsHandler.GetEventCategories)
-
-
+       
         auth.POST("/events/:id/tickets", ticketsHandler.Create)
         auth.GET("/events/:id/tickets", ticketsHandler.GetByEventID)
         auth.PATCH("/events/:id/tickets/:ticket_id", ticketsHandler.Update)
         auth.GET("/tickets/:id", ticketsHandler.GetByID)
 
-
+        
         auth.GET("/events/:id/bookings", bookingHandler.GetEventBookings)
         auth.POST("/events/:id/bookings", bookingHandler.Create)
-        auth.GET("/users/:id/bookings", bookingHandler.GetUserBookings)
+        auth.GET("/bookings", bookingHandler.GetUserBookings)
+
+        auth.POST("/conversations" , messagesHandler.CreateConversation)
+        auth.GET("conversations" , messagesHandler.ListUserConversations)
+        auth.PATCH("/conversations/:id/read", messagesHandler.MarkConversationAsRead)
+        auth.POST("/conversations/:id/messages" , messagesHandler.CreateMessage)
+        auth.GET("/conversations/:id/messages" , messagesHandler.GetConversationMessages)
     }
     
     // start server

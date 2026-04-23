@@ -47,7 +47,7 @@ async function hydrateEventLite(bare: BareEvent): Promise<Event> {
 }
 
 export async function getUserBookings(userID: string): Promise<UserBooking[]> {
-  const bookings = await api.get<BareBooking[]>(`/users/${userID}/bookings`).then(r => r.data)
+  const bookings = await api.get<BareBooking[]>(`/bookings`).then(r => r.data)
 
   const ticketIds = [...new Set(bookings.map(b => b.ticket_type_id))]
   const tickets = await Promise.all(

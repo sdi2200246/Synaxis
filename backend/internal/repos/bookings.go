@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sdi2200246/synaxis/internal/entities"
@@ -52,6 +53,41 @@ func (r *BookingsRepo) Create(ctx context.Context, booking entities.Booking) err
 
 	return tx.Commit(ctx)
 }
+
+func (r *BookingsRepo) GetByID(ctx context.Context, id uuid.UUID) (entities.Booking, error) {
+	row := r.db.QueryRow(ctx, `
+		SELECT 
+			id, user_id, ticket_type_id, number_of_tickets, total_cost, status, booked_at
+		FROM booking
+		WHERE id = $1
+	`, id)
+
+	var b entities.Booking
+	err := row.Scan(
+		&b.ID,
+		&b.UserID,
+		&b.TicketTypeID,
+		&b.NumberOfTickets,
+		&b.TotalCost,
+		&b.Status,
+		&b.BookedAt,
+	)
+	
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.Booking{}, apperr.ErrNotFound
+		}
+
+		slog.Error("BookingsRepo.GetByID failed",
+			"error", err,
+			"booking_id", id,
+		)
+		return entities.Booking{}, apperr.ErrInternal
+	}
+
+	return b, nil
+}
+
 
 func (r *BookingsRepo) GetByTicketTypeID(ctx context.Context, ticketTypeID uuid.UUID) ([]entities.Booking, error) {
 	rows, err := r.db.Query(ctx,

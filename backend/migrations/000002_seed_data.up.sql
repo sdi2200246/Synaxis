@@ -47,6 +47,21 @@ VALUES (
 -- user (password: user124)
 INSERT INTO "user" (id, username, password_hash, first_name, last_name, email, phone, address, city, country, tax_id, role, status)
 VALUES (
+    'a0000000-0000-0000-0000-000000000004',
+    'atendee',
+    '$2a$10$UJHVw3MOL.udCx8oXGaUpeBNB2Y3HtkjM88eZdsyx78EnEtXrLe1K',
+    'Jake', 'Doe',
+    'jake@example.com',
+    '2109876545',
+    'Ermou 9', 'Athens', 'Greece',
+    '123456785',
+    'user', 'approved'
+);
+
+
+-- user (password: user124)
+INSERT INTO "user" (id, username, password_hash, first_name, last_name, email, phone, address, city, country, tax_id, role, status)
+VALUES (
     'a0000000-0000-0000-0000-000000000003',
     'pending_user',
     '$2a$10$dEr0Gjk0HO7u9uvxDX0Zlep14G3kOWd9oM6Sh5qWFZpvhqApClt6q',

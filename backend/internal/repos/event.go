@@ -2,6 +2,7 @@ package repos
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/VauntDev/tqla"
@@ -280,4 +281,54 @@ func (r *EventRepo) GetAll(ctx context.Context) ([]entities.Event, error) {
 	}
 
 	return results, nil
+}
+
+func (r *EventRepo) GetByTicketTypeID(ctx context.Context, ticketTypeID uuid.UUID) (entities.Event, error) {
+	row := r.db.QueryRow(ctx, `
+		SELECT 
+			e.id,
+			e.organizer_id,
+			e.venue_id,
+			e.title,
+			e.event_type,
+			e.status,
+			e.description,
+			e.capacity,
+			e.start_datetime,
+			e.end_datetime,
+			e.created_at
+		FROM event e
+		JOIN tickettype t ON t.event_id = e.id
+		WHERE t.id = $1
+	`, ticketTypeID)
+
+	var e entities.Event
+
+	err := row.Scan(
+		&e.ID,
+		&e.OrganizerID,
+		&e.VenueID,
+		&e.Title,
+		&e.EventType,
+		&e.Status,
+		&e.Description,
+		&e.Capacity,
+		&e.StartDatetime,
+		&e.EndDatetime,
+		&e.CreatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.Event{}, apperr.ErrNotFound
+		}
+
+		slog.Error("EventRepo.GetByTicketTypeID failed",
+			"error", err,
+			"ticket_type_id", ticketTypeID,
+		)
+		return entities.Event{}, apperr.ErrInternal
+	}
+
+	return e, nil
 }

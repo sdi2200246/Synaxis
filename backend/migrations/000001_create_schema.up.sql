@@ -75,13 +75,22 @@ CREATE TABLE "conversation" (
   "created_at" timestamp NOT NULL DEFAULT (now())
 );
 
+CREATE TABLE conversation_participant (
+  "conversation_id" uuid NOT NULL,
+  "user_id" uuid NOT NULL,
+  "role" varchar NOT NULL, 
+  PRIMARY KEY (conversation_id, user_id)
+);
+
 CREATE TABLE "message" (
   "id" uuid PRIMARY KEY,
   "conversation_id" uuid NOT NULL,
   "sender_id" uuid NOT NULL,
   "content" text NOT NULL,
   "is_read" boolean NOT NULL DEFAULT false,
-  "sent_at" timestamp NOT NULL DEFAULT (now())
+  "status"  integer NOT NULL DEFAULT 0,
+  "sent_at" timestamp NOT NULL DEFAULT (now()),
+  "updated_at" timestamp
 );
 
 CREATE TABLE "visit" (
@@ -119,6 +128,9 @@ ALTER TABLE "visit" ADD CONSTRAINT visit_event_fkey FOREIGN KEY ("event_id") REF
 ALTER TABLE "media" ADD CONSTRAINT media_event_fkey FOREIGN KEY ("event_id") REFERENCES "event" ("id") ON DELETE CASCADE;
 ALTER TABLE "eventcategory" ADD CONSTRAINT eventcategory_event_fkey FOREIGN KEY ("event_id") REFERENCES "event" ("id") ON DELETE CASCADE;
 ALTER TABLE "eventcategory" ADD CONSTRAINT eventcategory_category_fkey FOREIGN KEY ("category_id") REFERENCES "category" ("id");
+ALTER TABLE "conversation_participant" ADD CONSTRAINT cp_conversation_fkey FOREIGN KEY ("conversation_id") REFERENCES "conversation" ("id") ON DELETE CASCADE;
+ALTER TABLE "conversation_participant" ADD CONSTRAINT cp_user_fkey FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
+
 
 -- CHECK constraints
 ALTER TABLE "user" ADD CONSTRAINT user_role_check CHECK (role IN ('admin','user'));
@@ -133,6 +145,8 @@ ALTER TABLE "booking" ADD CONSTRAINT booking_tickets_check CHECK (number_of_tick
 ALTER TABLE "booking" ADD CONSTRAINT booking_cost_check CHECK (total_cost >= 0);
 ALTER TABLE "booking" ADD CONSTRAINT booking_status_check CHECK (status IN ('ACTIVE','COMPLETED','CANCELLED'));
 ALTER TABLE "venue" ADD CONSTRAINT venue_capacity_check CHECK (capacity > 0);
+ALTER TABLE "message" ADD CONSTRAINT message_status_check CHECK (status in (0 , 1 , 2 , 3 ));
+ALTER TABLE conversation_participant ADD CONSTRAINT conversation_participant_role_check CHECK (role IN ('organizer', 'attendee'));
 
 
 -- UNIQUE on venue coordinates

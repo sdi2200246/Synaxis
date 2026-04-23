@@ -81,6 +81,40 @@ type EventBookingResponse struct {
 	AttendeePhone   *string   `json:"attendee_phone,omitempty"`
 }
 
+
+type ConversationResponse struct {
+	ID          uuid.UUID `json:"id"`
+	BookingID   uuid.UUID `json:"booking_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UnseenCount int       `json:"unseen_count"`
+}
+
+type ConvParticipantResponse struct {
+	Role   string    `json:"role"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+type ConversationWithParticipantsResponse struct {
+	Conversation ConversationResponse       `json:"conversation"`
+	Participants []ConvParticipantResponse   `json:"participants"`
+}
+
+type MessageResponse struct {
+	ID             uuid.UUID  `json:"id"`
+	ConversationID uuid.UUID  `json:"conversation_id"`
+	SenderID       uuid.UUID  `json:"sender_id"`
+	Content        string     `json:"content"`
+	IsRead         bool       `json:"is_read"`
+	IsDeleted      bool       `json:"is_deleted"`
+	SentAt         time.Time  `json:"sent_at"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+}
+
+type CreateConversationResponse struct {
+	ConversationID uuid.UUID `json:"conversation_id"`
+}
+
+
 func ToVenueResponse(v services.DetailedVenue) VenueResponse {
 	return VenueResponse{
 		ID:        v.ID,
@@ -178,6 +212,61 @@ func ToPublicUserResponse(u services.PublicUser) PublicUserResponse {
 		Phone:     u.Phone,
 	}
 }
+
+
+func ToConversationResponse(c services.Conversation) ConversationResponse {
+	return ConversationResponse{
+		ID:          c.ID,
+		BookingID:   c.BookingID,
+		CreatedAt:   c.CreatedAt,
+		UnseenCount: c.UnseenCount,
+	}
+}
+
+func ToConversationListResponse(convs []services.Conversation) []ConversationResponse {
+	result := make([]ConversationResponse, len(convs))
+	for i, c := range convs {
+		result[i] = ToConversationResponse(c)
+	}
+	return result
+}
+
+func ToConvParticipantResponse(p services.ConvParticipant) ConvParticipantResponse {
+	return ConvParticipantResponse{
+		Role:   p.Role,
+		UserID: p.UserID,
+	}
+}
+
+func ToConvParticipantsResponse(ps []services.ConvParticipant) []ConvParticipantResponse {
+	result := make([]ConvParticipantResponse, len(ps))
+	for i, p := range ps {
+		result[i] = ToConvParticipantResponse(p)
+	}
+	return result
+}
+
+func ToMessageResponse(m services.Message) MessageResponse {
+	return MessageResponse{
+		ID:             m.ID,
+		ConversationID: m.ConversationID,
+		SenderID:       m.SenderID,
+		Content:        m.Content,
+		IsRead:         m.IsRead,
+		IsDeleted:      m.Deleted,
+		SentAt:         m.SentAt,
+		UpdatedAt:      m.UpdatedAt,
+	}
+}
+
+func ToMessageListResponse(messages []services.Message) []MessageResponse {
+	result := make([]MessageResponse, len(messages))
+	for i, m := range messages {
+		result[i] = ToMessageResponse(m)
+	}
+	return result
+}
+
 
 
 
