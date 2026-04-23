@@ -6,7 +6,13 @@ import (
 )
 
 type Conversation struct {
-    ID        uuid.UUID `json:"id" db:"id"`
-    BookingID uuid.UUID `json:"booking_id" db:"booking_id"`
-    CreatedAt time.Time `json:"created_at" db:"created_at"`
+    ID        uuid.UUID `db:"id"`
+    BookingID uuid.UUID `db:"booking_id"`
+    CreatedAt time.Time `db:"created_at"`
+}
+
+type ConvParticipant struct{
+    ConversationID  uuid.UUID `db:"conversation_id"`
+	Role            string    `db:"role"`
+	UserId          uuid.UUID `db:"user_id"`
 }
