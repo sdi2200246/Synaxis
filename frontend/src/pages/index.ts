@@ -9,3 +9,4 @@ export { EventTicketsPage } from "./EventTickets"
 export { SearchPage} from "./Search"
 export { AttendingPage } from './Attending'
 export {EventBookingsPage} from './EventBookings'
+export { MessagesPage } from './MessagesPage'

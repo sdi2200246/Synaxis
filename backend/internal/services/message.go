@@ -34,6 +34,11 @@ type Message struct {
 	UpdatedAt      *time.Time
 }
 
+type UpdateMessageInput struct{
+	Content 	*string
+	Delete      *int
+}
+
 type Conversation struct {
 	ID        uuid.UUID
 	BookingID uuid.UUID
@@ -49,6 +54,7 @@ type ConvParticipant struct{
 type ConversationWithParticipants struct {
 	Conversation Conversation
 	Participants []ConvParticipant
+	EventName string
 }
 
 type MessageService struct {
@@ -108,10 +114,38 @@ func (s *MessageService) SendMessage(ctx context.Context, input CreateMessageInp
 	return s.messagesRepo.Create(ctx, msg)
 }
 
-func (s *MessageService) EditMessage(ctx context.Context, id uuid.UUID, mu entities.MessageUpdate) error {
-	return s.messagesRepo.UpdateMessage(ctx, id, mu)
-}
+func (s *MessageService) UpdateMessage(ctx context.Context, id uuid.UUID, callerID uuid.UUID, input UpdateMessageInput) error {
+	msg, err := s.messagesRepo.GetMessageByID(ctx, id)
+	if err != nil {
+		return err
+	}
 
+	if msg.SenderID != callerID {
+		return apperr.ErrForbidden
+	}
+
+	update := entities.MessageUpdate{}
+
+	if input.Content != nil {
+		if err := msg.CanEditContent(callerID); err != nil {
+			return apperr.ErrBadInput
+		}
+		if err := msg.ValidateContent(*input.Content); err != nil {
+			return apperr.ErrBadInput
+		}
+		trimmed := strings.TrimSpace(*input.Content)
+		update.Content = &trimmed
+	}
+
+	if input.Delete != nil {
+		if err := msg.CanTransitionTo(*input.Delete); err != nil {
+			return apperr.ErrBadInput
+		}
+		update.Status = input.Delete
+	}
+
+	return s.messagesRepo.UpdateMessage(ctx, id, update)
+}
 func (s *MessageService) GetConversationMessages(ctx context.Context,conversationID uuid.UUID,userID uuid.UUID)([]Message, error) {
 
 	participants, err := s.messagesRepo.GetParticipantsByConversationID(ctx, conversationID)
@@ -144,38 +178,7 @@ func (s *MessageService) GetConversationMessages(ctx context.Context,conversatio
 	return result, nil
 }
 
-func (s *MessageService) GetConversation(ctx context.Context,conversationID uuid.UUID,userID uuid.UUID) (ConversationWithParticipants, error) {
-
-	conv, err := s.messagesRepo.GetConversationByID(ctx, conversationID)
-	if err != nil {
-		return ConversationWithParticipants{}, err
-	}
-
-	participants, err := s.messagesRepo.GetParticipantsByConversationID(ctx, conversationID)
-	if err != nil {
-		return ConversationWithParticipants{}, err
-	}
-
-	if len(participants) != 2 {
-		return ConversationWithParticipants{}, apperr.ErrInternal
-	}
-
-	unseen , err := s.messagesRepo.GetUnreadMessagesCountByUser(ctx ,userID)
-	if err != nil {
-		return ConversationWithParticipants{}, err
-	}
-
-
-	return ConversationWithParticipants{
-		Conversation: toConversation(conv , unseen[conversationID]),
-		Participants: []ConvParticipant{
-			toConvParticipant(participants[0]),
-			toConvParticipant(participants[1]),
-		},
-	}, nil
-}
-
-func (s *MessageService) ListUserConversations(ctx context.Context,userID uuid.UUID,) ([]ConversationWithParticipants, error) {
+func (s *MessageService) ListUserConversations(ctx context.Context, userID uuid.UUID) ([]ConversationWithParticipants, error) {
 
 	convs, err := s.messagesRepo.GetUserConversations(ctx, userID)
 	if err != nil {
@@ -201,10 +204,29 @@ func (s *MessageService) ListUserConversations(ctx context.Context,userID uuid.U
 		return nil, err
 	}
 
+	eventNameByBooking := make(map[uuid.UUID]string)
+
+	for _, c := range convs {
+		if _, exists := eventNameByBooking[c.BookingID]; exists {
+			continue
+		}
+
+		booking, err := s.bookingRepo.GetByID(ctx, c.BookingID)
+		if err != nil {
+			return nil, err
+		}
+
+		event, err := s.eventRepo.GetByTicketTypeID(ctx, booking.TicketTypeID)
+		if err != nil {
+			return nil, err
+		}
+
+		eventNameByBooking[c.BookingID] = event.Title
+	}
+
 	result := make([]ConversationWithParticipants, len(convs))
 
 	for i, c := range convs {
-
 		participants := participantsMap[c.ID]
 
 		if len(participants) != 2 {
@@ -219,6 +241,7 @@ func (s *MessageService) ListUserConversations(ctx context.Context,userID uuid.U
 		result[i] = ConversationWithParticipants{
 			Conversation: toConversation(c, unseenMap[c.ID]),
 			Participants: ps,
+			EventName:    eventNameByBooking[c.BookingID],
 		}
 	}
 

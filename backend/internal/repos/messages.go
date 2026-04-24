@@ -24,7 +24,7 @@ func NewMessagesRepo(db *pgxpool.Pool ) *MessagesRepo {
 	return &MessagesRepo{db: db}
 }
 
-func (r *MessagesRepo) CreateConversation(ctx context.Context,conv entities.Conversation,organizer uuid.UUID,attendee uuid.UUID,) error {
+func (r *MessagesRepo) CreateConversation(ctx context.Context,conv entities.Conversation,organizer uuid.UUID,attendee uuid.UUID,)  error {
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -78,6 +78,25 @@ func (r *MessagesRepo) CreateConversation(ctx context.Context,conv entities.Conv
 	return tx.Commit(ctx)
 }
 
+func (r *MessagesRepo) GetConversationByBookingID(ctx context.Context, bookingID uuid.UUID) (entities.Conversation, error) {
+	row := r.db.QueryRow(ctx, `
+		SELECT id, booking_id, created_at
+		FROM conversation
+		WHERE booking_id = $1
+	`, bookingID)
+
+	var c entities.Conversation
+	err := row.Scan(&c.ID, &c.BookingID, &c.CreatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.Conversation{}, apperr.ErrNotFound
+		}
+		return entities.Conversation{}, apperr.ErrInternal
+	}
+	return c, nil
+}
+
+
 func (r *MessagesRepo) Create(ctx context.Context, msg entities.Message) error {
     _, err := r.db.Exec(ctx, `
         INSERT INTO "message" (
@@ -116,7 +135,6 @@ func (r *MessagesRepo) UpdateMessage(ctx context.Context, id uuid.UUID, mu entit
         UPDATE "message" SET
             {{ if .Update.Status }} status = {{ .Update.Status }}, {{ end }}
             {{ if .Update.Content }} content = {{ .Update.Content }}, {{ end }}
-            {{ if .Update.IsRead }} is_read = {{ .Update.IsRead }}, {{ end }}
             updated_at = now()
         WHERE id = {{ .ID }}
     `, struct {
@@ -452,4 +470,23 @@ func (r *MessagesRepo) MarkAsReadUpToMessage(ctx context.Context,conversationID 
 	}
 
 	return nil
+}
+
+func (r *MessagesRepo) GetMessageByID(ctx context.Context, id uuid.UUID) (entities.Message, error) {
+	row := r.db.QueryRow(ctx, `
+		SELECT id, conversation_id, sender_id, content, is_read, status, sent_at, updated_at
+		FROM message
+		WHERE id = $1
+	`, id)
+
+	var m entities.Message
+	err := row.Scan(&m.ID, &m.ConversationID, &m.SenderID, &m.Content, &m.IsRead, &m.Status, &m.SentAt, &m.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.Message{}, apperr.ErrNotFound
+		}
+		return entities.Message{}, apperr.ErrInternal
+	}
+
+	return m, nil
 }

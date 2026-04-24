@@ -97,11 +97,13 @@ func main() {
         auth.POST("/events/:id/bookings", bookingHandler.Create)
         auth.GET("/bookings", bookingHandler.GetUserBookings)
 
+
         auth.POST("/conversations" , messagesHandler.CreateConversation)
         auth.GET("conversations" , messagesHandler.ListUserConversations)
         auth.PATCH("/conversations/:id/read", messagesHandler.MarkConversationAsRead)
         auth.POST("/conversations/:id/messages" , messagesHandler.CreateMessage)
         auth.GET("/conversations/:id/messages" , messagesHandler.GetConversationMessages)
+        auth.PATCH("/messages/:id", messagesHandler.UpdateMessage)
     }
     
     // start server

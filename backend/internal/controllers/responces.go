@@ -97,6 +97,7 @@ type ConvParticipantResponse struct {
 type ConversationWithParticipantsResponse struct {
 	Conversation ConversationResponse       `json:"conversation"`
 	Participants []ConvParticipantResponse   `json:"participants"`
+	EventTitle string						`json:"event_title"`
 }
 
 type MessageResponse struct {

@@ -60,6 +60,7 @@ type BookingRepository interface{
 
 type MessagesRepository interface {
 	CreateConversation(ctx context.Context,conv entities.Conversation,organizer uuid.UUID,attendee uuid.UUID,) error
+	GetConversationByBookingID(ctx context.Context, bookingID uuid.UUID) (entities.Conversation, error)
 	Create(ctx context.Context, msg entities.Message) error
 	UpdateMessage(ctx context.Context, id uuid.UUID, mu entities.MessageUpdate) error
 	GetByConversationID(ctx context.Context, conversationID uuid.UUID) ([]entities.Message, error)
@@ -70,4 +71,5 @@ type MessagesRepository interface {
 	GetUnreadMessagesCountByUser(ctx context.Context,userID uuid.UUID,) (map[uuid.UUID]int, error)
 	GetMessagesByConversationID(ctx context.Context,conversationID uuid.UUID,) ([]entities.Message, error)
 	MarkAsReadUpToMessage(ctx context.Context,conversationID uuid.UUID,userID uuid.UUID,lastMessageTime time.Time,) error 
+	GetMessageByID(ctx context.Context, id uuid.UUID) (entities.Message, error)
 }
