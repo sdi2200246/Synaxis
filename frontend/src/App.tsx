@@ -14,7 +14,8 @@ import {
   BrowsePage,
   SearchPage,
   AttendingPage,
-  EventBookingsPage
+  EventBookingsPage ,
+  MessagesPage
 } from './pages'
 import './styles.css'
 
@@ -99,6 +100,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+              <Route path="/messages/:conversationId" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
 
               {/* Default redirect */}
               <Route path="*" element={<LoginPage />} />

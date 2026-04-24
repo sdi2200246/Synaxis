@@ -21,6 +21,11 @@ type CreateMessageRequest struct {
 	Content string `json:"content" binding:"required"`
 }
 
+type UpdateMessageRequest struct{
+	Content *string `json:"content,omitempty"`	
+	Delete *int 	`json:"delete,omitempty"`
+}
+
 type MessagesHandler struct {
 	messagesService *services.MessageService
 }
@@ -86,6 +91,41 @@ func (h *MessagesHandler) CreateMessage(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
+func (h *MessagesHandler) UpdateMessage(c *gin.Context) {
+	messageID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid message id"})
+		return
+	}
+
+	userID, ok := getUserIDFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var input UpdateMessageRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input", "details": err.Error()})
+		return
+	}
+
+	if input.Content == nil && input.Delete == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "nothing to update"})
+		return
+	}
+	
+	if err := h.messagesService.UpdateMessage(c.Request.Context(), messageID, userID, services.UpdateMessageInput{
+		Content: input.Content,
+		Delete: input.Delete,
+	}); err != nil {
+		h.handleError(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
 func (h *MessagesHandler) ListUserConversations(c *gin.Context) {
 	userID, ok := getUserIDFromContext(c)
 	if !ok {
@@ -119,6 +159,7 @@ func (h *MessagesHandler) ListUserConversations(c *gin.Context) {
 				UnseenCount: conv.Conversation.UnseenCount,
 			},
 			Participants: ps,
+			EventTitle: conv.EventName,
 		})
 	}
 

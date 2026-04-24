@@ -16,6 +16,7 @@ export interface UserBooking {
   venue_city: string
   venue_latitude?: number
   venue_longitude?: number
+  organizer_id: string
 }
 
 export interface EventBooking {
@@ -81,6 +82,7 @@ export async function getUserBookings(userID: string): Promise<UserBooking[]> {
       venue_city: event.venue.city ?? '',
       venue_latitude: event.venue.latitude,
       venue_longitude: event.venue.longitude,
+      organizer_id: event.organizer_id,
     }
   })
 }

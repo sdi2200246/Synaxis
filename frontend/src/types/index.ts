@@ -112,3 +112,32 @@ export interface Category {
   name: string
   parent_id?: string | null
 }
+
+export interface ConversationParticipant {
+  role: string
+  user_id: string
+}
+
+export interface ConversationData {
+  id: string
+  booking_id: string
+  created_at: string
+  unseen_count: number
+}
+
+export interface ConversationWithParticipants {
+  conversation: ConversationData
+  participants: ConversationParticipant[]
+  event_title: string
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string
+  is_read: boolean
+  is_deleted: boolean
+  sent_at: string
+  updated_at?: string
+}

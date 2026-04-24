@@ -16,7 +16,6 @@ type CreateBookingInput struct{
 	Quantity	 int
 }
 
-
 type Booking struct {
 	ID              uuid.UUID
 	UserID          uuid.UUID
@@ -26,7 +25,6 @@ type Booking struct {
 	Status          string
 	BookedAt        time.Time
 }
-
 
 type ExportBookingDetail struct {
 	ID              uuid.UUID

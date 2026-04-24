@@ -227,3 +227,123 @@
     min-width: 60px;
   }
 }
+ 
+/* ── Card actions row ── */
+.ub-card-actions {
+  display: flex;
+  gap: 8px;
+  margin: 10px 16px;
+  flex-wrap: wrap;
+}
+
+/* ── Message button ─ */
+.ub-msg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 16px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: #fff;
+  background: #d9a1ff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.ub-msg-btn:hover {
+  background: #9a40d4;
+  
+}
+
+/* ── Conversation dialog ── */
+.ub-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ub-dialog {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.ub-dialog-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0 0 10px;
+}
+
+.ub-dialog-body {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.ub-dialog-error {
+  font-size: 0.82rem;
+  color: #c0392b;
+  margin: 0 0 12px;
+}
+
+.ub-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ub-dialog-cancel {
+  padding: 8px 18px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-h);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+
+.ub-dialog-cancel:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.ub-dialog-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ub-dialog-confirm {
+  padding: 8px 18px;
+  background: #5f2089;
+  border: 1px solid #7a1dbd;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.12s;
+}
+
+.ub-dialog-confirm:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.ub-dialog-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

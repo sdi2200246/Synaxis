@@ -1,11 +1,13 @@
-import { useState, useEffect ,} from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { FiHome, FiSearch, FiCalendar, FiCheckSquare, FiUser, FiUsers, FiBell } from 'react-icons/fi'
+import { FiHome, FiSearch, FiCalendar, FiCheckSquare, FiUser, FiUsers, FiBell, FiMessageSquare } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
-import { getPendingUsers} from '../../api/users'
+import { getPendingUsers } from '../../api/users'
+import { getConversations } from '../../api/messages'
 
 export function Sidebar() {
   const [pendingUsersCount, setPendingCount] = useState<number>(0)
+  const [hasUnread, setHasUnread] = useState(false)
 
   const { logout, userRole } = useAuth()
   const navigate = useNavigate()
@@ -14,7 +16,7 @@ export function Sidebar() {
     logout()
     navigate('/login')
   }
-  
+
   useEffect(() => {
     async function loadPendingUsers() {
       const data = await getPendingUsers()
@@ -22,10 +24,28 @@ export function Sidebar() {
     }
 
     loadPendingUsers()
-      const interval = setInterval(loadPendingUsers, 30000)
+    const interval = setInterval(loadPendingUsers, 30000)
 
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (userRole === 'admin') return
+
+    async function checkUnread() {
+      try {
+        const convs = await getConversations()
+        setHasUnread(convs.some(c => c.conversation.unseen_count > 0))
+      } catch {
+        /* silent — sidebar badge is non-critical */
+      }
+    }
+
+    checkUnread()
+    const interval = setInterval(checkUnread, 15000)
+
+    return () => clearInterval(interval)
+  }, [userRole])
 
   return (
     <aside className="sidebar">
@@ -54,18 +74,30 @@ export function Sidebar() {
               <FiHome size={20} />
               <span>Home</span>
             </NavLink>
+
             <NavLink to="/search" className="sidebar-link">
               <FiSearch size={20} />
               <span>Search</span>
             </NavLink>
+
             <NavLink to="/my-events" className="sidebar-link">
               <FiCalendar size={20} />
               <span>My Events</span>
             </NavLink>
+
             <NavLink to="/attending" className="sidebar-link">
               <FiCheckSquare size={20} />
               <span>Attending</span>
             </NavLink>
+
+            <NavLink to="/messages" className="sidebar-link">
+              <span className="icon-badge">
+                <FiMessageSquare size={20} />
+                {hasUnread && <span className="red-dot" />}
+              </span>
+              <span>Messages</span>
+            </NavLink>
+
             <NavLink to="/profile" className="sidebar-link">
               <FiUser size={20} />
               <span>Profile</span>
