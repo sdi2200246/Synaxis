@@ -1,7 +1,7 @@
 // in pages/Myevents.tsx
 import { useState, useEffect } from 'react'
 import type { Event } from '../types'
-import { getOrganizerEvents, deleteEvent , publishEvent } from '../api/events'
+import { getOrganizerEvents, deleteEvent , publishEvent , cancelEvent} from '../api/events'
 import { OrganizerEventCard } from '../components/events/OganizerCard'
 import { CreateEventForm } from '../components/forms/NewEventForm'
 import { EditEventForm } from '../components/forms/EditEventForm'
@@ -20,6 +20,10 @@ export function MyEventsPage() {
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [publishTarget, setPublishTarget] = useState<Event | null>(null)
   const [publishSubmitting, setPublishSubmitting] = useState(false)
+
+  const [cancelTarget, setCancelTarget] = useState<Event | null>(null)
+  const [cancelSubmitting, setCancelSubmitting] = useState(false)
+  
   const navigate = useNavigate()
   const {userId} = useAuth()
 
@@ -54,6 +58,25 @@ export function MyEventsPage() {
     } finally {
       setDeleteSubmitting(false)
     }
+  }
+
+  async function handleConfirmCancel() {
+      if (!cancelTarget) return
+      setCancelSubmitting(true)
+      try {
+        await cancelEvent(cancelTarget.id)
+        setCancelTarget(null)
+        setSuccessMessage('Event cancelled successfully')
+        fetchEvents()
+        setTimeout(() => setSuccessMessage(''), 3000)
+      } catch (err: any) {
+        const msg = err.response?.data?.error || 'Failed to cancel event'
+        setError(msg)
+        setCancelTarget(null)
+        setTimeout(() => setError(''), 3000)
+      } finally {
+        setCancelSubmitting(false)
+      }
   }
 
   async function handleConfirmPublish() {
@@ -96,7 +119,7 @@ export function MyEventsPage() {
             onEdit={e => setEditTarget(e)}
             onTickets={e => navigate(`/events/${e.id}/tickets`, { state: { title: e.title, capacity: e.capacity } })}
             onPublish={e => setPublishTarget(e)}
-            onCancel={e => console.log('cancel', e.id)}
+            onCancel={e => setCancelTarget(e)}
             onDelete={e => setDeleteTarget(e)}
             onBookings={e => navigate(`/my-events/${e.id}/bookings`, {
               state: { title: e.title, capacity: e.capacity, venue: e.venue?.name }
@@ -130,6 +153,19 @@ export function MyEventsPage() {
             cancelClassName="browse-detail__btn"
           />
         )}
+
+        {cancelTarget && (
+            <ConfirmDialog
+              title="Cancel Event"
+              body={`"${cancelTarget.title}" will be cancelled and all attendees will be notified via a direct message. This cannot be undone.`}
+              confirmLabel={cancelSubmitting ? 'Cancelling…' : 'Cancel Event'}
+              loading={cancelSubmitting}
+              onConfirm={handleConfirmCancel}
+              onCancel={() => setCancelTarget(null)}
+              confirmClassName="browse-detail__confirm-btn browse-detail__confirm-btn--danger"
+              cancelClassName="browse-detail__btn"
+            />
+          )}
 
       {showCreateForm && (
         <CreateEventForm

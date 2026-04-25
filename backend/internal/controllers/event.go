@@ -115,6 +115,7 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
 		VenueID: input.VenueID,
 		Description: input.Description,
 		CategoryIDs: input.CategoryIDs,
+        Status: input.Status,
 	})
     if err != nil {
 		h.handleError(c , err)
@@ -122,24 +123,6 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
     }
     c.Status(http.StatusNoContent)
 }
-
-func (h *EventsHandler) PublishEvent(c *gin.Context) {
-
-   	eventID, err := uuid.Parse(c.Param("id"))
-    if err != nil {
-        c.JSON(400, gin.H{"error": "invalid id"})
-        return
-    }
-	
-    err = h.eventsService.Publish(c.Request.Context(), eventID)
-    if err != nil {
-		h.handleError(c , err)
-        return
-    }
-
-    c.Status(http.StatusNoContent)
-}
-
 
 func (h *EventsHandler) List(c *gin.Context) {
     var req SearchEventRequest

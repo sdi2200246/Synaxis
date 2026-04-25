@@ -43,8 +43,6 @@ type EventRepository interface {
 	GetbyFilter(ctx context.Context, filter entities.EventFilter) ([]entities.Event, bool, error)
 	GetAll(ctx context.Context) ([]entities.Event, error)
 	Delete(ctx context.Context, eventID uuid.UUID) error
-	// Publish(ctx context.Context, id uuid.UUID) error 
-	// Cancel(ctx context.Context, id uuid.UUID) error
 }
 
 
@@ -72,4 +70,11 @@ type MessagesRepository interface {
 	GetMessagesByConversationID(ctx context.Context,conversationID uuid.UUID,) ([]entities.Message, error)
 	MarkAsReadUpToMessage(ctx context.Context,conversationID uuid.UUID,userID uuid.UUID,lastMessageTime time.Time,) error 
 	GetMessageByID(ctx context.Context, id uuid.UUID) (entities.Message, error)
+	CreateConversationWithMessage(ctx context.Context,conv entities.Conversation,organizer uuid.UUID,attendee uuid.UUID,msg entities.Message,) error
+	GetByBookingID(ctx context.Context, bookingID uuid.UUID) (entities.Conversation, error)
+}
+
+type EventBus interface{
+	Publish(topic string, event any)
+	Subscribe(topic string) chan any
 }

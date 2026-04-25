@@ -82,5 +82,9 @@ export async function deleteEvent(id: string): Promise<void> {
 }
 
 export async function publishEvent(id: string): Promise<void> {
-  await api.post(`/events/${id}/publish`)
+     await api.patch(`/events/${id}`, { status: 'PUBLISHED' })
+}
+
+export async function cancelEvent(id: string): Promise<void> {
+  await api.patch(`/events/${id}`, { status: 'CANCELLED' })
 }

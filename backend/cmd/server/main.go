@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/sdi2200246/synaxis/internal/controllers"
+	"github.com/sdi2200246/synaxis/internal/infastructure"
 	"github.com/sdi2200246/synaxis/internal/middleware"
 	"github.com/sdi2200246/synaxis/internal/repos"
 	"github.com/sdi2200246/synaxis/internal/services"
@@ -23,7 +24,10 @@ func main() {
         log.Fatal(err)
     }
     defer pool.Close()
-    
+
+    eventBus := infastructure.NewEventBus();
+
+
     categoryRepo := repos.NewCategoryRepo(pool)
     userRepo     := repos.NewUserRepo(pool)
     eventRepo    := repos.NewEventRepo(pool)
@@ -36,10 +40,13 @@ func main() {
     authService  := services.NewAuthService(userRepo, "jason_derullo")
     venueService := services.NewVenueService(venueRepo)
 
-    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo)
+    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo , eventBus)
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
     ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
     messagesService := services.NewMessageService(messagesRepo , bookingRepo , eventRepo)
+    eventCancelationService := services.NewCancelEventService(eventRepo , bookingRepo , messagesRepo , eventBus)
+    eventCancelationService.Subscribe()
+
 
     userHandler        := controllers.NewUserHandler(userService)
     authHandler        := middleware.NewAuthHandler(authService)
@@ -84,7 +91,6 @@ func main() {
         auth.GET("/users/:id", userHandler.GetByID)
 
         auth.POST("/events", eventsHandler.Create)
-        auth.POST("/events/:id/publish" , eventsHandler.PublishEvent)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
         auth.DELETE("/events/:id" , eventsHandler.Delete)
        
@@ -100,7 +106,7 @@ func main() {
 
 
         auth.POST("/conversations" , messagesHandler.CreateConversation)
-        auth.GET("conversations" , messagesHandler.ListUserConversations)
+        auth.GET("/conversations" , messagesHandler.ListUserConversations)
         auth.PATCH("/conversations/:id/read", messagesHandler.MarkConversationAsRead)
         auth.POST("/conversations/:id/messages" , messagesHandler.CreateMessage)
         auth.GET("/conversations/:id/messages" , messagesHandler.GetConversationMessages)
