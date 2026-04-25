@@ -124,6 +124,50 @@ func (r *MessagesRepo) Create(ctx context.Context, msg entities.Message) error {
     return nil
 }
 
+func (r *MessagesRepo) CreateConversationWithMessage(ctx context.Context,conv entities.Conversation,organizer uuid.UUID,attendee uuid.UUID,msg entities.Message,) error {
+    tx, err := r.db.Begin(ctx)
+    if err != nil {
+        return apperr.ErrInternal
+    }
+    defer tx.Rollback(ctx)
+
+    _, err = tx.Exec(ctx, `
+        INSERT INTO conversation (id, booking_id, created_at)
+        VALUES ($1, $2, $3)
+    `, conv.ID, conv.BookingID, conv.CreatedAt)
+    if err != nil {
+        var pgErr *pgconn.PgError
+        if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+            return apperr.ErrConflict
+        }
+        slog.Error("CreateConversationWithMessage: insert conversation failed",
+            "error", err, "conversation_id", conv.ID)
+        return apperr.ErrInternal
+    }
+
+    _, err = tx.Exec(ctx, `
+        INSERT INTO conversation_participant (conversation_id, user_id, role)
+        VALUES ($1, $2, 'organizer'), ($1, $3, 'attendee')
+    `, conv.ID, organizer, attendee)
+    if err != nil {
+        slog.Error("CreateConversationWithMessage: insert participants failed",
+            "error", err, "conversation_id", conv.ID)
+        return apperr.ErrInternal
+    }
+
+    _, err = tx.Exec(ctx, `
+        INSERT INTO message (id, conversation_id, sender_id, content, is_read, status, sent_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, msg.ID, conv.ID, msg.SenderID, msg.Content, msg.IsRead, msg.Status, msg.SentAt)
+    if err != nil {
+        slog.Error("CreateConversationWithMessage: insert message failed",
+            "error", err, "conversation_id", conv.ID)
+        return apperr.ErrInternal
+    }
+
+    return tx.Commit(ctx)
+}
+
 
 func (r *MessagesRepo) UpdateMessage(ctx context.Context, id uuid.UUID, mu entities.MessageUpdate) error {
     t, err := tqla.New(tqla.WithPlaceHolder(tqla.Dollar))
@@ -261,6 +305,26 @@ func (r *MessagesRepo) GetUserConversations(ctx context.Context, userID uuid.UUI
 	}
 
 	return conversations, nil
+}
+
+func (r *MessagesRepo) GetByBookingID(ctx context.Context, bookingID uuid.UUID) (entities.Conversation, error) {
+	var c entities.Conversation
+	err := r.db.QueryRow(ctx, `
+		SELECT id, booking_id, created_at
+		FROM conversation
+		WHERE booking_id = $1
+	`, bookingID).Scan(&c.ID, &c.BookingID, &c.CreatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entities.Conversation{}, apperr.ErrNotFound
+		}
+		slog.Error("MessagesRepo.GetByBookingID failed",
+			"error", err,
+			"booking_id", bookingID,
+		)
+		return entities.Conversation{}, apperr.ErrInternal
+	}
+	return c, nil
 }
 
 func (r *MessagesRepo) GetParticipantsByConversationID(ctx context.Context,conversationID uuid.UUID,) ([]entities.ConvParticipant, error) {

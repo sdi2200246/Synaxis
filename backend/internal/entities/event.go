@@ -52,6 +52,12 @@ func (e Event) ApprovePublication()error{
     return nil
 }
 
+func (e Event) ApproveCancellation() error {
+    if  e.Status != "PUBLISHED"{
+        return  apperr.ErrInvalidEventStatus
+    }
+    return nil
+}
 
 type UpdateEvent struct{
     Title       *string
