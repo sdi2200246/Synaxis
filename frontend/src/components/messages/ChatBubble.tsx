@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Message } from '../../types'
+import { ConfirmDialog } from '../ConfirmDialogue'
  
 interface Props {
   message: Message
@@ -154,24 +155,20 @@ export function ChatBubble({ message, isOutgoing, onUpdate }: Props) {
  
       {/* Delete confirmation dialog */}
       {deleteDialog !== null && (
-        <div className="msg-dialog-overlay" onClick={() => setDeleteDialog(null)}>
-          <div className="msg-dialog" onClick={e => e.stopPropagation()}>
-            <h3 className="msg-dialog-title">Delete message?</h3>
-            <p className="msg-dialog-body">
-              {deleteDialog === 1
-                ? 'This message will be removed from your view only. Others can still see it.'
-                : 'This message will be permanently deleted for everyone in this conversation.'}
-            </p>
-            <div className="msg-dialog-actions">
-              <button className="msg-dialog-cancel" onClick={() => setDeleteDialog(null)}>
-                Cancel
-              </button>
-              <button className="msg-dialog-confirm" onClick={handleDeleteConfirm}>
-                {deleteDialog === 1 ? 'Delete for me' : 'Delete for everyone'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="Delete message?"
+          body={deleteDialog === 1
+            ? 'This message will be removed from your view only. Others can still see it.'
+            : 'This message will be permanently deleted for everyone in this conversation.'}
+          confirmLabel={deleteDialog === 1 ? 'Delete for me' : 'Delete for everyone'}
+          loading={loading}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteDialog(null)}
+          overlayClassName="msg-dialog-overlay"
+          dialogClassName="msg-dialog"
+          confirmClassName="msg-dialog-confirm"
+          cancelClassName="msg-dialog-cancel"
+        />
       )}
     </>
   )

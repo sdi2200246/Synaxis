@@ -4,6 +4,7 @@ import { FiMapPin, FiCalendar, FiMessageSquare } from 'react-icons/fi'
 import { EventMap } from '../events/Map'
 import { createConversation } from '../../api/messages'
 import type { UserBooking } from '../../api/bookings'
+import { ConfirmDialog } from '../ConfirmDialogue'
 import './Bookings.css'
  
 interface UserBookingCardProps {
@@ -119,35 +120,21 @@ export function UserBookingCard({
         )}
       </div>
  
-      {/* Confirmation dialog */}
+ 
       {showDialog && (
-        <div className="ub-dialog-overlay" onClick={() => !creating && setShowDialog(false)}>
-          <div className="ub-dialog" onClick={e => e.stopPropagation()}>
-            <h3 className="ub-dialog-title">Start a conversation?</h3>
-            <p className="ub-dialog-body">
-              This will open a direct message thread with the organizer of{' '}
-              <strong>{booking.event_title}</strong>. You can use it to ask questions
-              about your booking.
-            </p>
-            {error && <p className="ub-dialog-error">{error}</p>}
-            <div className="ub-dialog-actions">
-              <button
-                className="ub-dialog-cancel"
-                onClick={() => setShowDialog(false)}
-                disabled={creating}
-              >
-                Cancel
-              </button>
-              <button
-                className="ub-dialog-confirm"
-                onClick={handleCreateConversation}
-                disabled={creating}
-              >
-                {creating ? 'Starting…' : 'Start conversation'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="Start a conversation?"
+          body={`This will open a direct message thread with the organizer of ${booking.event_title}. You can use it to ask questions about your booking.`}
+          confirmLabel={creating ? 'Starting…' : 'Start conversation'}
+          loading={creating}
+          error={error || undefined}
+          onConfirm={handleCreateConversation}
+          onCancel={() => setShowDialog(false)}
+          overlayClassName="ub-dialog-overlay"
+          dialogClassName="ub-dialog"
+          confirmClassName="ub-dialog-confirm"
+          cancelClassName="ub-dialog-cancel"
+        />
       )}
     </>
   )

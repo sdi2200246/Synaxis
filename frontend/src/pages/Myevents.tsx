@@ -1,10 +1,11 @@
 // in pages/Myevents.tsx
 import { useState, useEffect } from 'react'
 import type { Event } from '../types'
-import { getOrganizerEvents, deleteEvent } from '../api/events'
+import { getOrganizerEvents, deleteEvent , publishEvent } from '../api/events'
 import { OrganizerEventCard } from '../components/events/OganizerCard'
 import { CreateEventForm } from '../components/forms/NewEventForm'
 import { EditEventForm } from '../components/forms/EditEventForm'
+import { ConfirmDialog } from '../components/ConfirmDialogue'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -15,11 +16,12 @@ export function MyEventsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-  const navigate = useNavigate()
-  const {userId} = useAuth()
-
   const [deleteTarget, setDeleteTarget] = useState<Event | null>(null)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [publishTarget, setPublishTarget] = useState<Event | null>(null)
+  const [publishSubmitting, setPublishSubmitting] = useState(false)
+  const navigate = useNavigate()
+  const {userId} = useAuth()
 
   async function fetchEvents() {
     try {
@@ -54,6 +56,25 @@ export function MyEventsPage() {
     }
   }
 
+  async function handleConfirmPublish() {
+      if (!publishTarget) return
+      setPublishSubmitting(true)
+      try {
+        await publishEvent(publishTarget.id)
+        setPublishTarget(null)
+        setSuccessMessage('Event published successfully')
+        fetchEvents()
+        setTimeout(() => setSuccessMessage(''), 3000)
+      } catch (err: any) {
+        const msg = err.response?.data?.error || 'Failed to publish event'
+        setError(msg)
+        setPublishTarget(null)
+        setTimeout(() => setError(''), 3000)
+      } finally {
+        setPublishSubmitting(false)
+      }
+  }
+
   return (
     <div className="page">
       <div className="page-header">
@@ -74,7 +95,7 @@ export function MyEventsPage() {
             event={event}
             onEdit={e => setEditTarget(e)}
             onTickets={e => navigate(`/events/${e.id}/tickets`, { state: { title: e.title, capacity: e.capacity } })}
-            onPublish={e => console.log('publish', e.id)}
+            onPublish={e => setPublishTarget(e)}
             onCancel={e => console.log('cancel', e.id)}
             onDelete={e => setDeleteTarget(e)}
             onBookings={e => navigate(`/my-events/${e.id}/bookings`, {
@@ -85,39 +106,30 @@ export function MyEventsPage() {
       </div>
 
       {deleteTarget && (
-        <div className="browse-detail-overlay" onClick={() => !deleteSubmitting && setDeleteTarget(null)}>
-          <div className="browse-detail" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
-            <div className="browse-detail__content">
-              <h2 className="browse-detail__title">Delete Event</h2>
-              <div className="browse-detail__confirm">
-                <p className="browse-detail__confirm-text">
-                  Delete <strong>{deleteTarget.title}</strong>?
-                </p>
-                <p className="browse-detail__confirm-warning">
-                  This action cannot be undone.
-                </p>
-                <div className="browse-detail__confirm-actions">
-                  <button
-                    className="browse-detail__btn"
-                    onClick={() => setDeleteTarget(null)}
-                    disabled={deleteSubmitting}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="browse-detail__confirm-btn"
-                    onClick={handleConfirmDelete}
-                    disabled={deleteSubmitting}
-                    style={{ background: '#ef4444' }}
-                  >
-                    {deleteSubmitting ? 'Deleting…' : 'Delete'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+          <ConfirmDialog
+            title="Delete Event"
+            body={`Delete "${deleteTarget.title}"? This action cannot be undone.`}
+            confirmLabel={deleteSubmitting ? 'Deleting…' : 'Delete'}
+            loading={deleteSubmitting}
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setDeleteTarget(null)}
+            confirmClassName="browse-detail__confirm-btn browse-detail__confirm-btn--danger"
+            cancelClassName="browse-detail__btn"
+          />
+        )}
+
+      {publishTarget && (
+          <ConfirmDialog
+            title="Publish Event"
+            body={`"${publishTarget.title}" will be visible to all users and open for bookings.Events can be cancelled after this action.`}
+            confirmLabel={publishSubmitting ? 'Publishing…' : 'Publish'}
+            loading={publishSubmitting}
+            onConfirm={handleConfirmPublish}
+            onCancel={() => setPublishTarget(null)}
+            confirmClassName="browse-detail__confirm-btn"
+            cancelClassName="browse-detail__btn"
+          />
+        )}
 
       {showCreateForm && (
         <CreateEventForm

@@ -123,6 +123,23 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
     c.Status(http.StatusNoContent)
 }
 
+func (h *EventsHandler) PublishEvent(c *gin.Context) {
+
+   	eventID, err := uuid.Parse(c.Param("id"))
+    if err != nil {
+        c.JSON(400, gin.H{"error": "invalid id"})
+        return
+    }
+	
+    err = h.eventsService.Publish(c.Request.Context(), eventID)
+    if err != nil {
+		h.handleError(c , err)
+        return
+    }
+
+    c.Status(http.StatusNoContent)
+}
+
 
 func (h *EventsHandler) List(c *gin.Context) {
     var req SearchEventRequest
@@ -248,15 +265,6 @@ func (h *EventsHandler) GetEventCategories(c *gin.Context) {
 	c.JSON(200, ToCategoryListResponse(categories))
 }
 
-func (h *EventsHandler) handleError(c *gin.Context, err error) {
-    switch {
-    case errors.Is(err, apperr.ErrConflict):
-        c.JSON(409, gin.H{"error": err.Error(), "fields": "starting_time"})
-    default:
-        apperr.Handle(c, err)
-    }
-}
-
 func (h *EventsHandler) GetByID(c *gin.Context) {
 	eventID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -271,4 +279,38 @@ func (h *EventsHandler) GetByID(c *gin.Context) {
 	}
 
 	c.JSON(200, ToEventResponse(event))
+}
+
+
+func (h *EventsHandler) handleError(c *gin.Context, err error) {
+    switch {
+    case errors.Is(err, apperr.ErrCannotPublishWithoutTickets):
+        c.JSON(400, gin.H{
+            "error":  err.Error(),
+            "field":  "tickets",
+            "reason": "no_tickets",
+        })
+
+    case errors.Is(err, apperr.ErrCannotPublishPastEvent):
+        c.JSON(400, gin.H{
+            "error":  err.Error(),
+            "field":  "start_datetime",
+            "reason": "event_in_past",
+        })
+
+    case errors.Is(err, apperr.ErrInvalidEventStatus):
+        c.JSON(409, gin.H{
+            "error":  err.Error(),
+            "field":  "status",
+            "reason": "invalid_transition",
+        })
+
+    case errors.Is(err, apperr.ErrConflict):
+        c.JSON(409, gin.H{
+            "error": err.Error(),
+        })
+
+    default:
+        apperr.Handle(c, err)
+    }
 }

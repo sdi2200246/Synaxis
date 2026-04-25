@@ -1,9 +1,13 @@
 package entities
 
 import (
-    "time"
-    "github.com/google/uuid"
+	"time"
+
+	"github.com/google/uuid"
+	apperr "github.com/sdi2200246/synaxis/internal/error"
 )
+
+type EventStatus string
 
 type Event struct {
     ID            uuid.UUID `db:"id"`
@@ -34,6 +38,20 @@ func (e Event) AllowsTicketModification() bool {
 func (e Event) HasCapacityFor(currentSum, additional int) bool {
     return currentSum + additional <= e.Capacity
 }
+
+func (e Event) ApprovePublication()error{
+    
+    if time.Now().After(e.StartDatetime){
+        return  apperr.ErrCannotPublishPastEvent
+    }
+
+    if e.Status != "DRAFT"{
+        return  apperr.ErrInvalidEventStatus
+    }
+
+    return nil
+}
+
 
 type UpdateEvent struct{
     Title       *string
