@@ -80,3 +80,7 @@ export async function updateEvent(id: string, event: Partial<Event>): Promise<vo
 export async function deleteEvent(id: string): Promise<void> {
   await api.delete(`/events/${id}`)
 }
+
+export async function publishEvent(id: string): Promise<void> {
+  await api.post(`/events/${id}/publish`)
+}

@@ -36,7 +36,7 @@ func main() {
     authService  := services.NewAuthService(userRepo, "jason_derullo")
     venueService := services.NewVenueService(venueRepo)
 
-    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo)
+    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo)
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
     ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
     messagesService := services.NewMessageService(messagesRepo , bookingRepo , eventRepo)
@@ -84,6 +84,7 @@ func main() {
         auth.GET("/users/:id", userHandler.GetByID)
 
         auth.POST("/events", eventsHandler.Create)
+        auth.POST("/events/:id/publish" , eventsHandler.PublishEvent)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
         auth.DELETE("/events/:id" , eventsHandler.Delete)
        

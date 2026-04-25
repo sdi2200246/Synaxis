@@ -72,10 +72,11 @@ type EventService struct{
 	eventRepo interfaces.EventRepository
     categoryProvider interfaces.CategoriesRepo
     bookingsProvider interfaces.BookingRepository
+	ticketsProvider interfaces.TicketTypeRepository
 }
 
-func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,bk  interfaces.BookingRepository)*EventService{
-	return  &EventService{eventRepo:r , categoryProvider: cr, bookingsProvider: bk}
+func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,br  interfaces.BookingRepository , tr interfaces.TicketTypeRepository)*EventService{
+	return  &EventService{eventRepo:r , categoryProvider: cr, bookingsProvider: br , ticketsProvider: tr}
 }
 
 func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , event CreateEventInput)error{
@@ -217,6 +218,33 @@ func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
 
     return s.eventRepo.Delete(ctx, eventID)
 }
+
+
+func (s *EventService) Publish(ctx context.Context , eventID uuid.UUID) error{
+
+	event , err := s.eventRepo.GetByID(ctx , eventID)
+	if err != nil{
+		return err
+	}
+	published_tickets , err := s.ticketsProvider.SumQuantityByEventID(ctx , eventID)
+	if err != nil{
+		return err
+	}
+
+	if published_tickets <= 0{
+		return  apperr.ErrCannotPublishWithoutTickets
+	} 
+
+	if err := event.ApprovePublication(); err != nil{
+		return err
+	}
+
+	status := "PUBLISHED"
+	updateEvent := entities.UpdateEvent{Status: &status}
+	return  s.eventRepo.Update(ctx , eventID , updateEvent)
+	
+}
+
 
 func (s *EventService) GetByID(ctx context.Context, id uuid.UUID) (Event, error) {
 	event, err := s.eventRepo.GetByID(ctx, id)
