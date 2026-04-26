@@ -19,9 +19,3 @@ var (
     ErrRejected          = errors.New("registration was rejected by admin")
     ErrInvalidPassword   = errors.New("invalid username or password")
 )
-
-var (
-    ErrCannotPublishWithoutTickets = errors.New("cannot publish event without tickets")
-    ErrCannotPublishPastEvent      = errors.New("cannot publish an event in the past")
-    ErrInvalidEventStatus          = errors.New("invalid event status")
-)

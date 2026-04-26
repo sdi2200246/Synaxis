@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -223,18 +222,7 @@ func (h *MessagesHandler) MarkConversationAsRead(c *gin.Context) {
 
 
 func (h *MessagesHandler) handleError(c *gin.Context, err error) {
-	switch {
-	case errors.Is(err, apperr.ErrForbidden):
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
-	case errors.Is(err, apperr.ErrConflict):
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-	case errors.Is(err, apperr.ErrNotFound):
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	case errors.Is(err, apperr.ErrBadInput):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	default:
-		apperr.Handle(c, err)
-	}
+	apperr.Handle(c, err)
 }
 
 func getUserIDFromContext(c *gin.Context) (uuid.UUID, bool) {

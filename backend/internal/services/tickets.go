@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sdi2200246/synaxis/internal/entities"
-	apperr "github.com/sdi2200246/synaxis/internal/error"
 	"github.com/sdi2200246/synaxis/internal/interfaces"
 )
 
@@ -51,16 +50,16 @@ func (s *TicketTypeService) CreateTicketType(ctx context.Context, input CreateTi
 	if err != nil {
 		return err
 	}
-	if !event.AllowsTicketModification() {
-		return apperr.ErrConflict
+	if err = event.AllowsTicketModification() ; err != nil {
+		return err
 	}
 	currentSum, err := s.ticketTypeRepo.SumQuantityByEventID(ctx, input.EventID)
 	if err != nil {
 		return err
 	}
 
-	if !event.HasCapacityFor(currentSum, input.Quantity) {
-    	return apperr.ErrConflict
+	if err = event.HasCapacityFor(currentSum, input.Quantity) ; err != nil {
+    	return err
 	}
 
 	tt := entities.TicketType{
@@ -81,18 +80,21 @@ func (s *TicketTypeService) UpdateTicketType(ctx context.Context, ticketID, even
 		return err
 	}
 	if input.Quantity != nil {
-		currentSum, err := s.ticketTypeRepo.SumQuantityByEventID(ctx, eventID)
+		releasedTickets, err := s.ticketTypeRepo.SumQuantityByEventID(ctx, eventID)
 		if err != nil {
 			return err
 		}
-		current, err := s.ticketTypeRepo.GetByID(ctx, ticketID)
+		ticketType, err := s.ticketTypeRepo.GetByID(ctx, ticketID)
 		if err != nil {
 			return err
 		}
-		adjustedSum := currentSum - current.Quantity
-		if !event.HasCapacityFor(adjustedSum, *input.Quantity) {
-			return apperr.ErrConflict
+		if err = ticketType.CanSetQuantity(*input.Quantity); err != nil{
+			return err
 		}
+		adjustedSum := releasedTickets - ticketType.Quantity
+		if err = event.HasCapacityFor(adjustedSum, *input.Quantity) ; err != nil {
+			return err 
+		}	
 	}
 
 	update := entities.UpdateTicketType{

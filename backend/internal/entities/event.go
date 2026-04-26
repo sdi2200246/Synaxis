@@ -2,7 +2,7 @@ package entities
 
 import (
 	"time"
-
+    "fmt"
 	"github.com/google/uuid"
 	apperr "github.com/sdi2200246/synaxis/internal/error"
 )
@@ -23,38 +23,49 @@ type Event struct {
     CreatedAt     time.Time `db:"created_at"`
 }
 
-func (e Event) ApproveDeletion()bool{
-    return e.Status != "CANCELLED"
-}
-
-func (e Event) IsBookingAvailable()bool{
-    return e.Status == "PUBLISHED"
-}
-
-func (e Event) AllowsTicketModification() bool {
-    return e.Status == "DRAFT" || e.Status == "PUBLISHED"
-}
-
-func (e Event) HasCapacityFor(currentSum, additional int) bool {
-    return currentSum + additional <= e.Capacity
-}
-
-func (e Event) ApprovePublication()error{
-    
-    if time.Now().After(e.StartDatetime){
-        return  apperr.ErrCannotPublishPastEvent
+func (e Event) ApproveDeletion() error {
+    if e.Status == "CANCELLED" {
+        return fmt.Errorf("cancelled events cannot be deleted: %w", apperr.ErrConflict)
     }
+    return nil
+}
 
-    if e.Status != "DRAFT"{
-        return  apperr.ErrInvalidEventStatus
+func (e Event) IsBookingAvailable() error {
+    if e.Status != "PUBLISHED" {
+        return fmt.Errorf("bookings are not available for %s events: %w", e.Status, apperr.ErrConflict)
     }
+    return nil
+}
 
+func (e Event) AllowsTicketModification() error {
+    if e.Status != "DRAFT" && e.Status != "PUBLISHED" {
+        return fmt.Errorf("cannot modify tickets for %s events: %w", e.Status, apperr.ErrConflict)
+    }
+    return nil
+}
+
+func (e Event) HasCapacityFor(currentSum, additional int) error {
+    if currentSum+additional > e.Capacity {
+        return fmt.Errorf("adding %d tickets would exceed event capacity of %d (current: %d): %w",
+            additional, e.Capacity, currentSum, apperr.ErrConflict)
+    }
+    return nil
+}
+
+func (e Event) ApprovePublication() error {
+    if time.Now().After(e.StartDatetime) {
+        return fmt.Errorf("event starts at %s which is in the past: %w",
+            e.StartDatetime.Format(time.RFC3339), apperr.ErrConflict)
+    }
+    if e.Status != "DRAFT" {
+        return fmt.Errorf("cannot publish a %s event: %w", e.Status, apperr.ErrConflict)
+    }
     return nil
 }
 
 func (e Event) ApproveCancellation() error {
-    if  e.Status != "PUBLISHED"{
-        return  apperr.ErrInvalidEventStatus
+    if e.Status != "PUBLISHED" {
+        return fmt.Errorf("cannot cancel a %s event: %w", e.Status, apperr.ErrConflict)
     }
     return nil
 }

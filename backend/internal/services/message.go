@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -81,7 +82,7 @@ func (s *MessageService) CreateConversation(ctx context.Context, input CreateCon
 	}
 
 	if booking.UserID != input.AttendeeID || event.OrganizerID != input.OrganizerID {
-		return uuid.Nil, apperr.ErrForbidden
+		return uuid.Nil, fmt.Errorf("user is not a participant in this booking: %w", apperr.ErrForbidden)
 	}
 
 	conv := entities.Conversation{
@@ -121,17 +122,17 @@ func (s *MessageService) UpdateMessage(ctx context.Context, id uuid.UUID, caller
 	}
 
 	if msg.SenderID != callerID {
-		return apperr.ErrForbidden
+    	return fmt.Errorf("only the message sender can modify this message: %w", apperr.ErrForbidden)
 	}
 
 	update := entities.MessageUpdate{}
 
 	if input.Content != nil {
 		if err := msg.CanEditContent(callerID); err != nil {
-			return apperr.ErrBadInput
+			return err
 		}
 		if err := msg.ValidateContent(*input.Content); err != nil {
-			return apperr.ErrBadInput
+			return err
 		}
 		trimmed := strings.TrimSpace(*input.Content)
 		update.Content = &trimmed
@@ -139,7 +140,7 @@ func (s *MessageService) UpdateMessage(ctx context.Context, id uuid.UUID, caller
 
 	if input.Delete != nil {
 		if err := msg.CanTransitionTo(*input.Delete); err != nil {
-			return apperr.ErrBadInput
+			return err
 		}
 		update.Status = input.Delete
 	}
@@ -162,7 +163,7 @@ func (s *MessageService) GetConversationMessages(ctx context.Context,conversatio
 	}
 
 	if !isParticipant {
-		return nil, apperr.ErrForbidden
+		return nil, fmt.Errorf("Only participants can read messages %w" , apperr.ErrForbidden)
 	}
 
 	messages, err := s.messagesRepo.GetByConversationID(ctx, conversationID)

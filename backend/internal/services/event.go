@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -77,19 +78,32 @@ type EventService struct{
     categoryProvider interfaces.CategoriesRepo
     bookingsProvider interfaces.BookingRepository
 	ticketsProvider interfaces.TicketTypeRepository
+	venuesProvider interfaces.VenuesRepository
 	eventBus 		interfaces.EventBus
 }
 
-func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,br  interfaces.BookingRepository , tr interfaces.TicketTypeRepository , eb interfaces.EventBus)*EventService{
+func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,br  interfaces.BookingRepository , tr interfaces.TicketTypeRepository , eb interfaces.EventBus , vr interfaces.VenuesRepository)*EventService{
 	return  &EventService{
 				eventRepo:r,
 				categoryProvider: cr,
 				bookingsProvider: br,
 				ticketsProvider: tr,
+				venuesProvider: vr,
 				eventBus: eb,
 			}
 }
 func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , event CreateEventInput)error{
+
+	if time.Now().After(event.StartDatetime){
+		return  fmt.Errorf("Event must start after current date : %w" , apperr.ErrBadInput)
+	}
+	venue, err := s.venuesProvider.GetByID(ctx, event.VenueID)
+	if err != nil {
+		return err
+	}
+	if err := venue.HasCapacityFor(event.Capacity); err != nil {
+		return err
+	}
 
 	newEvent := entities.Event{
         ID:           uuid.New(),
@@ -104,12 +118,7 @@ func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , ev
 		EndDatetime:  event.EndDatetime,
         CreatedAt:    time.Now(),
     }	
-    err := s.eventRepo.CreateWithCategories(ctx , newEvent , event.CategoryIDs)
-
-    if err != nil{
-        return apperr.ErrInternal
-    }
-    return nil
+    return  s.eventRepo.CreateWithCategories(ctx , newEvent , event.CategoryIDs)
 }
 
 func (s *EventService) UpdateEvent(ctx context.Context, eventID uuid.UUID, input UpdateEventInput) error {
@@ -123,9 +132,9 @@ func (s *EventService) UpdateEvent(ctx context.Context, eventID uuid.UUID, input
 			return err
 		}
 
-		if publishedTickets <= 0{
-			return  apperr.ErrCannotPublishWithoutTickets
-		} 
+		if publishedTickets <= 0 {
+			return fmt.Errorf("cannot publish event with out released tickets :%w", apperr.ErrConflict)
+		}
 
 		if err := event.ApprovePublication(); err != nil{
 			return err
@@ -252,11 +261,11 @@ func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
     }
 
     if bookingsCount > 0 {
-        return  apperr.ErrConflict
-    }
+    	return fmt.Errorf("cannot delete event with %d existing bookings:%w", bookingsCount , apperr.ErrConflict)
+	}
 
-    if !event.ApproveDeletion(){
-        return apperr.ErrConflict
+    if err = event.ApproveDeletion() ; err != nil{
+        return err
     }
 
     return s.eventRepo.Delete(ctx, eventID)

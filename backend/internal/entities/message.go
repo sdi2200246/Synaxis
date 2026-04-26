@@ -1,11 +1,12 @@
 package entities
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	apperr "github.com/sdi2200246/synaxis/internal/error"
 )
 
 type Message struct {
@@ -21,32 +22,32 @@ type Message struct {
 
 func (m Message) CanEditContent(callerID uuid.UUID) error {
     if m.SenderID != callerID {
-        return errors.New("only the sender can edit a message")
+        return fmt.Errorf("only sender can modify this message: %w", apperr.ErrForbidden)
     }
     if m.Status != 0 {
-        return errors.New("cannot edit a deleted message")
+        return fmt.Errorf("cannot edit a deleted message: %w" , apperr.ErrConflict)
     }
     return nil
 }
 
 func (m Message) ValidateContent(content string) error {
     if strings.TrimSpace(content) == "" {
-        return errors.New("message content cannot be empty")
+        return fmt.Errorf("message content cannot be empty: %w", apperr.ErrBadInput)
     }
     return nil
 }
 
 func (m Message) CanTransitionTo(target int) error {
-	if target == m.Status {
-		return errors.New("already in this state")
-	}
-	if target < m.Status {
-		return errors.New("cannot reverse a deletion")
-	}
-	if target < 1 || target > 2 {
-		return errors.New("invalid status")
-	}
-	return nil
+    if target < 1 || target > 2 {
+        return fmt.Errorf("invalid deletion status %d, must be 1 or 2: %w", target, apperr.ErrBadInput)
+    }
+    if target == m.Status {
+        return fmt.Errorf("message is already in status %d: %w", target, apperr.ErrConflict)
+    }
+    if target < m.Status {
+        return fmt.Errorf("cannot reverse a deletion from status %d to %d: %w", m.Status, target, apperr.ErrConflict)
+    }
+    return nil
 }
 
 

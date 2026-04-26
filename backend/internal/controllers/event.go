@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"log/slog"
 	"time"
 	"net/http"
@@ -225,7 +224,7 @@ func (h *EventsHandler) Delete(c *gin.Context) {
     }
 
     if err := h.eventsService.Delete(c.Request.Context(), eventID); err != nil {
-         c.JSON(403, gin.H{"error": "This event cannot be deleted"})
+        apperr.Handle(c , err)
         return
     }
 
@@ -264,36 +263,6 @@ func (h *EventsHandler) GetByID(c *gin.Context) {
 	c.JSON(200, ToEventResponse(event))
 }
 
-
 func (h *EventsHandler) handleError(c *gin.Context, err error) {
-    switch {
-    case errors.Is(err, apperr.ErrCannotPublishWithoutTickets):
-        c.JSON(400, gin.H{
-            "error":  err.Error(),
-            "field":  "tickets",
-            "reason": "no_tickets",
-        })
-
-    case errors.Is(err, apperr.ErrCannotPublishPastEvent):
-        c.JSON(400, gin.H{
-            "error":  err.Error(),
-            "field":  "start_datetime",
-            "reason": "event_in_past",
-        })
-
-    case errors.Is(err, apperr.ErrInvalidEventStatus):
-        c.JSON(409, gin.H{
-            "error":  err.Error(),
-            "field":  "status",
-            "reason": "invalid_transition",
-        })
-
-    case errors.Is(err, apperr.ErrConflict):
-        c.JSON(409, gin.H{
-            "error": err.Error(),
-        })
-
-    default:
-        apperr.Handle(c, err)
-    }
+    apperr.Handle(c, err)
 }

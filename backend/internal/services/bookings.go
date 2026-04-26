@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sdi2200246/synaxis/internal/entities"
-	apperr "github.com/sdi2200246/synaxis/internal/error"
 	"github.com/sdi2200246/synaxis/internal/interfaces"
 )
 
@@ -57,12 +56,12 @@ func (s *BookingService) CreateBooking(ctx context.Context, input CreateBookingI
         return err
     }
 
-	if !event.IsBookingAvailable(){
-		return apperr.ErrConflict
+	if err = event.IsBookingAvailable() ; err != nil{
+		return err
 	}
 
-	if !ticket.HasAvailability(input.Quantity) {
-		return apperr.ErrConflict
+	if err = ticket.HasAvailability(input.Quantity) ; err != nil {
+		return err
 	}
 	totalCost := ticket.Price * float64(input.Quantity)
 

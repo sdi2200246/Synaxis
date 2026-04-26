@@ -40,7 +40,7 @@ func main() {
     authService  := services.NewAuthService(userRepo, "jason_derullo")
     venueService := services.NewVenueService(venueRepo)
 
-    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo , eventBus)
+    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo ,eventBus , venueRepo)
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
     ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
     messagesService := services.NewMessageService(messagesRepo , bookingRepo , eventRepo)

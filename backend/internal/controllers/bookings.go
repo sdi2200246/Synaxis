@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sdi2200246/synaxis/internal/error"
@@ -89,12 +88,5 @@ func (h *BookingHandler) GetEventBookings(c *gin.Context) {
 }
 
 func (h *BookingHandler) handleError(c *gin.Context, err error) {
-	switch {
-	case errors.Is(err, apperr.ErrConflict):
-		c.JSON(409, gin.H{"error": "not enough tickets available"})
-	case errors.Is(err, apperr.ErrNotFound):
-		c.JSON(404, gin.H{"error": "ticket type not found"})
-	default:
-		apperr.Handle(c, err)
-	}
+	apperr.Handle(c, err)
 }

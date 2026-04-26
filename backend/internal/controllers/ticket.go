@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -149,10 +148,5 @@ func (h *TicketTypeHandler) GetByID(c *gin.Context) {
 }
 
 func (h *TicketTypeHandler) handleError(c *gin.Context, err error) {
-	switch {
-	case errors.Is(err, apperr.ErrConflict):
-		c.JSON(409, gin.H{"error": "ticket quantity exceeds event capacity"})
-	default:
 		apperr.Handle(c, err)
-	}
 }
