@@ -49,24 +49,19 @@ type SearchEventRequest struct {
 }
 
 type EventsHandler struct {
+    baseHandler *BaseHandler
     eventsService *services.EventService
 }
 
-func NewEventsHandler(eventsService *services.EventService) *EventsHandler {
-    return &EventsHandler{eventsService: eventsService}
+func NewEventsHandler(eventsService *services.EventService , bh *BaseHandler) *EventsHandler {
+    return &EventsHandler{baseHandler: bh , eventsService: eventsService}
 }
 
 func (h *EventsHandler)Create(c *gin.Context) {
 
-    val, exists := c.Get("userID")
-	if !exists {
-		c.JSON(401, gin.H{"error": "unauthorized"})
-		return
-	}
-
-	organizerID, ok := val.(uuid.UUID)
-	if !ok {
-		c.JSON(500, gin.H{"error": "invalid user ID in token"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 
@@ -77,7 +72,7 @@ func (h *EventsHandler)Create(c *gin.Context) {
         return
     }
 
-    err := h.eventsService.CreateEvent(c.Request.Context(), organizerID , services.CreateEventInput{
+    err = h.eventsService.CreateEvent(c.Request.Context(), userID , services.CreateEventInput{
 		Title: input.Title,
 		EventType: input.EventType,
 		VenueID: input.VenueID,
@@ -95,6 +90,12 @@ func (h *EventsHandler)Create(c *gin.Context) {
 }
 func (h *EventsHandler)UpdateEvent(c *gin.Context) {
 
+    callerID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
+		return
+	}
+
    	eventID, err := uuid.Parse(c.Param("id"))
     if err != nil {
         c.JSON(400, gin.H{"error": "invalid id"})
@@ -108,7 +109,7 @@ func (h *EventsHandler)UpdateEvent(c *gin.Context) {
         return
     }
 
-    err = h.eventsService.UpdateEvent(c.Request.Context(), eventID , services.UpdateEventInput{
+    err = h.eventsService.UpdateEvent(c.Request.Context(), callerID , eventID , services.UpdateEventInput{
         Title:     input.Title,
 		EventType: input.EventType,
 		VenueID: input.VenueID,
@@ -129,10 +130,9 @@ func (h *EventsHandler) List(c *gin.Context) {
         c.JSON(400, gin.H{"error": err.Error()})
         return
     }
-
-
+   
     var organizerID *uuid.UUID
-    if req.OrganizerID != nil && *req.OrganizerID != "" {
+    if req.OrganizerID != nil {
         id, err := uuid.Parse(*req.OrganizerID)
         if err != nil {
             c.JSON(400, gin.H{"error": "invalid organizer_id"})
@@ -141,22 +141,7 @@ func (h *EventsHandler) List(c *gin.Context) {
         organizerID = &id
     }
 
-    var callerID uuid.UUID
-    if val, exists := c.Get("userID"); exists {
-        if id, ok := val.(uuid.UUID); ok {
-            callerID = id
-        }
-    }
-
-    isOwner := organizerID != nil && *organizerID == callerID
-
-    var status *string
-    if isOwner {
-        status = req.Status
-    } else {
-        published := "PUBLISHED"
-        status = &published
-    }
+    callerID , _ := h.baseHandler.CallerIDExists(c)
 
     categoryIDs := make([]uuid.UUID, 0, len(req.CategoryIDs))
     for _, s := range req.CategoryIDs {
@@ -170,7 +155,7 @@ func (h *EventsHandler) List(c *gin.Context) {
 
     filter := services.EventFilterInput{
         OrganizerID: organizerID,
-        Status:      status,
+        Status:      req.Status,
         CategoryIDs: categoryIDs,
         Title:       req.Title,
         Description: req.Description,
@@ -184,7 +169,7 @@ func (h *EventsHandler) List(c *gin.Context) {
         Offset:      req.Offset,
     }
 
-    events, hasMore, err := h.eventsService.List(c.Request.Context(), filter)
+    events, hasMore, err := h.eventsService.List(c.Request.Context(), callerID , filter)
     if err != nil {
         apperr.Handle(c, err)
         return
@@ -202,28 +187,13 @@ func (h *EventsHandler) Delete(c *gin.Context) {
         return
     }
 
-    val, exists := c.Get("userID")
-    if !exists {
-        c.JSON(401, gin.H{"error": "unauthorized"})
-        return
-    }
-    userID, ok := val.(uuid.UUID)
-    if !ok {
-        c.JSON(500, gin.H{"error": "invalid user ID in token"})
-        return
-    }
-
-    organizerID, err := h.eventsService.GetEventOrganizer(c.Request.Context(), eventID)
-    if err != nil {
-        apperr.Handle(c, err)
-        return
-    }
-    if organizerID != userID {
-        c.JSON(403, gin.H{"error": "forbidden"})
-        return
-    }
-
-    if err := h.eventsService.Delete(c.Request.Context(), eventID); err != nil {
+    callerID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
+		return
+	}
+   
+    if err := h.eventsService.Delete(c.Request.Context(),callerID ,eventID); err != nil {
         apperr.Handle(c , err)
         return
     }

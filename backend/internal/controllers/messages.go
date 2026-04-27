@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -26,11 +28,12 @@ type UpdateMessageRequest struct{
 }
 
 type MessagesHandler struct {
+	baseHandler *BaseHandler
 	messagesService *services.MessageService
 }
 
-func NewMessagesHandler(messagesService *services.MessageService) *MessagesHandler {
-	return &MessagesHandler{messagesService: messagesService}
+func NewMessagesHandler(messagesService *services.MessageService , bh *BaseHandler) *MessagesHandler {
+	return &MessagesHandler{baseHandler: bh  ,messagesService: messagesService}
 }
 
 func (h *MessagesHandler) CreateConversation(c *gin.Context) {
@@ -64,9 +67,9 @@ func (h *MessagesHandler) CreateMessage(c *gin.Context) {
 		return
 	}
 
-	userID, ok := getUserIDFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 
@@ -97,9 +100,9 @@ func (h *MessagesHandler) UpdateMessage(c *gin.Context) {
 		return
 	}
 
-	userID, ok := getUserIDFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 
@@ -126,9 +129,9 @@ func (h *MessagesHandler) UpdateMessage(c *gin.Context) {
 }
 
 func (h *MessagesHandler) ListUserConversations(c *gin.Context) {
-	userID, ok := getUserIDFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 
@@ -174,9 +177,9 @@ func (h *MessagesHandler) GetConversationMessages(c *gin.Context) {
 		return
 	}
 
-	userID, ok := getUserIDFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 
@@ -202,9 +205,9 @@ func (h *MessagesHandler) MarkConversationAsRead(c *gin.Context) {
 		return
 	}
 
-	userID, ok := getUserIDFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 
@@ -225,16 +228,16 @@ func (h *MessagesHandler) handleError(c *gin.Context, err error) {
 	apperr.Handle(c, err)
 }
 
-func getUserIDFromContext(c *gin.Context) (uuid.UUID, bool) {
+func getUserIDFromContext(c *gin.Context) (uuid.UUID, error) {
 	val, exists := c.Get("userID")
 	if !exists {
-		return uuid.Nil, false
+		return uuid.Nil, fmt.Errorf("User is unothorized : %w" , apperr.ErrUnauthorized)
 	}
 
 	userID, ok := val.(uuid.UUID)
 	if !ok {
-		return uuid.Nil, false
+		return uuid.Nil, apperr.ErrBadInput
 	}
 
-	return userID, true
+	return userID, nil
 }

@@ -13,21 +13,17 @@ type CreateBookingRequest struct {
 }
 
 type BookingHandler struct {
+	baseHandler *BaseHandler
 	bookingService *services.BookingService
 }
 
-func NewBookingHandler(bs *services.BookingService) *BookingHandler {
-	return &BookingHandler{bookingService: bs}
+func NewBookingHandler(bs *services.BookingService , bh *BaseHandler) *BookingHandler {
+	return &BookingHandler{baseHandler:bh ,bookingService: bs}
 }
 func (h *BookingHandler) Create(c *gin.Context) {
-	val, exists := c.Get("userID")
-	if !exists {
-		c.JSON(401, gin.H{"error": "unauthorized"})
-		return
-	}
-	userID, ok := val.(uuid.UUID)
-	if !ok {
-		c.JSON(500, gin.H{"error": "invalid user ID in token"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 
@@ -37,7 +33,7 @@ func (h *BookingHandler) Create(c *gin.Context) {
 		return
 	}
 
-	err := h.bookingService.CreateBooking(c.Request.Context(), services.CreateBookingInput{
+	err = h.bookingService.CreateBooking(c.Request.Context(), services.CreateBookingInput{
 		TicketTypeID: input.TicketTypeID,
 		UserID:       userID,
 		Quantity:     input.Quantity,
@@ -51,14 +47,9 @@ func (h *BookingHandler) Create(c *gin.Context) {
 }
 
 func (h *BookingHandler) GetUserBookings(c *gin.Context) {
-	val, exists := c.Get("userID")
-	if !exists {
-		c.JSON(401, gin.H{"error": "unauthorized"})
-		return
-	}
-	userID, ok := val.(uuid.UUID)
-	if !ok {
-		c.JSON(500, gin.H{"error": "invalid user ID in token"})
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
 		return
 	}
 

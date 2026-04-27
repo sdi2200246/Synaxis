@@ -30,11 +30,12 @@ type TicketTypeResponse struct {
 }
 
 type TicketTypeHandler struct {
+	baseHandler		 *BaseHandler
 	ticketsService   *services.TicketTypeService
 }
 
-func NewTicketTypeHandler(ts *services.TicketTypeService) *TicketTypeHandler {
-	return &TicketTypeHandler{ticketsService: ts}
+func NewTicketTypeHandler(ts *services.TicketTypeService , bs *BaseHandler) *TicketTypeHandler {
+	return &TicketTypeHandler{baseHandler: bs ,ticketsService: ts}
 }
 
 func (h *TicketTypeHandler) Create(c *gin.Context) {
@@ -44,13 +45,20 @@ func (h *TicketTypeHandler) Create(c *gin.Context) {
 		return
 	}
 
+	callerID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
+		return
+	}
+
+
 	var input CreateTicketTypeRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(400, gin.H{"error": "invalid input", "details": err.Error()})
 		return
 	}
 
-	err = h.ticketsService.CreateTicketType(c.Request.Context(), services.CreateTicketInput{
+	err = h.ticketsService.CreateTicketType(c.Request.Context(),callerID , services.CreateTicketInput{
 		EventID:  eventID,
 		Name:     input.Name,
 		Price:    input.Price,
@@ -65,6 +73,13 @@ func (h *TicketTypeHandler) Create(c *gin.Context) {
 }
 
 func (h *TicketTypeHandler) Update(c *gin.Context) {
+	callerID, err := h.baseHandler.getUserIDFromContext(c)
+	if err!= nil {
+		h.handleError(c , err)
+		return
+	}
+
+	
 	eventID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(400, gin.H{"error": "invalid event id"})
@@ -83,7 +98,7 @@ func (h *TicketTypeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	err = h.ticketsService.UpdateTicketType(c.Request.Context(), ticketID, eventID, services.UpdateTicketTypeInput{
+	err = h.ticketsService.UpdateTicketType(c.Request.Context(),callerID , ticketID, eventID, services.UpdateTicketTypeInput{
 		Name:     input.Name,
 		Price:    input.Price,
 		Quantity: input.Quantity,

@@ -121,12 +121,17 @@ func (s*EventService)CreateEvent(ctx context.Context ,organizerID uuid.UUID , ev
     return  s.eventRepo.CreateWithCategories(ctx , newEvent , event.CategoryIDs)
 }
 
-func (s *EventService) UpdateEvent(ctx context.Context, eventID uuid.UUID, input UpdateEventInput) error {
+func (s *EventService) UpdateEvent(ctx context.Context,callerID uuid.UUID, eventID uuid.UUID, input UpdateEventInput) error {
 	event, err := s.eventRepo.GetByID(ctx, eventID)
 	if err != nil {
 		return err
 	}
-	if input.Status != nil && *input.Status == "DRAFT" {
+
+	if err = validateOwnership(callerID , event.OrganizerID) ; err != nil{
+		return err
+	}
+
+	if input.Status != nil && *input.Status == "PUBLISHED" {
 		publishedTickets , err := s.ticketsProvider.SumQuantityByEventID(ctx , eventID)
 		if err != nil{
 			return err
@@ -192,7 +197,13 @@ func (s*EventService) GetEventOrganizer(ctx context.Context , id uuid.UUID)(uuid
 	return event.OrganizerID , nil
 }
 
-func (s *EventService) List(ctx context.Context, input EventFilterInput) ([]Event, bool, error) {
+func (s *EventService) List(ctx context.Context, callerID *uuid.UUID , input EventFilterInput) ([]Event, bool, error) {
+
+	if callerID == nil {
+		s := "PUBLISHED"
+		input.Status = &s
+	}	
+	
     filter := entities.EventFilter{
         OrganizerID: input.OrganizerID,
         Status:      input.Status,
@@ -249,11 +260,15 @@ func toEvent(e entities.Event)Event {
 	}
 }
 
-func (s *EventService) Delete(ctx context.Context, eventID uuid.UUID) error {
+func (s *EventService) Delete(ctx context.Context,callerID uuid.UUID,eventID uuid.UUID) error {
     event, err := s.eventRepo.GetByID(ctx, eventID)
     if err != nil {
         return err
     }
+
+	if err = validateOwnership(callerID , event.OrganizerID) ; err != nil{
+		return err
+	}
 
     bookingsCount , err := s.bookingsProvider.CountByEventID(ctx , eventID)
     if err != nil {

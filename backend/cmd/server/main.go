@@ -48,13 +48,14 @@ func main() {
     eventCancelationService.Subscribe()
 
 
+    baseHandler        := &controllers.BaseHandler{}
     userHandler        := controllers.NewUserHandler(userService)
     authHandler        := middleware.NewAuthHandler(authService)
     venueHandlers      := controllers.NewVenueHandler(venueService)
-    eventsHandler      := controllers.NewEventsHandler(eventsService)
-    ticketsHandler     := controllers.NewTicketTypeHandler(ticketTypeService)
-    bookingHandler     := controllers.NewBookingHandler(bookingService)
-    messagesHandler    := controllers.NewMessagesHandler(messagesService)
+    eventsHandler      := controllers.NewEventsHandler(eventsService , baseHandler)
+    ticketsHandler     := controllers.NewTicketTypeHandler(ticketTypeService , baseHandler)
+    bookingHandler     := controllers.NewBookingHandler(bookingService , baseHandler)
+    messagesHandler    := controllers.NewMessagesHandler(messagesService , baseHandler)
     // adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 

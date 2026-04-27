@@ -67,6 +67,13 @@ func (s *AuthService)Login(ctx context.Context , credentials UserCridentials)(st
 
 }
 
+func validateOwnership(callerID, ownerID uuid.UUID) error {
+    if callerID != ownerID {
+        return apperr.ErrForbidden
+    }
+    return nil
+}
+
 func (s *AuthService) ValidateToken(tokenString string) (*Claims, error) {
     token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
         return []byte(s.secret), nil

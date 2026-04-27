@@ -45,11 +45,16 @@ func NewTicketTypeService(ttr interfaces.TicketTypeRepository,er interfaces.Even
 	}
 }
 
-func (s *TicketTypeService) CreateTicketType(ctx context.Context, input CreateTicketInput) error {
+func (s *TicketTypeService) CreateTicketType(ctx context.Context,callerID uuid.UUID , input CreateTicketInput) error {
 	event, err := s.eventsRepo.GetByID(ctx, input.EventID)
 	if err != nil {
 		return err
 	}
+
+	if err = validateOwnership(callerID , event.OrganizerID) ; err != nil{
+		return err
+	}
+
 	if err = event.AllowsTicketModification() ; err != nil {
 		return err
 	}
@@ -74,11 +79,16 @@ func (s *TicketTypeService) CreateTicketType(ctx context.Context, input CreateTi
 	return s.ticketTypeRepo.Create(ctx, tt)
 }
 
-func (s *TicketTypeService) UpdateTicketType(ctx context.Context, ticketID, eventID uuid.UUID, input UpdateTicketTypeInput) error {
+func (s *TicketTypeService) UpdateTicketType(ctx context.Context,callerID, ticketID, eventID uuid.UUID, input UpdateTicketTypeInput) error {
 	event, err := s.eventsRepo.GetByID(ctx, eventID)
 	if err != nil {
 		return err
 	}
+
+	if err = validateOwnership(callerID , event.OrganizerID) ; err != nil{
+		return err
+	}
+
 	if input.Quantity != nil {
 		releasedTickets, err := s.ticketTypeRepo.SumQuantityByEventID(ctx, eventID)
 		if err != nil {
