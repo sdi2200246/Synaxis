@@ -35,10 +35,12 @@ func main() {
     bookingRepo  := repos.NewBookingsRepo(pool)
     ticketsRepo  := repos.NewTicketTypeRepo(pool)
     messagesRepo := repos.NewMessagesRepo(pool)
+    visitsRepo   := repos.NewVisitsRepo(pool)
 
     userService  := services.NewUserService(userRepo)
     authService  := services.NewAuthService(userRepo, "jason_derullo")
     venueService := services.NewVenueService(venueRepo)
+    visitsService := services.NewVisitService(visitsRepo)
 
     eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo ,eventBus , venueRepo)
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
@@ -56,6 +58,7 @@ func main() {
     ticketsHandler     := controllers.NewTicketTypeHandler(ticketTypeService , baseHandler)
     bookingHandler     := controllers.NewBookingHandler(bookingService , baseHandler)
     messagesHandler    := controllers.NewMessagesHandler(messagesService , baseHandler)
+    visitsHandler      := controllers.NewVisitsHandler(visitsService , baseHandler)
     // adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 
@@ -104,6 +107,8 @@ func main() {
         auth.GET("/events/:id/bookings", bookingHandler.GetEventBookings)
         auth.POST("/events/:id/bookings", bookingHandler.Create)
         auth.GET("/bookings", bookingHandler.GetUserBookings)
+
+        auth.POST("events/:id/visits" , visitsHandler.Record)
 
 
         auth.POST("/conversations" , messagesHandler.CreateConversation)

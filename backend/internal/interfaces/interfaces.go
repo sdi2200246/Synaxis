@@ -30,7 +30,6 @@ type VenuesRepository interface {
 	ListVenues(ctx context.Context , filter entities.VenuesFilter) ([]entities.Venue , error)	
 }
 
-
 type CategoriesRepo interface{
 	GetByEventID(ctx context.Context, eventID uuid.UUID) ([]entities.Category, error)
 } 
@@ -72,6 +71,10 @@ type MessagesRepository interface {
 	GetMessageByID(ctx context.Context, id uuid.UUID) (entities.Message, error)
 	CreateConversationWithMessage(ctx context.Context,conv entities.Conversation,organizer uuid.UUID,attendee uuid.UUID,msg entities.Message,) error
 	GetByBookingID(ctx context.Context, bookingID uuid.UUID) (entities.Conversation, error)
+}
+
+type VisitsRepository interface{
+	Create(ctx context.Context, visit entities.Visit) error
 }
 
 type EventBus interface{

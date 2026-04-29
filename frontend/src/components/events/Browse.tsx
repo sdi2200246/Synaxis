@@ -6,6 +6,7 @@ import { getTicketTypes } from '../../api/tickets'
 import type { Event } from '../../types'
 import type { TicketType } from '../../api/tickets'
 import { createBooking } from '../../api/bookings'
+import { recordVisit } from '../../api/visits'
 import './Events.css'
 
 interface BrowseEventCardProps {
@@ -36,11 +37,15 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
 
   useEffect(() => {
     if (!open) return
+
     setLoadingTickets(true)
+
     getTicketTypes(event.id)
       .then(setTickets)
-      .catch(() => {})
       .finally(() => setLoadingTickets(false))
+
+    recordVisit(event.id).catch(() => {})
+
   }, [open, event.id])
 
   function handleSelectTicket(t: TicketType) {
