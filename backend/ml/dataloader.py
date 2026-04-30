@@ -1,14 +1,14 @@
-
 from __future__ import annotations
-
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Tuple
+import psycopg2
+from psycopg2.extras import execute_values
+from uuid import UUID
+import os
+from dotenv import load_dotenv
 
-
-from abc import ABC, abstractmethod
- 
  
 class DataLoader(ABC):
     """
@@ -142,3 +142,96 @@ class FileDataLoader(DataLoader):
 
     def load_events(self) -> List[str]:
         return self._events
+
+class Database(DataLoader):
+    def __init__(self):
+        try:
+            load_dotenv("../.env")
+            self.conn = psycopg2.connect(os.getenv("REC_DATABASE_URL"))
+            self.cur = self.conn.cursor()
+            self.bookings = None
+
+        except Exception as e:
+            print("DB connection failed:", e)
+
+
+    def test(self):
+        cur = self.conn.cursor()
+        cur.execute("SELECT version();")
+        print(cur.fetchone())
+
+    def load_visits(self) -> List[Tuple[str, str, float]]:
+        try:
+
+            self.cur.execute("""
+                SELECT DISTINCT user_id , event_id
+                FROM visit
+            """)
+
+            rows = self.cur.fetchall()
+            return [(str(r[0]), str(r[1]) ,  1.0) for r in rows]
+
+        except Exception as e:
+            print("DB visits fetch failed:", e)
+            return []
+
+    def load_bookings(self) -> List[Tuple[str, str, float]]:
+        try:
+            self.cur.execute("""
+                SELECT DISTINCT b.user_id, e.id AS event_id
+                FROM booking b
+                JOIN tickettype tt ON tt.id = b.ticket_type_id
+                JOIN event e ON e.id = tt.event_id
+            """)
+            rows = self.cur.fetchall()
+            self.bookings =  [(str(r[0]), str(r[1]) ,  6.0) for r in rows]
+            return self.bookings
+        
+        except Exception as e:
+            print("DB bookings fetch failed:", e)
+            return []
+    
+    def load_users(self) -> List[str]:
+        try:
+            self.cur.execute("""
+                SELECT id
+                FROM "user"
+                WHERE status = 'approved'
+                AND role = 'user';
+            """)
+
+            users = self.cur.fetchall()
+            return [str(u[0]) for u in users]
+
+        except Exception as e:
+            print("DB users fetch failed:", e)
+            return []
+
+    def load_events(self) -> List[str]:
+        try:
+            self.cur.execute("""
+                SELECT id
+                FROM event 
+                WHERE status != 'DRAFT';
+            """)
+            events = self.cur.fetchall()
+            return [str(e[0]) for e in events]
+        except Exception as e:
+            print("DB events fetch failed:", e)
+            return []
+
+
+    def save_recommendations(self, recommendations: list[tuple[str, str, float]]) -> None:
+        rows = [(UUID(u), UUID(e), s) for u, e, s in recommendations]
+        execute_values(self.cur, """
+            INSERT INTO recommendation (user_id, event_id, score)
+            VALUES %s
+            ON CONFLICT (user_id, event_id)
+            DO UPDATE SET score = EXCLUDED.score, created_at = now()
+        """, rows)
+        self.conn.commit()
+
+if __name__ == "__main__":
+    db = Database()
+    results = db.load_visits()
+    print(results)

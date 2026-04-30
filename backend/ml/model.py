@@ -149,7 +149,6 @@ class BiasedMF:
     def top_n(self,user_id: str,n: int = 20,exclude: set[str] | None = None,) -> list[tuple[str, float]]:
 
         if user_id not in self.user_index:
-            # fallback popularity-ish ranking by item bias
             scores = [
                 (event_id, float(self.mu + self.b_i[i]))
                 for event_id, i in self.event_index.items()
@@ -174,3 +173,12 @@ class BiasedMF:
 
         results.sort(key=lambda x: x[1], reverse=True)
         return results[:n]
+    
+
+    def recomendations(self , k :int , bookings:list[tuple[str , str , float] , clicks: list[tuple[str, str, float]]]) -> list[tuple[str , str , float]]:
+        all_recomendations = []
+        for u in self.users:
+            previous_bookings = set([e for user , e , _ in bookings if  user == u])
+            all_recomendations.extend((u, e, score) for e, score in self.top_n(u, k , previous_bookings))
+            
+        return all_recomendations

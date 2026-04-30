@@ -19,7 +19,7 @@ func main() {
 
     godotenv.Load()
 
-    pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+    pool, err := pgxpool.New(context.Background(), os.Getenv("REC_DATABASE_URL"))
     if err != nil {
         log.Fatal(err)
     }

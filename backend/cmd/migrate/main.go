@@ -18,7 +18,7 @@ func main() {
 
 	migration := os.Args[1];
 	godotenv.Load() 
-	dbURL := os.Getenv("DATABASE_URL")
+	dbURL := os.Getenv("REC_DATABASE_URL")
 	if dbURL == "" {
 		log.Fatalf("Failed to fetch DATABASE_URL from the .env file",)
 	}

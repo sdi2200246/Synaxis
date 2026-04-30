@@ -100,6 +100,15 @@ CREATE TABLE "visit" (
   "visited_at" timestamp NOT NULL DEFAULT (now())
 );
 
+CREATE TABLE "recommendation" (
+  "user_id"    uuid NOT NULL,
+  "event_id"   uuid NOT NULL,
+  "score"      float NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (now()),
+  PRIMARY KEY ("user_id", "event_id")
+);
+
+
 CREATE TABLE "media" (
   "id" uuid PRIMARY KEY,
   "event_id" uuid NOT NULL,
@@ -130,6 +139,8 @@ ALTER TABLE "eventcategory" ADD CONSTRAINT eventcategory_event_fkey FOREIGN KEY 
 ALTER TABLE "eventcategory" ADD CONSTRAINT eventcategory_category_fkey FOREIGN KEY ("category_id") REFERENCES "category" ("id");
 ALTER TABLE "conversation_participant" ADD CONSTRAINT cp_conversation_fkey FOREIGN KEY ("conversation_id") REFERENCES "conversation" ("id") ON DELETE CASCADE;
 ALTER TABLE "conversation_participant" ADD CONSTRAINT cp_user_fkey FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
+ALTER TABLE "recommendation" ADD CONSTRAINT recommendation_user_fkey FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
+ALTER TABLE "recommendation" ADD CONSTRAINT recommendation_event_fkey FOREIGN KEY ("event_id") REFERENCES "event" ("id") ON DELETE CASCADE;
 
 
 -- CHECK constraints
