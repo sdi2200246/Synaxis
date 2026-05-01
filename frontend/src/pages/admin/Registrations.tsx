@@ -52,22 +52,22 @@ export function PendingRegistrations() {
   }
 
   if (loading) {
-    return <div className="pending-page"><p>Loading...</p></div>
+    return <div className="page-narrow"><p>Loading...</p></div>
   }
 
   return (
-    <div className="pending-page">
+    <div className="page-narrow">
       <div className="pending-header">
         <h1>Pending Registrations</h1>
-        <span className="pending-count">{count} pending</span>
+        <span className="badge badge--neutral">{count} pending</span>
       </div>
 
       {users.length === 0 ? (
-        <div className="pending-empty">
+        <div className="empty-state">
           <p>No pending registrations — you're all caught up.</p>
         </div>
       ) : (
-        <div className="pending-list">
+        <div className="list-stack">
           {users.map((user) => (
             <UserCard
               key={user.id}
@@ -85,14 +85,14 @@ export function PendingRegistrations() {
               actions={
                 <>
                   <button
-                    className="btn btn-approve"
+                    className="btn btn--success"
                     disabled={actionInFlight === user.id}
                     onClick={() => handleApprove(user.id)}
                   >
                     Approve
                   </button>
                   <button
-                    className="btn btn-reject"
+                    className="btn btn--danger"
                     disabled={actionInFlight === user.id}
                     onClick={() => handleReject(user.id)}
                   >

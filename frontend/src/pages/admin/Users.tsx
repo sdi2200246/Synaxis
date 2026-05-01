@@ -26,22 +26,22 @@ export function Users() {
 
   
   if (loading) {
-    return <div className="pending-page"><p>Loading...</p></div>
+    return <div className="page-narrow"><p>Loading...</p></div>
   }
 
   return (
-    <div className="pending-page">
+    <div className="page-narrow">
       <div className="pending-header">
         <h1>All Users</h1>
         <span className="count">{count} users</span>
       </div>
 
       {users.length === 0 ? (
-        <div className="pending-empty">
+        <div className="empty-state">
           <p>No user exists in the system</p>
         </div>
       ) : (
-        <div className="pending-list">
+        <div className="list-stack">
           {users.map((user) => (
             <UserCard
               key={user.id}

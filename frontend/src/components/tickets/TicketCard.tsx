@@ -6,29 +6,29 @@ interface Props {
   onEdit: (ticket: TicketType) => void
 }
 
-export function TicketCard({ ticket , onEdit }: Props) {
+export function TicketCard({ ticket, onEdit }: Props) {
   const soldOut = ticket.available === 0
   const sold = ticket.quantity - ticket.available
 
   return (
-    <div className={`tc-card ${soldOut ? 'tc-card--sold-out' : ''}`}>
-      <div className="tc-header">
-        <span className="tc-name">{ticket.name}</span>
-        <span className="tc-price">€{ticket.price.toFixed(2)}</span>
-        <button className="tc-edit-btn" onClick={() => onEdit(ticket)}>Edit</button>
+    <div className={`card card--hoverable ticket-type-card ${soldOut ? 'is-sold-out' : ''}`}>
+      <div className="ticket-type-card__header">
+        <span className="card__title">{ticket.name}</span>
+        <span className="ticket-type-card__price">€{ticket.price.toFixed(2)}</span>
+        <button className="btn btn--ghost" onClick={() => onEdit(ticket)}>Edit</button>
       </div>
-      <div className="tc-stats">
-        <div className="tc-stat">
-          <span className="tc-stat-label">Total</span>
-          <span className="tc-stat-value">{ticket.quantity}</span>
+      <div className="ticket-type-card__stats">
+        <div className="ticket-type-card__stat">
+          <span className="label">Total</span>
+          <span className="ticket-type-card__stat-value">{ticket.quantity}</span>
         </div>
-        <div className="tc-stat">
-          <span className="tc-stat-label">Sold</span>
-          <span className="tc-stat-value">{sold}</span>
+        <div className="ticket-type-card__stat">
+          <span className="label">Sold</span>
+          <span className="ticket-type-card__stat-value">{sold}</span>
         </div>
-        <div className="tc-stat">
-          <span className="tc-stat-label">Available</span>
-          <span className={`tc-stat-value ${soldOut ? 'tc-stat-value--zero' : ''}`}>
+        <div className="ticket-type-card__stat">
+          <span className="label">Available</span>
+          <span className={`ticket-type-card__stat-value ${soldOut ? 'is-zero' : ''}`}>
             {ticket.available}
           </span>
         </div>

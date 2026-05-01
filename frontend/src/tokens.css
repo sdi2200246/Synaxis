@@ -1,0 +1,132 @@
+/* ==========================================================================
+   SYNAXIS DESIGN TOKENS
+   Single source of truth for all visual values.
+   Switch themes by setting data-theme on <html>:
+     <html data-theme="light">  (default)
+     <html data-theme="dark">
+   Add new themes by copying a block and overriding what you want.
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  /* ── Surfaces ── */
+  --syn-bg-page:    #fafafb;
+  --syn-bg-card:    #ffffff;
+  --syn-bg-surface: #f5f5f7;
+  --syn-bg-hover:   #eef0f3;
+  --syn-bg-input:   #ffffff;
+  --syn-bg-overlay: rgba(15, 17, 23, 0.5);
+
+  /* ── Borders ── */
+  --syn-border:        rgba(0, 0, 0, 0.08);
+  --syn-border-hover:  rgba(0, 0, 0, 0.15);
+  --syn-border-focus:  var(--syn-accent);
+
+  /* ── Text ── */
+  --syn-text-primary:   #111827;
+  --syn-text-secondary: #4b5563;
+  --syn-text-muted:     #9ca3af;
+  --syn-text-inverse:   #ffffff;
+
+  /* ── Accent (teal) ── */
+  --syn-accent:        #0D9488;
+  --syn-accent-light:  #14b8a6;
+  --syn-accent-dark:   #0f766e;
+  --syn-accent-bg:     rgba(13, 148, 136, 0.10);
+  --syn-accent-border: rgba(13, 148, 136, 0.25);
+  --syn-accent-text:   #0f766e;
+
+  /* ── Semantic: Success (green) ── */
+  --syn-success:      #16a34a;
+  --syn-success-text: #15803d;
+  --syn-success-bg:   rgba(22, 163, 74, 0.10);
+
+  /* ── Semantic: Danger (red) ── */
+  --syn-danger:       #dc2626;
+  --syn-danger-text:  #b91c1c;
+  --syn-danger-bg:    rgba(220, 38, 38, 0.08);
+
+  /* ── Semantic: Warning (amber) ── */
+  --syn-warning:      #d97706;
+  --syn-warning-text: #b45309;
+  --syn-warning-bg:   rgba(217, 119, 6, 0.10);
+
+  /* ── Semantic: Info (blue) ── */
+  --syn-info:         #2563eb;
+  --syn-info-text:    #1d4ed8;
+  --syn-info-bg:      rgba(37, 99, 235, 0.08);
+
+  /* ── Shadows ── */
+  --syn-shadow-card:  0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --syn-shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="dark"] {
+  --syn-bg-page:    #0f1117;
+  --syn-bg-card:    #1a1d27;
+  --syn-bg-surface: #242833;
+  --syn-bg-hover:   #2d3140;
+  --syn-bg-input:   #1e2230;
+  --syn-bg-overlay: rgba(0, 0, 0, 0.55);
+
+  --syn-border:       rgba(255, 255, 255, 0.08);
+  --syn-border-hover: rgba(255, 255, 255, 0.15);
+
+  --syn-text-primary:   #f0f0f3;
+  --syn-text-secondary: #b8bcc9;
+  --syn-text-muted:     #6c7080;
+  --syn-text-inverse:   #0f1117;
+
+  --syn-accent-bg:     rgba(13, 148, 136, 0.15);
+  --syn-accent-border: rgba(13, 148, 136, 0.40);
+  --syn-accent-text:   #2dd4bf;
+
+  --syn-success-text: #4ade80;
+  --syn-success-bg:   rgba(34, 197, 94, 0.12);
+
+  --syn-danger-text:  #f87171;
+  --syn-danger-bg:    rgba(239, 68, 68, 0.12);
+
+  --syn-warning-text: #fbbf24;
+  --syn-warning-bg:   rgba(234, 179, 8, 0.12);
+
+  --syn-info-text:    #60a5fa;
+  --syn-info-bg:      rgba(59, 130, 246, 0.12);
+
+  --syn-shadow-card:  0 2px 8px rgba(0, 0, 0, 0.25);
+  --syn-shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Theme-independent tokens (same in every theme) ── */
+:root {
+  /* Radii */
+  --syn-radius-sm:   6px;
+  --syn-radius:      10px;
+  --syn-radius-lg:   14px;
+  --syn-radius-pill: 999px;
+
+  /* Spacing scale */
+  --syn-space-1: 4px;
+  --syn-space-2: 8px;
+  --syn-space-3: 12px;
+  --syn-space-4: 16px;
+  --syn-space-5: 20px;
+  --syn-space-6: 24px;
+  --syn-space-8: 32px;
+
+  /* Typography */
+  --syn-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --syn-font-mono: ui-monospace, Consolas, monospace;
+
+  /* Type scale */
+  --syn-text-xs:   11px;
+  --syn-text-sm:   13px;
+  --syn-text-base: 14px;
+  --syn-text-md:   15px;
+  --syn-text-lg:   17px;
+  --syn-text-xl:   20px;
+  --syn-text-2xl:  24px;
+
+  /* Transitions */
+  --syn-transition: 0.15s ease;
+}

@@ -1,15 +1,24 @@
-// frontend/src/components/layout/Layout.tsx
+import { useState, useEffect } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { Sidebar } from './Sidebar'
 
+const SIDEBAR_KEY = 'synaxis-sidebar-collapsed'
+
 export function Layout() {
   const { isAuthenticated } = useAuth()
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem(SIDEBAR_KEY) === '1'
+  })
+
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0')
+  }, [collapsed])
 
   if (isAuthenticated) {
     return (
-      <div className="app-authenticated">
-        <Sidebar />
+      <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
         <main className="main-content">
           <Outlet />
         </main>
@@ -20,15 +29,15 @@ export function Layout() {
   return (
     <div className="app">
       <nav className="navbar">
-        <Link to="/home" className="brand">Synaxis</Link>
-        
-        <div className="nav-links">
-          <Link to="/login">Login</Link>
-          <Link to="/register">Register</Link>
+        <Link to="/home" className="navbar__brand">Synaxis</Link>
+
+        <div className="navbar__links">
+          <Link to="/login" className="navbar__link">Login</Link>
+          <Link to="/register" className="navbar__link">Register</Link>
         </div>
       </nav>
 
-      <main className="content">
+      <main className="public-content">
         <Outlet />
       </main>
     </div>

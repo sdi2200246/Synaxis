@@ -32,43 +32,43 @@ export function EventBookingsPage() {
   }, [bookings, eventCapacity])
 
   if (loading) return <div className="page"><p>Loading bookings…</p></div>
-  if (error) return <div className="page"><div className="error-message">{error}</div></div>
+  if (error) return <div className="page"><div className="alert alert--error">{error}</div></div>
 
   return (
     <div className="page">
-      <div className="eb-page-header">
-        <Link to="/my-events" className="eb-back">&larr; Back to My Events</Link>
+      <div className="page-header">
+        <Link to="/my-events" className="page-header__back">&larr; Back to My Events</Link>
         <h1>{eventTitle}</h1>
-        {venueName && <span className="eb-subtitle">{venueName}</span>}
+        {venueName && <span className="page-header__subtitle">{venueName}</span>}
       </div>
 
-      <div className="eb-stats">
-        <div className="eb-stat">
-          <span className="eb-stat__value">{bookings.length}</span>
-          <span className="eb-stat__label">Bookings</span>
+      <div className="stat-row">
+        <div className="stat">
+          <span className="stat__value">{bookings.length}</span>
+          <span className="label">Bookings</span>
         </div>
-        <div className="eb-stat">
-          <span className="eb-stat__value">{stats.totalTickets}</span>
-          <span className="eb-stat__label">Tickets sold</span>
+        <div className="stat">
+          <span className="stat__value">{stats.totalTickets}</span>
+          <span className="label">Tickets sold</span>
         </div>
-        <div className="eb-stat">
-          <span className="eb-stat__value">€{stats.totalRevenue.toFixed(0)}</span>
-          <span className="eb-stat__label">Revenue</span>
+        <div className="stat">
+          <span className="stat__value">€{stats.totalRevenue.toFixed(0)}</span>
+          <span className="label">Revenue</span>
         </div>
         {stats.seatsLeft != null && (
-          <div className="eb-stat">
-            <span className="eb-stat__value">{stats.seatsLeft.toLocaleString()}</span>
-            <span className="eb-stat__label">Seats left</span>
+          <div className="stat">
+            <span className="stat__value">{stats.seatsLeft.toLocaleString()}</span>
+            <span className="label">Seats left</span>
           </div>
         )}
       </div>
 
       {bookings.length === 0 ? (
-        <p className="eb-empty">No bookings yet for this event.</p>
+        <p className="empty-state">No bookings yet for this event.</p>
       ) : (
         <>
           <h2 className="eb-section-title">Attendees</h2>
-          <div className="eb-list">
+          <div className="list-stack">
             {bookings.map(b => (
               <EventBookingCard key={b.id} booking={b} />
             ))}

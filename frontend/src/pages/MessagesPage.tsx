@@ -11,35 +11,35 @@ import {
 } from '../api/messages'
 import type { ConversationWithParticipants, Message } from '../types'
 import '../components/messages/Messages.css'
- 
+
 async function fetchUserName(userId: string): Promise<string> {
   const { default: api } = await import('../api/client')
   const res = await api.get<{ first_name: string; last_name: string }>(`/users/${userId}`)
   return `${res.data.first_name} ${res.data.last_name}`
 }
- 
+
 export function MessagesPage() {
   const { conversationId } = useParams<{ conversationId?: string }>()
   const navigate = useNavigate()
   const { userId } = useAuth()
- 
+
   const [conversations, setConversations] = useState<ConversationWithParticipants[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [userNames, setUserNames] = useState<Record<string, string>>({})
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
- 
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
- 
+
   // Load conversations
   useEffect(() => {
     getConversations().then(setConversations)
   }, [])
- 
+
   // Resolve participant names
   useEffect(() => {
     if (conversations.length === 0) return
- 
+
     const ids = new Set<string>()
     for (const c of conversations) {
       for (const p of c.participants) {
@@ -48,9 +48,9 @@ export function MessagesPage() {
         }
       }
     }
- 
+
     if (ids.size === 0) return
- 
+
     Promise.all(
       [...ids].map(async id => {
         const name = await fetchUserName(id)
@@ -64,19 +64,19 @@ export function MessagesPage() {
       })
     })
   }, [conversations, userId])
- 
+
   // Load messages when active conversation changes
   useEffect(() => {
     if (!conversationId) {
       setMessages([])
       return
     }
- 
+
     getConversationMessages(conversationId).then(msgs => {
       setMessages(msgs)
       scrollToBottom()
     })
- 
+
     // Mark as read
     const conv = conversations.find(c => c.conversation.id === conversationId)
     if (conv && conv.conversation.unseen_count > 0) {
@@ -91,15 +91,15 @@ export function MessagesPage() {
       })
     }
   }, [conversationId])
- 
+
   function scrollToBottom() {
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
   }
- 
+
   function handleSelect(id: string) {
     navigate(`/messages/${id}`)
   }
- 
+
   async function handleUpdate(id: string, payload: { content?: string; delete?: number }) {
     const { updateMessage } = await import('../api/messages')
     await updateMessage(id, payload)
@@ -108,10 +108,10 @@ export function MessagesPage() {
       setMessages(msgs)
     }
   }
- 
+
   async function handleSend() {
     if (!conversationId || !draft.trim() || sending) return
- 
+
     setSending(true)
     try {
       await sendMessage(conversationId, draft.trim())
@@ -123,24 +123,24 @@ export function MessagesPage() {
       setSending(false)
     }
   }
- 
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
     }
   }
- 
+
   const activeConv = conversations.find(c => c.conversation.id === conversationId)
   const otherParticipant = activeConv?.participants.find(p => p.user_id !== userId)
   const otherName = otherParticipant ? (userNames[otherParticipant.user_id] ?? '...') : ''
- 
+
   function getInitials(name: string): string {
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
   }
- 
+
   return (
-    <div className="msg-page">
+    <div className="card message-page">
       <ConversationList
         conversations={conversations}
         activeId={conversationId ?? null}
@@ -148,23 +148,23 @@ export function MessagesPage() {
         userNames={userNames}
         onSelect={handleSelect}
       />
- 
-      <div className="msg-chat">
+
+      <div className="message-page__chat">
         {!conversationId ? (
-          <div className="msg-chat-empty">Select a conversation</div>
+          <div className="chat-empty">Select a conversation</div>
         ) : (
           <>
-            <div className="msg-chat-header">
-              <div className="msg-avatar msg-avatar--lg">
+            <div className="chat-header">
+              <div className="avatar avatar--lg">
                 {otherName ? getInitials(otherName) : '??'}
               </div>
               <div>
-                <p className="msg-chat-header-name">{otherName}</p>
-                <p className="msg-chat-header-event">{activeConv?.event_title}</p>
+                <p className="chat-header__title">{otherName}</p>
+                <p className="chat-header__sub">{activeConv?.event_title}</p>
               </div>
             </div>
- 
-            <div className="msg-messages">
+
+            <div className="message-feed">
               {messages.map(msg => (
                 <ChatBubble
                   key={msg.id}
@@ -175,10 +175,10 @@ export function MessagesPage() {
               ))}
               <div ref={messagesEndRef} />
             </div>
- 
-            <div className="msg-input-bar">
+
+            <div className="composer">
               <input
-                className="msg-input"
+                className="composer__input"
                 type="text"
                 placeholder="Type a message..."
                 value={draft}
@@ -186,7 +186,7 @@ export function MessagesPage() {
                 onKeyDown={handleKeyDown}
               />
               <button
-                className="msg-send-btn"
+                className="btn btn--primary"
                 onClick={handleSend}
                 disabled={!draft.trim() || sending}
               >
@@ -199,4 +199,3 @@ export function MessagesPage() {
     </div>
   )
 }
- 

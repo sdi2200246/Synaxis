@@ -1,0 +1,838 @@
+/* ==========================================================================
+   LAYOUT — Page-level structural components.
+   These are unique scopes (one per app), not reusable patterns.
+   ========================================================================== */
+
+/* ==========================================================================
+   01. AUTHENTICATED SHELL (Sidebar + Main)
+   ========================================================================== */
+.app-shell {
+  --sidebar-width: 250px;
+  display: flex;
+  min-height: 100vh;
+  background: var(--syn-bg-page);
+}
+ 
+.app-shell--collapsed {
+  --sidebar-width: 64px;
+}
+ 
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: var(--syn-space-8);
+  min-height: 100vh;
+  transition: margin-left var(--syn-transition);
+}
+ 
+@media (max-width: 768px) {
+  .app-shell { --sidebar-width: 200px; }
+  .app-shell--collapsed { --sidebar-width: 64px; }
+  .main-content { padding: var(--syn-space-4); }
+}
+
+/* ==========================================================================
+   02. SIDEBAR
+   ========================================================================== */
+.sidebar {
+  width: var(--sidebar-width);
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  background: var(--syn-bg-card);
+  border-right: 1px solid var(--syn-border);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--syn-transition);
+  overflow: hidden;
+}
+ 
+.sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--syn-space-2);
+  padding: var(--syn-space-5) var(--syn-space-5);
+  border-bottom: 1px solid var(--syn-border);
+  min-height: 72px;
+}
+ 
+.sidebar__brand {
+  font-size: var(--syn-text-xl);
+  font-weight: 600;
+  color: var(--syn-accent-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+ 
+.sidebar.is-collapsed .sidebar__header {
+  padding: var(--syn-space-5) 0;
+  justify-content: center;
+}
+ 
+.sidebar.is-collapsed .sidebar__brand {
+  display: none;
+}
+ 
+.sidebar__toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--syn-radius-sm);
+  background: var(--syn-bg-surface);
+  color: var(--syn-text-secondary);
+  border: 1px solid var(--syn-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--syn-transition), color var(--syn-transition);
+}
+ 
+.sidebar__toggle:hover {
+  background: var(--syn-bg-hover);
+  color: var(--syn-text-primary);
+}
+ 
+.sidebar__nav {
+  flex: 1;
+  padding: var(--syn-space-3) 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+ 
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-3);
+  padding: 0.85rem var(--syn-space-5);
+  color: var(--syn-text-secondary);
+  font-size: var(--syn-text-md);
+  border-left: 3px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: background var(--syn-transition), color var(--syn-transition);
+}
+ 
+.sidebar__link:hover {
+  background: var(--syn-bg-hover);
+  color: var(--syn-text-primary);
+}
+ 
+.sidebar__link.is-active,
+.sidebar__link.active {
+  background: var(--syn-accent-bg);
+  color: var(--syn-accent-text);
+  border-left-color: var(--syn-accent);
+}
+ 
+.sidebar__link svg {
+  flex-shrink: 0;
+}
+ 
+.sidebar__label {
+  opacity: 1;
+  transition: opacity var(--syn-transition);
+}
+ 
+.sidebar.is-collapsed .sidebar__link {
+  justify-content: center;
+  padding: 0.85rem 0;
+  border-left-width: 0;
+  border-left-color: transparent;
+}
+ 
+.sidebar.is-collapsed .sidebar__link.is-active,
+.sidebar.is-collapsed .sidebar__link.active {
+  background: var(--syn-accent-bg);
+  border-left-width: 3px;
+  border-left-color: var(--syn-accent);
+}
+ 
+.sidebar.is-collapsed .sidebar__label {
+  display: none;
+}
+ 
+.sidebar__footer {
+  padding: var(--syn-space-3) var(--syn-space-3);
+  border-top: 1px solid var(--syn-border);
+}
+ 
+.sidebar__logout {
+  border-radius: var(--syn-radius-sm);
+}
+
+/* ==========================================================================
+   03. NAVBAR (Public, unauthenticated)
+   ========================================================================== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--syn-space-4) var(--syn-space-8);
+  background: var(--syn-bg-card);
+  border-bottom: 1px solid var(--syn-border);
+}
+
+.navbar__brand {
+  font-size: var(--syn-text-xl);
+  font-weight: 600;
+  color: var(--syn-accent-text);
+}
+
+.navbar__links {
+  display: flex;
+  gap: var(--syn-space-4);
+  align-items: center;
+}
+
+.navbar__link {
+  color: var(--syn-text-secondary);
+}
+
+.navbar__link:hover { color: var(--syn-text-primary); }
+
+.public-content {
+  max-width: 1000px;
+  margin: var(--syn-space-8) auto;
+  padding: 0 var(--syn-space-4);
+}
+
+/* ==========================================================================
+   04. PAGE HEADER (above any list/page)
+   ========================================================================== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--syn-space-4);
+  margin-bottom: var(--syn-space-8);
+  padding-bottom: var(--syn-space-5);
+  border-bottom: 1px solid var(--syn-border);
+}
+
+.page-header__title {
+  font-size: var(--syn-text-2xl);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+  margin: 0 0 var(--syn-space-1);
+}
+
+.page-header__subtitle {
+  font-size: var(--syn-text-base);
+  color: var(--syn-text-secondary);
+  margin: 0;
+}
+
+.page-header__count {
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-secondary);
+  background: var(--syn-bg-surface);
+  padding: 2px var(--syn-space-2);
+  border-radius: var(--syn-radius-pill);
+  margin-left: var(--syn-space-2);
+}
+
+.page-header__back {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-secondary);
+  margin-bottom: var(--syn-space-1);
+  display: inline-block;
+}
+
+.page-header__back:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-header .btn { width: 100%; justify-content: center; }
+}
+
+/* ==========================================================================
+   05. AUTH PAGE (Login, Register)
+   ========================================================================== */
+.auth-page {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: var(--syn-space-8);
+  background: var(--syn-bg-card);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius-lg);
+}
+
+.auth-page__title {
+  font-size: var(--syn-text-xl);
+  margin-bottom: var(--syn-space-5);
+}
+
+.auth-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--syn-space-4);
+}
+
+.auth-page__footer {
+  margin-top: var(--syn-space-4);
+  text-align: center;
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-secondary);
+}
+
+/* ==========================================================================
+   06. PAGE CONTAINERS
+   ========================================================================== */
+.page-narrow { max-width: 720px; margin: 0 auto; }
+.page-wide   { max-width: 1200px; }
+
+/* ==========================================================================
+   07. LISTS
+   ========================================================================== */
+.list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--syn-space-3);
+}
+
+.list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--syn-space-4);
+}
+
+
+/* ==========================================================================
+   SEARCH PAGE — Component-specific styles only.
+   Reuses .btn, .search-bar, .label, .badge from utilities.css.
+   ========================================================================== */
+ 
+/* ──  Layout ── */
+.search-layout {
+  display: flex;
+  gap: var(--syn-space-6);
+}
+ 
+@media (max-width: 640px) {
+  .search-layout {
+    flex-direction: column;
+  }
+  .search-sidebar {
+    width: 100%;
+  }
+}
+ 
+/* ── Filter sidebar ── */
+.search-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+}
+ 
+.search-sidebar__section {
+  margin-bottom: var(--syn-space-5);
+}
+ 
+.search-sidebar__label {
+  font-size: var(--syn-text-xs);
+  font-weight: 600;
+  color: var(--syn-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--syn-space-2);
+}
+ 
+.search-sidebar__section input,
+.search-sidebar__section select {
+  width: 100%;
+  padding: 6px var(--syn-space-2);
+  background: var(--syn-bg-input);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius-sm);
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--syn-transition);
+}
+ 
+.search-sidebar__section input::placeholder {
+  color: var(--syn-text-muted);
+}
+ 
+.search-sidebar__section input:focus,
+.search-sidebar__section select:focus {
+  border-color: var(--syn-accent);
+}
+ 
+.search-sidebar__price-row {
+  display: flex;
+  gap: var(--syn-space-2);
+}
+ 
+.search-sidebar__price-row input {
+  width: 50%;
+}
+ 
+.search-sidebar__date-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--syn-space-1);
+}
+ 
+.search-sidebar__date-fields label {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+}
+ 
+/* ── Category list (custom checkboxes) ── */
+.search-sidebar__cats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+ 
+.search-cat {
+  font-size: var(--syn-text-sm);
+  padding: 6px var(--syn-space-3);
+  border-radius: var(--syn-radius-sm);
+  color: var(--syn-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-2);
+  transition: background var(--syn-transition), color var(--syn-transition);
+}
+ 
+.search-cat:hover {
+  background: var(--syn-bg-hover);
+  color: var(--syn-text-primary);
+}
+ 
+.search-cat--active {
+  background: var(--syn-accent-bg);
+  color: var(--syn-accent-text);
+}
+ 
+.search-cat__check {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid var(--syn-border-hover);
+  flex-shrink: 0;
+  position: relative;
+}
+ 
+.search-cat--active .search-cat__check {
+  background: var(--syn-accent);
+  border-color: var(--syn-accent);
+}
+ 
+.search-cat--active .search-cat__check::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 7px;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+  position: absolute;
+  top: 1px;
+  left: 4px;
+}
+ 
+/* ── Active filter pills row ── */
+.search-pills {
+  display: flex;
+  gap: var(--syn-space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--syn-space-4);
+  align-items: center;
+}
+ 
+.search-pill {
+  font-size: var(--syn-text-xs);
+  padding: 4px var(--syn-space-3);
+  border-radius: var(--syn-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--syn-space-1);
+}
+ 
+.search-pill--cat   { background: var(--syn-accent-bg);  color: var(--syn-accent-text);  }
+.search-pill--text  { background: var(--syn-bg-surface); color: var(--syn-text-secondary); }
+.search-pill--loc   { background: var(--syn-success-bg); color: var(--syn-success-text); }
+.search-pill--price { background: var(--syn-warning-bg); color: var(--syn-warning-text); }
+.search-pill--date  { background: var(--syn-info-bg);    color: var(--syn-info-text); }
+ 
+.search-pill__x {
+  cursor: pointer;
+  font-size: var(--syn-text-base);
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity var(--syn-transition);
+}
+ 
+.search-pill__x:hover {
+  opacity: 1;
+}
+ 
+/* ── Results column ── */
+.search-results {
+  flex: 1;
+  min-width: 0;
+}
+ 
+.search-results__count {
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-secondary);
+  margin-bottom: var(--syn-space-3);
+}
+ 
+.search-results__empty {
+  text-align: center;
+  padding: var(--syn-space-8) var(--syn-space-4);
+  color: var(--syn-text-muted);
+  font-size: var(--syn-text-base);
+}
+ 
+.search-results__loading {
+  text-align: center;
+  padding: var(--syn-space-4);
+  color: var(--syn-text-muted);
+  font-size: var(--syn-text-sm);
+}
+ 
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--syn-space-3);
+}
+ 
+.search-sentinel {
+  height: 1px;
+}
+ 
+
+
+/* ==========================================================================
+   BROWSE PAGE — hero + elevated category rows.
+   Reuses .empty-state from utilities.css; everything else is page-specific.
+   ========================================================================== */
+
+/* ── Page wrapper ──
+   Escape the .main-content padding (32px) so hero + rows can go full-bleed.
+   Calc value matches --syn-space-8 (or --syn-space-4 on mobile). */
+.browse-page {
+  margin: calc(var(--syn-space-8) * -1);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .browse-page {
+    margin: calc(var(--syn-space-4) * -1);
+  }
+}
+
+/* ==========================================================================
+   BROWSE PAGE — hero + elevated category rows.
+   Reuses .empty-state from utilities.css; everything else is page-specific.
+   ========================================================================== */
+
+/* ── Page wrapper ──
+   Escape the .main-content padding (32px) so hero + rows can go full-bleed.
+   Calc value matches --syn-space-8 (or --syn-space-4 on mobile). */
+.browse-page {
+  margin: calc(var(--syn-space-8) * -1);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .browse-page {
+    margin: calc(var(--syn-space-4) * -1);
+  }
+}
+
+/* ==========================================================================
+   01. HERO
+   Sticky-ish: stays at the top of the page; opacity is driven by scrollY
+   in JS (inline style). Background uses gradient placeholder; will become
+   the event image when you add real photos.
+   ========================================================================== */
+.browse-hero {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--syn-space-8);
+  color: #fff;
+  transition: opacity 0.1s linear;
+}
+
+.browse-hero__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15, 17, 23, 0.2) 0%,
+      rgba(15, 17, 23, 0.4) 40%,
+      rgba(15, 17, 23, 0.85) 100%
+    ),
+    linear-gradient(135deg, var(--syn-accent-dark), #1a1d27 70%);
+  z-index: 0;
+}
+
+.browse-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--syn-space-2);
+}
+
+.browse-hero__eyebrow {
+  font-size: var(--syn-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--syn-accent-light);
+}
+
+.browse-hero__title {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.browse-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--syn-space-2) var(--syn-space-4);
+  font-size: var(--syn-text-sm);
+  opacity: 0.9;
+}
+
+.browse-hero__meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--syn-space-2);
+}
+
+/* Pagination dots */
+.browse-hero__dots {
+  position: absolute;
+  bottom: var(--syn-space-4);
+  right: var(--syn-space-8);
+  display: flex;
+  gap: var(--syn-space-1);
+  z-index: 1;
+}
+
+.browse-hero__dot {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background var(--syn-transition);
+  padding: 0;
+}
+
+.browse-hero__dot:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.browse-hero__dot.is-active {
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .browse-hero {
+    height: 240px;
+    padding: var(--syn-space-5);
+  }
+  .browse-hero__dots {
+    right: var(--syn-space-5);
+  }
+}
+
+/* ==========================================================================
+   02. ROWS CONTAINER
+   ========================================================================== */
+.browse-rows {
+  padding: var(--syn-space-6) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--syn-space-6);
+}
+
+.browse-rows__title {
+  font-size: var(--syn-text-2xl);
+  font-weight: 600;
+  margin: 0 var(--syn-space-8) var(--syn-space-2);
+}
+
+@media (max-width: 768px) {
+  .browse-rows__title {
+    margin: 0 var(--syn-space-4) var(--syn-space-2);
+  }
+}
+
+/* ==========================================================================
+   03. CATEGORY ROW
+   Plain row, no decoration. Cards inside cast their own shadows.
+   ========================================================================== */
+.browse-row {
+  position: relative;
+  padding: var(--syn-space-5) 0 var(--syn-space-8);
+  overflow: visible;
+}
+
+.browse-row__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--syn-space-8);
+  margin-bottom: var(--syn-space-3);
+}
+
+.browse-row__title {
+  font-size: var(--syn-text-lg);
+  font-weight: 600;
+  color: var(--syn-text-primary);
+  margin: 0;
+}
+
+.browse-row__nav {
+  display: flex;
+  gap: var(--syn-space-1);
+}
+
+.browse-row__arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--syn-border);
+  background: var(--syn-bg-surface);
+  color: var(--syn-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--syn-transition), color var(--syn-transition), border-color var(--syn-transition);
+}
+
+.browse-row__arrow:hover {
+  background: var(--syn-bg-hover);
+  color: var(--syn-text-primary);
+  border-color: var(--syn-border-hover);
+}
+
+/* The horizontal scroll track */
+.browse-row__track {
+  display: flex;
+  gap: var(--syn-space-4);
+
+  overflow-x: hidden;
+  overflow-y: visible;
+
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+
+  padding:
+    var(--syn-space-3)
+    var(--syn-space-5)
+    var(--syn-space-4);
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--syn-border-hover) transparent;
+}
+
+.browse-row__track::-webkit-scrollbar {
+  height: 6px;
+}
+
+.browse-row__track::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.browse-row__track::-webkit-scrollbar-thumb {
+  background: var(--syn-border-hover);
+  border-radius: 3px;
+}
+
+.browse-row__track::-webkit-scrollbar-thumb:hover {
+  background: var(--syn-text-muted);
+}
+
+.browse-row__track > .browse-card,
+.browse-row__track > .card {
+  min-width: 240px;
+  max-width: 240px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,0.06),
+    0 10px 20px rgba(0,0,0,0.05);
+
+  transition: box-shadow var(--syn-transition),
+              transform var(--syn-transition);
+}
+
+.browse-row__track > .browse-card:hover,
+.browse-row__track > .card:hover {
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.10),
+    0 12px 24px rgba(0, 0, 0, 0.14);
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .browse-row__track > .browse-card,
+[data-theme="dark"] .browse-row__track > .card {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .browse-row__track > .browse-card:hover,
+[data-theme="dark"] .browse-row__track > .card:hover {
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    0 12px 24px rgba(0, 0, 0, 0.7);
+}
+
+.browse-row__sentinel {
+  min-width: 1px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .browse-row__head,
+  .browse-row__track {
+    padding-left: var(--syn-space-4);
+    padding-right: var(--syn-space-4);
+  }
+
+  .browse-row__nav {
+    display: none; /* on mobile, swipe instead of arrow buttons */
+  }
+
+  .browse-row__track > .browse-card,
+  .browse-row__track > .card {
+    min-width: 180px;
+    max-width: 200px;
+  }
+}

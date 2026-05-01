@@ -17,7 +17,6 @@ import {
   EventBookingsPage ,
   MessagesPage
 } from './pages'
-import './styles.css'
 
 function App() {
   return (

@@ -1,349 +1,187 @@
-/* ── User Booking Card ── */
-.ub-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
+/* ==========================================================================
+   BOOKINGS — Component-specific styles only.
+   Reuses .card, .badge, .btn, .stat, .label, .overlay, .dialog from utilities.
+   ========================================================================== */
 
-.ub-header {
+/* ==========================================================================
+   01. USER BOOKING CARD (attendee view)
+   Layout: header (event + status) → ticket details strip → action row
+   ========================================================================== */
+
+.user-booking-card__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 14px 16px;
-  gap: 12px;
+  padding: var(--syn-space-4);
+  gap: var(--syn-space-3);
 }
 
-.ub-event {
-  flex: 1;
-  min-width: 0;
-}
+.user-booking-card__event { flex: 1; min-width: 0; }
 
-.ub-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-h);
+.user-booking-card__title {
+  font-size: var(--syn-text-md);
+  font-weight: 500;
+  color: var(--syn-text-primary);
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.ub-meta {
+.user-booking-card__meta {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-top: 4px;
-  font-size: 0.78rem;
-  color: var(--text);
+  margin-top: var(--syn-space-1);
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-secondary);
 }
 
-.ub-meta span {
+.user-booking-card__meta > span {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--syn-space-1);
 }
 
-.ub-status {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 20px;
-  flex-shrink: 0;
-}
-
-.ub-status--active {
-  background: #EAF3DE;
-  color: #27500A;
-}
-
-.ub-status--completed {
-  background: #E6F1FB;
-  color: #0C447C;
-}
-
-.ub-status--cancelled {
-  background: #FCEBEB;
-  color: #791F1F;
-}
-
-/* ── Ticket details row ── */
-.ub-ticket {
+/* Strip with ticket details (Type, Quantity, Total) */
+.user-booking-card__strip {
   display: flex;
-  gap: 16px;
-  padding: 10px 16px;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
+  gap: var(--syn-space-4);
+  padding: var(--syn-space-3) var(--syn-space-4);
+  border-top: 1px solid var(--syn-border);
+  background: var(--syn-bg-surface);
 }
 
-.ub-ticket-detail {
+.user-booking-card__strip-item {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.ub-label {
-  font-size: 10px;
+.user-booking-card__strip-value {
+  font-size: var(--syn-text-sm);
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  opacity: 0.6;
+  color: var(--syn-text-primary);
 }
 
-.ub-value {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text-h);
-}
+.user-booking-card__map { padding: 0 var(--syn-space-4) var(--syn-space-4); }
 
-/* ── Map toggle ── */
-.ub-map-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 10px 16px;
-  padding: 6px 16px;
-  font-size: 0.82rem;
-  font-family: inherit;
-  color: #fff;
-  background: #3b82f6;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-}
-
-.ub-map-toggle:hover {
-  background: #2563eb;
-}
-
-/* ── Map spacing ── */
-.ub-map {
-  padding: 0 16px 16px;
-}
-
-.ub-map .event-map {
-  border-radius: 8px;
-}
-
-@media (max-width: 540px) {
-  .ub-ticket {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .ub-ticket-detail {
-    min-width: 60px;
-  }
-}
-
-/* ── Event Booking Card (Organizer view) ── */
-.eb-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.eb-header {
+.user-booking-card__actions {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 14px 16px;
-  gap: 12px;
-}
-
-.eb-attendee {
-  flex: 1;
-  min-width: 0;
-}
-
-.eb-attendee__name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-h);
-  display: block;
-}
-
-.eb-attendee__contact {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 4px;
-  font-size: 0.78rem;
-  color: var(--text);
-}
-
-.eb-attendee__contact span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.eb-date {
-  font-size: 0.75rem;
-  color: var(--text);
-  opacity: 0.6;
-  flex-shrink: 0;
-}
-
-/* ── Ticket details row ── */
-.eb-ticket {
-  display: flex;
-  gap: 16px;
-  padding: 10px 16px;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
-}
-
-.eb-ticket-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.eb-label {
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  opacity: 0.6;
-}
-
-.eb-value {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-@media (max-width: 540px) {
-  .eb-ticket {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .eb-ticket-detail {
-    min-width: 60px;
-  }
-}
- 
-/* ── Card actions row ── */
-.ub-card-actions {
-  display: flex;
-  gap: 8px;
-  margin: 10px 16px;
+  gap: var(--syn-space-2);
+  padding: var(--syn-space-3) var(--syn-space-4);
   flex-wrap: wrap;
 }
 
-/* ── Message button ─ */
-.ub-msg-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 10px 16px;
-  padding: 6px 16px;
-  font-size: 0.82rem;
-  font-family: inherit;
-  color: #fff;
-  background: #d9a1ff;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background 0.12s;
+@media (max-width: 540px) {
+  .user-booking-card__strip { flex-wrap: wrap; }
+  .user-booking-card__strip-item { min-width: 60px; }
 }
 
-.ub-msg-btn:hover {
-  background: #9a40d4;
-  
-}
+/* ==========================================================================
+   02. EVENT BOOKING CARD (organizer view of who booked)
+   ========================================================================== */
 
-/* ── Conversation dialog ── */
-.ub-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.4);
+.event-booking-card__header {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--syn-space-4);
+  gap: var(--syn-space-3);
 }
 
-.ub-dialog {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
-  width: 360px;
-  max-width: 90vw;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
+.event-booking-card__attendee { flex: 1; min-width: 0; }
 
-.ub-dialog-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-h);
-  margin: 0 0 10px;
-}
-
-.ub-dialog-body {
-  font-size: 0.85rem;
-  color: var(--text);
-  line-height: 1.6;
-  margin: 0 0 16px;
-}
-
-.ub-dialog-error {
-  font-size: 0.82rem;
-  color: #c0392b;
-  margin: 0 0 12px;
-}
-
-.ub-dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.ub-dialog-cancel {
-  padding: 8px 18px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.85rem;
-  color: var(--text-h);
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.12s;
-}
-
-.ub-dialog-cancel:hover:not(:disabled) {
-  background: #f5f5f5;
-}
-
-.ub-dialog-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.ub-dialog-confirm {
-  padding: 8px 18px;
-  background: #5f2089;
-  border: 1px solid #7a1dbd;
-  border-radius: 8px;
-  font-size: 0.85rem;
+.event-booking-card__name {
+  font-size: var(--syn-text-md);
   font-weight: 500;
-  color: #fff;
-  cursor: pointer;
-  font-family: inherit;
-  transition: opacity 0.12s;
+  color: var(--syn-text-primary);
+  display: block;
 }
 
-.ub-dialog-confirm:hover:not(:disabled) {
-  opacity: 0.88;
+.event-booking-card__contact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--syn-space-1);
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-secondary);
 }
 
-.ub-dialog-confirm:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.event-booking-card__contact > span {
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-1);
+}
+
+.event-booking-card__date {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+  flex-shrink: 0;
+}
+
+.event-booking-card__strip {
+  display: flex;
+  gap: var(--syn-space-4);
+  padding: var(--syn-space-3) var(--syn-space-4);
+  border-top: 1px solid var(--syn-border);
+  background: var(--syn-bg-surface);
+}
+
+.event-booking-card__strip-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.event-booking-card__strip-value {
+  font-size: var(--syn-text-sm);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+}
+
+@media (max-width: 540px) {
+  .event-booking-card__strip { flex-wrap: wrap; }
+  .event-booking-card__strip-item { min-width: 60px; }
+}
+
+/* ==========================================================================
+   03. NEXT EVENT WIDGET (small "your next event" callout)
+   Compose with .card: <div class="card next-event">
+   The teal border-color override gives it a distinct accent look.
+   ========================================================================== */
+.next-event {
+  border-color: var(--syn-accent-border);
+  padding: var(--syn-space-4);
+}
+
+.next-event__label {
+  font-size: var(--syn-text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--syn-accent-text);
+  margin-bottom: var(--syn-space-2);
+}
+
+.next-event__title {
+  font-size: var(--syn-text-md);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+  display: block;
+}
+
+.next-event__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: var(--syn-space-1);
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-secondary);
+}
+
+.next-event__meta > span {
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-1);
 }
