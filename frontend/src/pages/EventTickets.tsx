@@ -62,90 +62,112 @@ export function EventTicketsPage() {
   }
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div>
-          <Link to="/my-events" style={{ fontSize: '13px', color: '#888' }}>&larr; Back to My Events</Link>
-          <h1>Ticket Types</h1>
+      <div className="page">
+        <div className="page-header">
+          <div>
+            <Link to="/my-events" style={{ fontSize: "13px", color: "#888" }}>
+              &larr; Back to My Events
+            </Link>
+            <h1>Ticket Types</h1>
+          </div>
         </div>
-      </div>
 
-    <h1>Tickets — {state?.title ?? 'Event'}</h1>
-    <p style={{ color: '#888', fontSize: '13px' }}>Capacity: {state?.capacity}</p>  
+        <h1>Tickets — {state?.title ?? "Event"}</h1>
+        <p style={{ color: "#888", fontSize: "13px" }}>
+          Capacity: {state?.capacity}
+        </p>
 
-      {error && <div className="error-message">{error}</div>}
+        {error && <div className="alert alert--error">{error}</div>}
 
-    {successMessage && (
-        <div className="toast">{successMessage}</div>
-      )}
+        {successMessage && (
+          <div className="toast toast--success">{successMessage}</div>
+        )}
 
-      <form className="tc-form" onSubmit={handleCreate}>
-        <h3>Release a new ticket type</h3>
-        <div className="tc-form-fields">
-          <div className="tc-field">
-            <label>Name</label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={e => handleChange(e)}
-              placeholder="e.g. General Admission"
-              required
-            />
+        <form className="card ticket-create-form" onSubmit={handleCreate}>
+          <h3 className="ticket-create-form__title">Release a new ticket type</h3>
+
+          <div className="ticket-create-form__row">
+            <div className="field">
+              <label className="field__label">Name</label>
+              <input
+                className="field__control"
+                name="name"
+                value={form.name}
+                onChange={(e) => handleChange(e)}
+                placeholder="e.g. General Admission"
+                required
+              />
+            </div>
+
+            <div className="field">
+              <label className="field__label">Price (€)</label>
+              <input
+                className="field__control"
+                name="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={(e) => handleChange(e)}
+                required
+              />
+            </div>
+
+            <div className="field">
+              <label className="field__label">Quantity</label>
+              <input
+                className="field__control"
+                name="quantity"
+                type="number"
+                min="1"
+                value={form.quantity}
+                onChange={(e) => handleChange(e)}
+                required
+              />
+            </div>
           </div>
-          <div className="tc-field">
-            <label>Price (€)</label>
-            <input
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.price}
-              onChange={e => handleChange(e)}
-              required
-            />
-          </div>
-          <div className="tc-field">
-            <label>Quantity</label>
-            <input
-              name="quantity"
-              type="number"
-              min="1"
-              value={form.quantity}
-              onChange={e => handleChange(e)}
-              required
-            />
-          </div>
-          <button className="tc-submit" type="submit" disabled={submitting}>
-            {submitting ? 'Creating...' : 'Release'}
-          </button>
-        </div>
-      </form>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : tickets.length === 0 ? (
-        <div className="tc-empty">No ticket types yet — release one above.</div>
-      ) : (
-        <div className="tc-list">
-         {tickets.map(t => (
-              <TicketCard key={t.id} ticket={t} onEdit={t => setEditTarget(t)} />
+          <div className="dialog__actions dialog__actions--with-divider">
+            <button
+              className="btn btn--primary"
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? "Creating..." : "Release"}
+            </button>
+          </div>
+        </form>
+
+        {loading ? (
+          <p>Loading...</p>
+        ) : tickets.length === 0 ? (
+          <div className="empty-state">
+            No ticket types yet — release one above.
+          </div>
+        ) : (
+          <div className="list-stack">
+            {tickets.map((t) => (
+              <TicketCard
+                key={t.id}
+                ticket={t}
+                onEdit={(t) => setEditTarget(t)}
+              />
             ))}
-        </div>
-      )}
+          </div>
+        )}
 
         {editTarget && (
           <EditTicketForm
             ticket={editTarget}
             onClose={() => setEditTarget(null)}
             onSuccess={() => {
-              setEditTarget(null)
-              setSuccessMessage('Ticket updated successfully')
-              fetchTickets()
-              setTimeout(() => setSuccessMessage(''), 3000)
+              setEditTarget(null);
+              setSuccessMessage("Ticket updated successfully");
+              fetchTickets();
+              setTimeout(() => setSuccessMessage(""), 3000);
             }}
           />
         )}
-    </div>
-    
-  )
+      </div>
+    );
 }

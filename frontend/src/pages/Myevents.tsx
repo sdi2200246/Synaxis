@@ -102,16 +102,16 @@ export function MyEventsPage() {
     <div className="page">
       <div className="page-header">
         <h1>My Events</h1>
-        <button className="btn-submit" onClick={() => setShowCreateForm(true)}>
+        <button className="btn btn--primary" onClick={() => setShowCreateForm(true)}>
           New Event
         </button>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
-      {successMessage && <div className="toast">{successMessage}</div>}
+      {error && <div className="alert alert--error">{error}</div>}
+      {successMessage && <div className="toast toast--success">{successMessage}</div>}
       {loading && <p>Loading...</p>}
 
-      <div className="events-list">
+      <div className="list-stack">
         {events.map(event => (
           <OrganizerEventCard
             key={event.id}
@@ -136,8 +136,8 @@ export function MyEventsPage() {
             loading={deleteSubmitting}
             onConfirm={handleConfirmDelete}
             onCancel={() => setDeleteTarget(null)}
-            confirmClassName="browse-detail__confirm-btn browse-detail__confirm-btn--danger"
-            cancelClassName="browse-detail__btn"
+            confirmClassName="btn btn--danger btn btn--danger"
+            cancelClassName="btn btn--ghost"
           />
         )}
 
@@ -149,8 +149,8 @@ export function MyEventsPage() {
             loading={publishSubmitting}
             onConfirm={handleConfirmPublish}
             onCancel={() => setPublishTarget(null)}
-            confirmClassName="browse-detail__confirm-btn"
-            cancelClassName="browse-detail__btn"
+            confirmClassName="btn btn--danger"
+            cancelClassName="btn btn--ghost"
           />
         )}
 
@@ -162,8 +162,8 @@ export function MyEventsPage() {
               loading={cancelSubmitting}
               onConfirm={handleConfirmCancel}
               onCancel={() => setCancelTarget(null)}
-              confirmClassName="browse-detail__confirm-btn browse-detail__confirm-btn--danger"
-              cancelClassName="browse-detail__btn"
+              confirmClassName="btn btn--danger btn btn--danger"
+              cancelClassName="btn btn--ghost"
             />
           )}
 

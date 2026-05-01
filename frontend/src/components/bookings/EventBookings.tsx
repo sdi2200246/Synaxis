@@ -1,4 +1,4 @@
-import { FiMail, FiPhone, FiTag } from 'react-icons/fi'
+import { FiMail, FiPhone} from 'react-icons/fi'
 import type { EventBooking } from '../../api/bookings'
 import './Bookings.css'
 
@@ -8,34 +8,34 @@ interface EventBookingCardProps {
 
 export function EventBookingCard({ booking }: EventBookingCardProps) {
   return (
-    <div className="eb-card">
-      <div className="eb-header">
-        <div className="eb-attendee">
-          <span className="eb-attendee__name">{booking.attendee_name}</span>
-          <div className="eb-attendee__contact">
+    <div className="card event-booking-card">
+      <div className="event-booking-card__header">
+        <div className="event-booking-card__attendee">
+          <span className="event-booking-card__name">{booking.attendee_name}</span>
+          <div className="event-booking-card__contact">
             <span><FiMail size={12} />{booking.attendee_email}</span>
             {booking.attendee_phone && (
               <span><FiPhone size={12} />{booking.attendee_phone}</span>
             )}
           </div>
         </div>
-        <span className="eb-date">
+        <span className="event-booking-card__date">
           {new Date(booking.booked_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
         </span>
       </div>
 
-      <div className="eb-ticket">
-        <div className="eb-ticket-detail">
-          <span className="eb-label">Ticket</span>
-          <span className="eb-value">{booking.ticket_name}</span>
+      <div className="event-booking-card__strip">
+        <div className="event-booking-card__strip-item">
+          <span className="label">Ticket</span>
+          <span className="event-booking-card__strip-value">{booking.ticket_name}</span>
         </div>
-        <div className="eb-ticket-detail">
-          <span className="eb-label">Qty</span>
-          <span className="eb-value">{booking.number_of_tickets}</span>
+        <div className="event-booking-card__strip-item">
+          <span className="label">Qty</span>
+          <span className="event-booking-card__strip-value">{booking.number_of_tickets}</span>
         </div>
-        <div className="eb-ticket-detail">
-          <span className="eb-label">Total</span>
-          <span className="eb-value">€{booking.total_cost.toFixed(2)}</span>
+        <div className="event-booking-card__strip-item">
+          <span className="label">Total</span>
+          <span className="event-booking-card__strip-value">€{booking.total_cost.toFixed(2)}</span>
         </div>
       </div>
     </div>

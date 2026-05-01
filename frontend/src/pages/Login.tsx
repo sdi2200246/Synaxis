@@ -28,14 +28,18 @@ export function LoginPage() {
 
   return (
     <div className="auth-page">
-      <h1>Login</h1>
-      
-      <form onSubmit={handleSubmit}>
-        {error && <div className="error">{error}</div>}
-        
+      <h1 className="auth-page__title">Login</h1>
+
+      <form className="auth-page__form" onSubmit={handleSubmit}>
+        {error && <div className="alert alert--error">{error}</div>}
+
         <div className="field">
-          <label htmlFor="username">Username</label>
+          <label className="field__label" htmlFor="username">
+            Username
+          </label>
+
           <input
+            className="field__control"
             id="username"
             type="text"
             value={username}
@@ -45,8 +49,12 @@ export function LoginPage() {
         </div>
 
         <div className="field">
-          <label htmlFor="password">Password</label>
+          <label className="field__label" htmlFor="password">
+            Password
+          </label>
+
           <input
+            className="field__control"
             id="password"
             type="password"
             value={password}
@@ -55,12 +63,12 @@ export function LoginPage() {
           />
         </div>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Logging in...' : 'Login'}
+        <button className="btn btn--primary btn--block" type="submit">
+          {isSubmitting ? "Logging in..." : "Login"}
         </button>
       </form>
 
-      <p>
+      <p className="auth-page__footer">
         Don't have an account? <Link to="/register">Register</Link>
       </p>
     </div>

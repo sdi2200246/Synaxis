@@ -1,0 +1,779 @@
+/* ==========================================================================
+   UTILITIES — Reusable patterns.
+   Every pattern defined here is used in 2+ places.
+   Naming follows BEM: .block, .block__element, .block--modifier.
+   ========================================================================== */
+
+/* ==========================================================================
+   01. CARD
+   The bordered container used by every list item: events, bookings,
+   tickets, users, browse cards. Compose with a component class for variants.
+   Usage: <div class="card organizer-event-card">
+   ========================================================================== */
+.card {
+  background: var(--syn-bg-card);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius-lg);
+  overflow: hidden;
+  transition: border-color var(--syn-transition), box-shadow var(--syn-transition);
+}
+
+.card--hoverable:hover,
+.card.is-interactive:hover {
+  border-color: var(--syn-border-hover);
+  box-shadow: var(--syn-shadow-card);
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-3);
+  padding: var(--syn-space-4);
+}
+
+.card__body {
+  padding: var(--syn-space-4);
+  border-top: 1px solid var(--syn-border);
+}
+
+.card__title {
+  font-size: var(--syn-text-base);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-2);
+  margin-bottom: var(--syn-space-1);
+}
+
+.card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-2);
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-secondary);
+  flex-wrap: wrap;
+}
+
+.card__meta-sep {
+  color: var(--syn-text-muted);
+}
+
+.card__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--syn-space-1);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   02. BUTTON
+   Base + color/shape modifiers. Always combine: .btn .btn--primary
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--syn-space-2);
+  padding: 0.55rem 1.1rem;
+  font-size: var(--syn-text-sm);
+  font-weight: 500;
+  font-family: inherit;
+  border: 1px solid transparent;
+  border-radius: var(--syn-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--syn-transition), border-color var(--syn-transition), color var(--syn-transition);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Color variants ── */
+.btn--primary {
+  background: var(--syn-accent);
+  color: #fff;
+}
+.btn--primary:hover:not(:disabled) { background: var(--syn-accent-dark); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--syn-text-secondary);
+  border-color: var(--syn-border);
+}
+.btn--ghost:hover:not(:disabled) {
+  background: var(--syn-bg-hover);
+  color: var(--syn-text-primary);
+  border-color: var(--syn-border-hover);
+}
+
+.btn--soft {
+  background: var(--syn-accent-bg);
+  color: var(--syn-accent-text);
+}
+.btn--soft:hover:not(:disabled) { background: var(--syn-accent-border); }
+
+.btn--danger {
+  background: var(--syn-danger-bg);
+  color: var(--syn-danger-text);
+}
+.btn--danger:hover:not(:disabled) { background: var(--syn-danger); color: #fff; }
+
+.btn--success {
+  background: var(--syn-success-bg);
+  color: var(--syn-success-text);
+}
+.btn--success:hover:not(:disabled) { background: var(--syn-success); color: #fff; }
+
+/* ── Shape modifiers ── */
+.btn--pill { border-radius: var(--syn-radius-pill); padding: 0.4rem 1rem; }
+
+.btn--icon {
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  color: var(--syn-text-muted);
+  border-radius: var(--syn-radius-sm);
+}
+.btn--icon:hover:not(:disabled) {
+  background: var(--syn-bg-hover);
+  color: var(--syn-text-primary);
+}
+/* Tonal hover for icon buttons */
+.btn--icon.btn--icon-danger:hover:not(:disabled) {
+  background: var(--syn-danger-bg);
+  color: var(--syn-danger-text);
+}
+.btn--icon.btn--icon-success:hover:not(:disabled) {
+  background: var(--syn-success-bg);
+  color: var(--syn-success-text);
+}
+.btn--icon.btn--icon-info:hover:not(:disabled) {
+  background: var(--syn-info-bg);
+  color: var(--syn-info-text);
+}
+
+/* ── Block button (full width) ── */
+.btn--block { width: 100%; }
+
+/* ==========================================================================
+   03. BADGE
+   Small status pill. Always combine: .badge .badge--published
+   ========================================================================== */
+.badge {
+  display: inline-block;
+  font-size: var(--syn-text-xs);
+  font-weight: 500;
+  padding: 2px var(--syn-space-2);
+  border-radius: var(--syn-radius-pill);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge--published { background: var(--syn-accent-bg);  color: var(--syn-accent-text);  }
+.badge--draft     { background: var(--syn-bg-surface); color: var(--syn-text-secondary); border: 1px solid var(--syn-border); }
+.badge--active    { background: var(--syn-success-bg); color: var(--syn-success-text); }
+.badge--cancelled { background: var(--syn-danger-bg);  color: var(--syn-danger-text);  }
+.badge--completed { background: var(--syn-info-bg);    color: var(--syn-info-text);    }
+.badge--pending   { background: var(--syn-warning-bg); color: var(--syn-warning-text); }
+.badge--neutral   { background: var(--syn-bg-surface); color: var(--syn-text-secondary); }
+
+/* ==========================================================================
+   04. LABEL
+   The tiny uppercase muted text used above values everywhere.
+   ========================================================================== */
+.label {
+  display: block;
+  font-size: var(--syn-text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--syn-text-muted);
+  margin-bottom: var(--syn-space-1);
+}
+
+/* ==========================================================================
+   05. OVERLAY + DIALOG
+   Used by every modal, confirm, and full-screen detail view.
+   ========================================================================== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--syn-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--syn-space-4);
+}
+
+.dialog {
+  background: var(--syn-bg-card);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius-lg);
+  box-shadow: var(--syn-shadow-modal);
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--syn-space-6);
+}
+
+.dialog--wide   { max-width: 800px; padding: 0; }
+.dialog--medium { max-width: 540px; padding: 0; }
+
+/* For wide/medium dialogs that have headers and need internal padding */
+.dialog--wide > .dialog__header,
+.dialog--medium > .dialog__header { padding: var(--syn-space-4) var(--syn-space-6); }
+
+.dialog--wide > .dialog__body,
+.dialog--medium > .dialog__body { padding: var(--syn-space-6); }
+
+.dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--syn-border);
+  position: sticky;
+  top: 0;
+  background: var(--syn-bg-card);
+  z-index: 1;
+}
+
+.dialog__title {
+  font-size: var(--syn-text-md);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+  margin: 0 0 var(--syn-space-3);
+}
+
+.dialog__body {
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--syn-space-5);
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--syn-space-3);
+}
+
+.dialog__actions--with-divider {
+  padding-top: var(--syn-space-4);
+  border-top: 1px solid var(--syn-border);
+}
+
+/* ==========================================================================
+   06. FIELD (Form input + label group)
+   ========================================================================== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--syn-space-1);
+}
+
+.field--full { grid-column: 1 / -1; }
+
+.field__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--syn-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--syn-text-muted);
+  margin-bottom: var(--syn-space-1);
+}
+
+.field__label.is-dim { opacity: 0.5; }
+
+.field__control {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: var(--syn-bg-input);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius-sm);
+  font-size: var(--syn-text-base);
+  color: var(--syn-text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--syn-transition);
+}
+
+.field__control::placeholder { color: var(--syn-text-muted); }
+
+.field__control:focus { border-color: var(--syn-accent); }
+
+.field__control:disabled {
+  background: var(--syn-bg-surface);
+  color: var(--syn-text-muted);
+  cursor: not-allowed;
+}
+
+textarea.field__control {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.field__hint {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+  margin-top: 2px;
+}
+
+.field__error {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-danger-text);
+  margin-top: 2px;
+}
+
+/* Form layout helpers */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--syn-space-4);
+}
+
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   07. STAT (numeric summary card)
+   ========================================================================== */
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--syn-space-3) var(--syn-space-3);
+  background: var(--syn-bg-surface);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius);
+}
+
+.stat__value {
+  font-size: var(--syn-text-xl);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+}
+
+.stat__value--zero { color: var(--syn-danger-text); }
+
+.stat__label {
+  font-size: var(--syn-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--syn-text-muted);
+}
+
+.stat-row {
+  display: flex;
+  gap: var(--syn-space-3);
+  margin-bottom: var(--syn-space-5);
+}
+
+@media (max-width: 540px) {
+  .stat-row { flex-wrap: wrap; }
+  .stat { min-width: calc(50% - var(--syn-space-2)); }
+}
+
+/* ==========================================================================
+   08. ALERT (inline status messages)
+   ========================================================================== */
+.alert {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--syn-radius-sm);
+  font-size: var(--syn-text-sm);
+  line-height: 1.4;
+}
+
+.alert--error   { background: var(--syn-danger-bg);  color: var(--syn-danger-text);  }
+.alert--success { background: var(--syn-success-bg); color: var(--syn-success-text); }
+.alert--warning { background: var(--syn-warning-bg); color: var(--syn-warning-text); }
+.alert--info    { background: var(--syn-info-bg);    color: var(--syn-info-text);    }
+
+/* ==========================================================================
+   09. TOAST (floating success/error notification)
+   ========================================================================== */
+.toast {
+  position: fixed;
+  top: var(--syn-space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--syn-radius);
+  font-size: var(--syn-text-sm);
+  z-index: 2000;
+  white-space: nowrap;
+  animation: toast-fade 3s forwards;
+  box-shadow: var(--syn-shadow-card);
+}
+
+.toast--success {
+  background: var(--syn-success-bg);
+  color: var(--syn-success-text);
+  border: 1px solid var(--syn-success);
+}
+
+.toast--error {
+  background: var(--syn-danger-bg);
+  color: var(--syn-danger-text);
+  border: 1px solid var(--syn-danger);
+}
+
+@keyframes toast-fade {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ==========================================================================
+   10. EMPTY STATE
+   ========================================================================== */
+.empty-state {
+  text-align: center;
+  color: var(--syn-text-muted);
+  padding: var(--syn-space-8) var(--syn-space-5);
+  font-size: var(--syn-text-base);
+}
+
+/* ==========================================================================
+   11. STATUS DOT
+   ========================================================================== */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--approved { background: var(--syn-success); }
+.dot--pending  { background: var(--syn-warning); }
+.dot--rejected { background: var(--syn-danger); }
+
+/* ==========================================================================
+   12. ICON BADGE (red unread dot on icon)
+   ========================================================================== */
+.icon-badge {
+  position: relative;
+  display: inline-flex;
+}
+
+.icon-badge__dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  background: var(--syn-danger);
+  border-radius: 50%;
+  border: 1px solid var(--syn-bg-card);
+}
+
+.icon-badge__count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--syn-danger);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 500;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--syn-bg-card);
+}
+
+/* ==========================================================================
+   13. AVATAR
+   ========================================================================== */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--syn-accent-bg);
+  color: var(--syn-accent-text);
+  border: 1px solid var(--syn-accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--syn-text-sm);
+  font-weight: 500;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.avatar--sm { width: 28px; height: 28px; font-size: var(--syn-text-xs); }
+.avatar--lg { width: 48px; height: 48px; font-size: var(--syn-text-md); }
+
+/* ==========================================================================
+   14. CHIP (removable tag, e.g. category in form)
+   ========================================================================== */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--syn-space-1);
+  padding: var(--syn-space-1) 10px;
+  background: var(--syn-bg-surface);
+  border: 1px solid var(--syn-border);
+  color: var(--syn-text-secondary);
+  border-radius: var(--syn-radius-sm);
+  font-size: var(--syn-text-sm);
+}
+
+.chip__remove {
+  color: var(--syn-text-muted);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color var(--syn-transition);
+}
+
+.chip__remove:hover:not(:disabled) { color: var(--syn-text-primary); }
+.chip__remove:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--syn-space-2);
+}
+
+/* ==========================================================================
+   15. SEARCH BAR (input with leading icon)
+   ========================================================================== */
+.search-bar {
+  position: relative;
+}
+
+.search-bar__icon {
+  position: absolute;
+  left: var(--syn-space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--syn-text-muted);
+  pointer-events: none;
+}
+
+.search-bar__input {
+  width: 100%;
+  padding: 10px var(--syn-space-3) 10px 38px;
+  background: var(--syn-bg-input);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius);
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--syn-transition);
+}
+
+.search-bar__input::placeholder { color: var(--syn-text-muted); }
+.search-bar__input:focus { border-color: var(--syn-accent); }
+
+/* ==========================================================================
+   16. UPLOAD ZONE (dropzone for files)
+   ========================================================================== */
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--syn-space-2);
+  border: 1px dashed var(--syn-border-hover);
+  border-radius: var(--syn-radius);
+  padding: var(--syn-space-5);
+  cursor: pointer;
+  color: var(--syn-text-muted);
+  transition: background var(--syn-transition), border-color var(--syn-transition);
+}
+
+.upload-zone:hover {
+  background: var(--syn-bg-surface);
+  border-color: var(--syn-accent);
+}
+
+.upload-zone__hint {
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-secondary);
+}
+
+.upload-zone__sub {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+}
+
+.upload-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--syn-space-2);
+  margin-top: var(--syn-space-3);
+}
+
+.upload-thumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--syn-radius);
+  overflow: hidden;
+  border: 1px solid var(--syn-border);
+}
+
+.upload-thumb__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-thumb__remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.upload-thumb__remove:hover:not(:disabled) { background: rgba(0, 0, 0, 0.8); }
+.upload-thumb__remove:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ==========================================================================
+   17. UTILITY HELPERS
+   ========================================================================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* ==========================================================================
+   APPEND THESE TO utilities.css
+   These extract patterns that were being duplicated.
+   ========================================================================== */
+
+/* ── 18. SECTION (padded block with bottom divider) ──
+   Used inside dialogs and detail views for clear visual separation
+   between content groups. Compose:
+     <section class="section">...</section>
+     <section class="section section--accent">...</section>  // teal-tinted
+*/
+.section {
+  padding: var(--syn-space-5) var(--syn-space-6);
+  border-bottom: 1px solid var(--syn-border);
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.section--accent {
+  background: var(--syn-accent-bg);
+  border-left: 3px solid var(--syn-accent);
+}
+
+.section--compact {
+  padding: var(--syn-space-4) var(--syn-space-5);
+}
+
+.section__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--syn-space-3);
+  margin-bottom: var(--syn-space-3);
+}
+
+/* On mobile, sections shrink horizontal padding */
+@media (max-width: 540px) {
+  .section {
+    padding-left: var(--syn-space-4);
+    padding-right: var(--syn-space-4);
+  }
+}
+
+/* ── 19. ICON-TEXT (inline icon + label, used in metadata rows) ──
+   Replaces the duplicated `<span><Icon/>{text}</span>` pattern.
+   Compose:
+     <span class="icon-text"><FiMapPin /> Athens</span>
+*/
+.icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--syn-space-2);
+}
+
+.icon-text--compact {
+  gap: var(--syn-space-1);
+}
+
+
+.media {
+  width: 100%;
+  overflow: hidden;
+  background: var(--syn-bg-surface);
+  display: block;
+}
+
+.media--16x10 { aspect-ratio: 16 / 10; }
+.media--16x9  { aspect-ratio: 16 / 9; }
+.media--16x7  { aspect-ratio: 16 / 7; }
+.media--square { aspect-ratio: 1 / 1; }
+
+.media__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.media__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--syn-text-muted);
+  background: linear-gradient(135deg, var(--syn-bg-surface), var(--syn-bg-hover));
+}

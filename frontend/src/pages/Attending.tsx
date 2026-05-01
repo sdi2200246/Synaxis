@@ -52,41 +52,41 @@ export function AttendingPage() {
   }, [bookings])
  
   if (loading) return <div className="page"><p>Loading bookings…</p></div>
-  if (error) return <div className="page"><div className="error-message">{error}</div></div>
+  if (error) return <div className="page"><div className="alert alert--error">{error}</div></div>
  
   return (
     <div className="page">
       <h1>My Bookings</h1>
  
       {bookings.length === 0 ? (
-        <p className="ub-empty">You haven't booked any events yet.</p>
+        <p className="empty-state">You haven't booked any events yet.</p>
       ) : (
         <>
-          <div className="ub-stats">
-            <div className="ub-stat">
-              <span className="ub-stat__value">{bookings.length}</span>
-              <span className="ub-stat__label">Bookings</span>
+          <div className="stat-row">
+            <div className="stat">
+              <span className="stat__value">{bookings.length}</span>
+              <span className="label">Bookings</span>
             </div>
-            <div className="ub-stat">
-              <span className="ub-stat__value">{stats!.totalTickets}</span>
-              <span className="ub-stat__label">Tickets</span>
+            <div className="stat">
+              <span className="stat__value">{stats!.totalTickets}</span>
+              <span className="label">Tickets</span>
             </div>
-            <div className="ub-stat">
-              <span className="ub-stat__value">{stats!.upcomingCount}</span>
-              <span className="ub-stat__label">Upcoming</span>
+            <div className="stat">
+              <span className="stat__value">{stats!.upcomingCount}</span>
+              <span className="label">Upcoming</span>
             </div>
-            <div className="ub-stat">
-              <span className="ub-stat__value">€{stats!.totalSpent.toFixed(0)}</span>
-              <span className="ub-stat__label">Total spent</span>
+            <div className="stat">
+              <span className="stat__value">€{stats!.totalSpent.toFixed(0)}</span>
+              <span className="label">Total spent</span>
             </div>
           </div>
  
           {stats!.nextEvent && (
-            <div className="ub-next">
-              <span className="ub-next__label">Next event</span>
+            <div className="card next-event">
+              <span className="next-event__label">Next event</span>
               <div className="ub-next__body">
-                <span className="ub-next__title">{stats!.nextEvent.event_title}</span>
-                <div className="ub-next__meta">
+                <span className="next-event__title">{stats!.nextEvent.event_title}</span>
+                <div className="next-event__meta">
                   <span><FiMapPin size={13} />{stats!.nextEvent.venue_name}, {stats!.nextEvent.venue_city}</span>
                   <span>
                     <FiCalendar size={13} />
@@ -100,7 +100,7 @@ export function AttendingPage() {
             </div>
           )}
  
-          <h2 className="ub-section-title">All bookings</h2>
+          <h2 className="">All bookings</h2>
           <div className="ub-list">
             {bookings.map(b => (
               <UserBookingCard

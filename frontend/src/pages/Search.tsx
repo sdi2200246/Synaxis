@@ -4,7 +4,6 @@ import { useStaticData } from '../context/StaticData'
 import { searchEvents } from '../api/events'
 import { BrowseEventCard } from '../components/events/Browse'
 import type { Event } from '../types'
-import type { TicketType } from '../api/tickets'
 
 const LIMIT = 20
 
@@ -67,7 +66,7 @@ export function SearchPage() {
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    
+
     debounceRef.current = setTimeout(() => {
       setOffset(0)
       fetchEvents(filters, 0, false)
@@ -122,10 +121,6 @@ export function SearchPage() {
     return categories.find(c => c.id === id)?.name ?? ''
   }
 
-  function handleBook(event: Event, ticket: TicketType) {
-    console.log('book', event.id, ticket.id)
-  }
-
   const pills: { label: string; type: string; onRemove: () => void }[] = []
   filters.categoryIDs.forEach(id => {
     pills.push({ label: getCategoryName(id), type: 'cat', onRemove: () => removeCategory(id) })
@@ -166,7 +161,7 @@ export function SearchPage() {
               <span className="search-pill__x" onClick={p.onRemove}>&times;</span>
             </span>
           ))}
-          <button className="search-clear" onClick={clearAll}>Clear all</button>
+          <button className="btn btn--ghost" onClick={clearAll}>Clear all</button>
         </div>
       )}
 
@@ -248,7 +243,7 @@ export function SearchPage() {
           {events.length > 0 ? (
             <div className="search-grid">
               {events.map(ev => (
-                <BrowseEventCard key={ev.id} event={ev} onBook={handleBook} />
+                <BrowseEventCard key={ev.id} event={ev} />
               ))}
             </div>
           ) : searched && !loading ? (

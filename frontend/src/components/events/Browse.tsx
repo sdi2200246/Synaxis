@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FiMapPin, FiCalendar, FiTag } from 'react-icons/fi'
+import { FiMapPin, FiCalendar, FiTag, FiX } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import { EventMap } from './Map'
 import { getTicketTypes } from '../../api/tickets'
@@ -37,15 +37,11 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
 
   useEffect(() => {
     if (!open) return
-
     setLoadingTickets(true)
-
     getTicketTypes(event.id)
       .then(setTickets)
       .finally(() => setLoadingTickets(false))
-
     recordVisit(event.id).catch(() => {})
-
   }, [open, event.id])
 
   function handleSelectTicket(t: TicketType) {
@@ -55,36 +51,24 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
     setBookingSuccess('')
   }
 
-  function handleRequestBook() {
-    setConfirming(true)
-  }
-
   async function handleConfirmBook() {
     if (!selectedTicket) return
     setSubmitting(true)
     setBookingError('')
-
     try {
       await createBooking(event.id, selectedTicket.id, quantity)
       setBookingSuccess(`Booked ${quantity} × ${selectedTicket.name}!`)
       setSelectedTicket(null)
       setConfirming(false)
       setQuantity(1)
-
-      // Refresh ticket availability
       const updated = await getTicketTypes(event.id)
       setTickets(updated)
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Booking failed'
-      setBookingError(msg)
+      setBookingError(err.response?.data?.error || 'Booking failed')
       setConfirming(false)
     } finally {
       setSubmitting(false)
     }
-  }
-
-  function handleCancelBook() {
-    setConfirming(false)
   }
 
   function handleClose() {
@@ -94,20 +78,24 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
     setBookingError('')
     setBookingSuccess('')
     setQuantity(1)
+    setShowMap(false)
   }
 
   const totalCost = selectedTicket ? selectedTicket.price * quantity : 0
 
   return (
     <>
-      <div className="browse-card" onClick={() => setOpen(true)}>
-        {hasImage ? (
-          <img className="browse-card__img" src="" alt={event.title} />
-        ) : (
-          <div className="browse-card__placeholder">
-            <FiCalendar size={28} />
-          </div>
-        )}
+      {/* ── Card ─────────────────────────────────────────────────── */}
+      <div className="card card--hoverable browse-card" onClick={() => setOpen(true)}>
+        <div className="media media--16x10">
+          {hasImage ? (
+            <img className="media__img" src="" alt={event.title} />
+          ) : (
+            <div className="media__placeholder">
+              <FiCalendar size={28} />
+            </div>
+          )}
+        </div>
         <div className="browse-card__body">
           <span className="browse-card__title">{event.title}</span>
           <div className="browse-card__meta">
@@ -118,159 +106,213 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
         </div>
       </div>
 
+      {/* ── Detail Dialog ────────────────────────────────────────── */}
       {open && (
-        <div className="browse-detail-overlay" onClick={handleClose}>
-          <div className="browse-detail" onClick={e => e.stopPropagation()}>
-            <button className="browse-detail__close" onClick={handleClose}>
-              &times;
-            </button>
+        <div className="overlay" onClick={handleClose}>
+          <div
+            className="dialog dialog--medium browse-detail"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Hero */}
+            <div className="browse-detail__hero">
+              <div className="media media--16x7">
+                {hasImage ? (
+                  <img className="media__img" src="" alt={event.title} />
+                ) : (
+                  <div className="media__placeholder">
+                    <FiCalendar size={42} />
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                className="browse-detail__close"
+                onClick={handleClose}
+                aria-label="Close"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
 
-            {hasImage && (
-              <img className="browse-detail__img" src="" alt={event.title} />
+            {/* Header */}
+            <header className="section">
+              <h2 className="browse-detail__title">{event.title}</h2>
+              <div className="browse-detail__info">
+                <span className="icon-text"><FiTag size={14} />{event.event_type}</span>
+                <span className="icon-text"><FiMapPin size={14} />{event.venue.name}, {event.venue.city}</span>
+                <span className="icon-text"><FiCalendar size={14} />{dateLabel}</span>
+              </div>
+            </header>
+
+            {/* About */}
+            <section className="section">
+              <h3 className="label">About</h3>
+              <p className="browse-detail__desc">{event.description}</p>
+            </section>
+
+            {/* Location */}
+            {hasCoords && (
+              <section className="section">
+                <div className="section__head">
+                  <h3 className="label">Location</h3>
+                  <button
+                    type="button"
+                    className="btn btn--soft btn--pill"
+                    onClick={() => setShowMap(!showMap)}
+                  >
+                    <FiMapPin size={14} />
+                    {showMap ? 'Hide map' : 'Show map'}
+                  </button>
+                </div>
+                {showMap && (
+                  <EventMap
+                    lat={event.venue.latitude!}
+                    lng={event.venue.longitude!}
+                    venueName={event.venue.name}
+                  />
+                )}
+              </section>
             )}
 
-            <div className="browse-detail__content">
-              <h2 className="browse-detail__title">{event.title}</h2>
+            {/* Feedback */}
+            {(bookingSuccess || bookingError) && (
+              <section className="section">
+                {bookingSuccess && <div className="alert alert--success">{bookingSuccess}</div>}
+                {bookingError && <div className="alert alert--error">{bookingError}</div>}
+              </section>
+            )}
 
-              <div className="browse-detail__info">
-                <span><FiTag size={14} />{event.event_type}</span>
-                <span><FiMapPin size={14} />{event.venue.name}, {event.venue.city}</span>
-                <span><FiCalendar size={14} />{dateLabel}</span>
-              </div>
-
-              {hasCoords && (
-                <button
-                  className="browse-detail__map-toggle"
-                  onClick={() => setShowMap(!showMap)}
-                >
-                  <FiMapPin size={14} />
-                  {showMap ? 'Hide map' : 'View on map'}
-                </button>
-              )}
-
-              {showMap && hasCoords && (
-                <EventMap
-                  lat={event.venue.latitude!}
-                  lng={event.venue.longitude!}
-                  venueName={event.venue.name}
-                />
-              )}
-
-              <p className="browse-detail__desc">{event.description}</p>
-
-              {bookingSuccess && (
-                <div className="browse-detail__success">{bookingSuccess}</div>
-              )}
-
-              {bookingError && (
-                <div className="browse-detail__error">{bookingError}</div>
-              )}
-
-              <div className="browse-detail__tickets">
-                <h3 className="browse-detail__section-title">Tickets</h3>
-                {loadingTickets ? (
-                  <p className="browse-detail__tickets-loading">Loading tickets…</p>
-                ) : tickets.length === 0 ? (
-                  <p className="browse-detail__tickets-empty">No tickets available.</p>
-                ) : (
-                  <div className="browse-detail__ticket-list">
-                    {tickets.map(t => (
+            {/* Tickets */}
+            <section className="section">
+              <h3 className="label">Tickets</h3>
+              {loadingTickets ? (
+                <p className="empty-state">Loading tickets…</p>
+              ) : tickets.length === 0 ? (
+                <p className="empty-state">No tickets available.</p>
+              ) : (
+                <div className="list-stack">
+                  {tickets.map((t) => {
+                    const selected = selectedTicket?.id === t.id
+                    const soldOut = t.available <= 0
+                    return (
                       <div
                         key={t.id}
-                        className={`browse-detail__ticket ${selectedTicket?.id === t.id ? 'browse-detail__ticket--selected' : ''}`}
+                        className={`card ticket-row ${selected ? 'is-selected' : ''} ${soldOut ? 'is-sold-out' : ''}`}
                       >
-                        <div className="browse-detail__ticket-info">
-                          <span className="browse-detail__ticket-name">{t.name}</span>
-                          <span className="browse-detail__ticket-avail">
-                            {t.available > 0 ? `${t.available} left` : 'Sold out'}
+                        <div className="ticket-row__main">
+                          <span className="ticket-row__name">{t.name}</span>
+                          <span className="ticket-row__avail">
+                            {soldOut ? 'Sold out' : `${t.available} left`}
                           </span>
                         </div>
-                        <div className="browse-detail__ticket-right">
-                          <span className="browse-detail__ticket-price">
+                        <div className="ticket-row__right">
+                          <span className="ticket-row__price">
                             {t.price === 0 ? 'Free' : `€${t.price.toFixed(2)}`}
                           </span>
-                          {isAuthenticated && t.available > 0 && (
+                          {isAuthenticated && !soldOut && (
                             <button
-                              className="browse-detail__btn browse-detail__btn--primary"
+                              type="button"
+                              className={`btn ${selected ? 'btn--primary' : 'btn--ghost'}`}
                               onClick={() => handleSelectTicket(t)}
                             >
-                              {selectedTicket?.id === t.id ? 'Selected' : 'Select'}
+                              {selected ? 'Selected' : 'Select'}
                             </button>
                           )}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
 
-              {selectedTicket && !confirming && (
-                <div className="browse-detail__booking-form">
-                  <div className="browse-detail__qty-row">
-                    <label className="browse-detail__qty-label">Quantity</label>
-                    <div className="browse-detail__qty-controls">
+            {/* Booking form */}
+            {selectedTicket && !confirming && (
+              <section className="section">
+                <div className="booking-form">
+                  <div className="booking-form__qty-row">
+                    <span className="label" style={{ marginBottom: 0 }}>Quantity</span>
+                    <div className="qty-stepper">
                       <button
-                        className="browse-detail__qty-btn"
-                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        type="button"
+                        className="qty-stepper__btn"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                         disabled={quantity <= 1}
-                      >−</button>
-                      <span className="browse-detail__qty-value">{quantity}</span>
+                        aria-label="Decrease"
+                      >
+                        −
+                      </button>
+                      <span className="qty-stepper__value">{quantity}</span>
                       <button
-                        className="browse-detail__qty-btn"
-                        onClick={() => setQuantity(q => Math.min(selectedTicket.available, q + 1))}
+                        type="button"
+                        className="qty-stepper__btn"
+                        onClick={() => setQuantity((q) => Math.min(selectedTicket.available, q + 1))}
                         disabled={quantity >= selectedTicket.available}
-                      >+</button>
+                        aria-label="Increase"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
-                  <div className="browse-detail__total-row">
-                    <span className="browse-detail__total-label">Total</span>
-                    <span className="browse-detail__total-value">
+
+                  <div className="booking-form__total-row">
+                    <span className="label" style={{ marginBottom: 0 }}>Total</span>
+                    <span className="booking-form__total-value">
                       {totalCost === 0 ? 'Free' : `€${totalCost.toFixed(2)}`}
                     </span>
                   </div>
+
                   <button
-                    className="browse-detail__book-btn"
-                    onClick={handleRequestBook}
+                    type="button"
+                    className="btn btn--primary btn--block"
+                    onClick={() => setConfirming(true)}
                   >
                     Book {quantity} ticket{quantity > 1 ? 's' : ''}
                   </button>
                 </div>
-              )}
+              </section>
+            )}
 
-              {confirming && selectedTicket && (
-                <div className="browse-detail__confirm">
-                  <p className="browse-detail__confirm-text">
-                    Confirm booking of <strong>{quantity} × {selectedTicket.name}</strong> for{' '}
-                    <strong>{totalCost === 0 ? 'Free' : `€${totalCost.toFixed(2)}`}</strong>?
-                  </p>
-                  <p className="browse-detail__confirm-warning">
-                    This action cannot be undone.
-                  </p>
-                  <div className="browse-detail__confirm-actions">
-                    <button
-                      className="browse-detail__btn"
-                      onClick={handleCancelBook}
-                      disabled={submitting}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="browse-detail__confirm-btn"
-                      onClick={handleConfirmBook}
-                      disabled={submitting}
-                    >
-                      {submitting ? 'Booking…' : 'Confirm'}
-                    </button>
-                  </div>
+            {/* Confirm */}
+            {confirming && selectedTicket && (
+              <section className="section section--compact">
+                <h3 className="label">Confirm booking</h3>
+                <p className="browse-detail__confirm-text">
+                  You're booking <strong>{quantity} × {selectedTicket.name}</strong> for{' '}
+                  <strong>{totalCost === 0 ? 'Free' : `€${totalCost.toFixed(2)}`}</strong>.
+                </p>
+                <div className="alert alert--warning">
+                  This action cannot be undone.
                 </div>
-              )}
+                <div className="dialog__actions dialog__actions--with-divider ">
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    onClick={() => setConfirming(false)}
+                    disabled={submitting}
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    onClick={handleConfirmBook}
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Booking…' : 'Confirm'}
+                  </button>
+                </div>
+              </section>
+            )}
 
-              {!isAuthenticated && (
-                <div className="browse-detail__guest-note">
+            {/* Guest note */}
+            {!isAuthenticated && (
+              <section className="section">
+                <div className="alert alert--warning">
                   Sign up and get approved to book tickets and contact organizers.
                 </div>
-              )}
-            </div>
+              </section>
+            )}
           </div>
         </div>
       )}

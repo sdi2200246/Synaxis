@@ -6,14 +6,14 @@ import { createConversation } from '../../api/messages'
 import type { UserBooking } from '../../api/bookings'
 import { ConfirmDialog } from '../ConfirmDialogue'
 import './Bookings.css'
- 
+
 interface UserBookingCardProps {
   booking: UserBooking
   conversationId: string | null
   currentUserId: string
   onConversationCreated: (bookingId: string, conversationId: string) => void
 }
- 
+
 export function UserBookingCard({
   booking,
   conversationId,
@@ -25,12 +25,12 @@ export function UserBookingCard({
   const [showDialog, setShowDialog] = useState(false)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
- 
+
   const hasCoords = booking.venue_latitude != null && booking.venue_longitude != null
- 
+
   const dateLabel = new Date(booking.event_start).toLocaleDateString('en-US', { dateStyle: 'medium' })
   const timeLabel = new Date(booking.event_start).toLocaleTimeString('en-US', { timeStyle: 'short' })
- 
+
   function handleMessageClick() {
     if (conversationId) {
       navigate(`/messages/${conversationId}`)
@@ -39,7 +39,7 @@ export function UserBookingCard({
       setShowDialog(true)
     }
   }
- 
+
   async function handleCreateConversation() {
     setCreating(true)
     setError('')
@@ -58,59 +58,59 @@ export function UserBookingCard({
       setCreating(false)
     }
   }
- 
+
   return (
     <>
-      <div className="ub-card">
-        <div className="ub-header">
-          <div className="ub-event">
-            <span className="ub-title">{booking.event_title}</span>
-            <div className="ub-meta">
+      <div className="card user-booking-card">
+        <div className="user-booking-card__header">
+          <div className="user-booking-card__event">
+            <span className="user-booking-card__title">{booking.event_title}</span>
+            <div className="user-booking-card__meta">
               <span><FiMapPin size={13} />{booking.venue_name}, {booking.venue_city}</span>
               <span><FiCalendar size={13} />{dateLabel} · {timeLabel}</span>
             </div>
           </div>
-          <span className={`ub-status ub-status--${booking.status.toLowerCase()}`}>
+          <span className={`badge badge--${booking.status.toLowerCase()}`}>
             {booking.status}
           </span>
         </div>
- 
-        <div className="ub-ticket">
-          <div className="ub-ticket-detail">
-            <span className="ub-label">Ticket</span>
-            <span className="ub-value">{booking.ticket_name}</span>
+
+        <div className="user-booking-card__strip">
+          <div className="user-booking-card__strip-item">
+            <span className="label">Ticket</span>
+            <span className="user-booking-card__strip-value">{booking.ticket_name}</span>
           </div>
-          <div className="ub-ticket-detail">
-            <span className="ub-label">Qty</span>
-            <span className="ub-value">{booking.number_of_tickets}</span>
+          <div className="user-booking-card__strip-item">
+            <span className="label">Qty</span>
+            <span className="user-booking-card__strip-value">{booking.number_of_tickets}</span>
           </div>
-          <div className="ub-ticket-detail">
-            <span className="ub-label">Total</span>
-            <span className="ub-value">€{booking.total_cost.toFixed(2)}</span>
+          <div className="user-booking-card__strip-item">
+            <span className="label">Total</span>
+            <span className="user-booking-card__strip-value">€{booking.total_cost.toFixed(2)}</span>
           </div>
-          <div className="ub-ticket-detail">
-            <span className="ub-label">Booked</span>
-            <span className="ub-value">
+          <div className="user-booking-card__strip-item">
+            <span className="label">Booked</span>
+            <span className="user-booking-card__strip-value">
               {new Date(booking.booked_at).toLocaleDateString('en-US', { dateStyle: 'medium' })}
             </span>
           </div>
         </div>
- 
-        <div className="ub-card-actions">
+
+        <div className="user-booking-card__actions">
           {hasCoords && (
-            <button className="ub-map-toggle" onClick={() => setShowMap(!showMap)}>
+            <button className="btn btn--soft btn--pill" onClick={() => setShowMap(!showMap)}>
               <FiMapPin size={14} />
               {showMap ? 'Hide map' : 'View on map'}
             </button>
           )}
-          <button className="ub-msg-btn" onClick={handleMessageClick}>
+          <button className="btn btn--soft btn--pill" onClick={handleMessageClick}>
             <FiMessageSquare size={14} />
             Message organizer
           </button>
         </div>
- 
+
         {showMap && hasCoords && (
-          <div className="ub-map">
+          <div className="user-booking-card__map">
             <EventMap
               lat={booking.venue_latitude!}
               lng={booking.venue_longitude!}
@@ -119,24 +119,19 @@ export function UserBookingCard({
           </div>
         )}
       </div>
- 
- 
+
       {showDialog && (
         <ConfirmDialog
           title="Start a conversation?"
           body={`This will open a direct message thread with the organizer of ${booking.event_title}. You can use it to ask questions about your booking.`}
           confirmLabel={creating ? 'Starting…' : 'Start conversation'}
+          variant="primary"
           loading={creating}
           error={error || undefined}
           onConfirm={handleCreateConversation}
           onCancel={() => setShowDialog(false)}
-          overlayClassName="ub-dialog-overlay"
-          dialogClassName="ub-dialog"
-          confirmClassName="ub-dialog-confirm"
-          cancelClassName="ub-dialog-cancel"
         />
       )}
     </>
   )
 }
- 

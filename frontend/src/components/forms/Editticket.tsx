@@ -36,59 +36,118 @@ export function EditTicketForm({ ticket, onClose, onSuccess }: Props) {
     }
   }
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
+
+   return (
+    <div className="overlay" onClick={onClose}>
+      <div
+        className="dialog dialog--wide"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="dialog__header">
           <h2>Edit Ticket Type</h2>
-          <button className="close-btn" onClick={onClose} type="button">
+
+          <button
+            className="btn btn--icon"
+            onClick={onClose}
+            type="button"
+          >
             <FiX size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="tc-form">
-          {error && <div className="error-message">{error}</div>}
-          <div className="tc-form-fields">
-            <div className="tc-field">
-              <label>Name</label>
-              <input
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-                required
-                disabled={submitting}
-              />
+        <div className="dialog__body">
+          <form
+            onSubmit={handleSubmit}
+            className="card ticket-create-form"
+          >
+            {error && (
+              <div className="alert alert--error">
+                {error}
+              </div>
+            )}
+
+            <div className="ticket-create-form__row">
+              <div className="field">
+                <label className="field__label">Name</label>
+                <input
+                  className="field__control"
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      name: e.target.value,
+                    })
+                  }
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label">
+                  Price (€)
+                </label>
+
+                <input
+                  className="field__control"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      price: e.target.value,
+                    })
+                  }
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label">
+                  Quantity
+                </label>
+
+                <input
+                  className="field__control"
+                  type="number"
+                  min="1"
+                  value={form.quantity}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      quantity: e.target.value,
+                    })
+                  }
+                  required
+                  disabled={submitting}
+                />
+              </div>
             </div>
-            <div className="tc-field">
-              <label>Price (€)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.price}
-                onChange={e => setForm({ ...form, price: e.target.value })}
-                required
+
+            <div className="dialog__actions dialog__actions--with-divider">
+              <button
+                className="btn btn--ghost"
+                type="button"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="btn btn--primary"
+                type="submit"
                 disabled={submitting}
-              />
-            </div>
-            <div className="tc-field">
-              <label>Quantity</label>
-              <input
-                type="number"
-                min="1"
-                value={form.quantity}
-                onChange={e => setForm({ ...form, quantity: e.target.value })}
-                required
-                disabled={submitting}
-              />
-            </div>
-            <div className="form-actions">
-              <button className="btn-cancel" type="button" onClick={onClose}>Cancel</button>
-              <button className="btn-submit" type="submit" disabled={submitting}>
-                {submitting ? 'Saving...' : 'Save'}
+              >
+                {submitting
+                  ? "Saving..."
+                  : "Save"}
               </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   )

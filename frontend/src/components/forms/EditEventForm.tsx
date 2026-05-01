@@ -103,186 +103,285 @@ const { venues, categories, loading } = useStaticData()
   }
  
   const formatDatetime = (dt: string) =>
-    new Date(dt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
- 
+  new Date(dt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+  
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Edit Event</h2>
-          <button className="close-btn" onClick={onClose} type="button">
+    <div className="overlay" onClick={onClose}>
+      <div
+        className="dialog dialog--wide"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="dialog__header">
+          <h2 className="dialog__title">Edit Event</h2>
+
+          <button
+            className="btn btn--icon"
+            onClick={onClose}
+            type="button"
+          >
             <FiX size={24} />
           </button>
         </div>
- 
-        <form onSubmit={handleSubmit} className="event-form">
-          {error && <div className="error-message">{error}</div>}
- 
-          <div className="form-grid">
-            <div className="field">
-              <label htmlFor="title">Event Title</label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                value={form.title}
-                onChange={handleChange}
-                required
-                disabled={submitting}
-              />
-            </div>
- 
-            <div className="field">
-              <label htmlFor="event_type">Event Type</label>
-              <input
-                id="event_type"
-                name="event_type"
-                type="text"
-                value={form.event_type}
-                onChange={handleChange}
-                required
-                disabled={submitting}
-              />
-            </div>
- 
-            <div className="field">
-              <label htmlFor="capacity">Capacity</label>
-              <input
-                id="capacity"
-                type="number"
-                value={event.capacity}
-                disabled
-              />
-            </div>
- 
-            <div className="field">
-              <label htmlFor="venue_id">Venue</label>
-              <div className="venue-row">
-                <select
-                  id="venue_id"
-                  name="venue_id"
-                  value={form.venue_id}
+
+        <div className="dialog__body">
+          <form onSubmit={handleSubmit} className="event-form">
+            {error && (
+              <div className="alert alert--error">
+                {error}
+              </div>
+            )}
+
+            <div className="form-grid">
+              <div className="field">
+                <label className="field__label" htmlFor="title">
+                  Event Title
+                </label>
+                <input
+                  className="field__control"
+                  id="title"
+                  name="title"
+                  type="text"
+                  value={form.title}
                   onChange={handleChange}
-                  disabled={loading || submitting}
                   required
-                >
-                  <option value="">{loading ? 'Loading venues…' : 'Select a venue'}</option>
-                  {venues.map(v => (
-                    <option key={v.id} value={v.id}>
-                      {v.name} — {v.city}, {v.country}{v.capacity != null ? ` (cap. ${v.capacity})` : ''}
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label" htmlFor="event_type">
+                  Event Type
+                </label>
+                <input
+                  className="field__control"
+                  id="event_type"
+                  name="event_type"
+                  type="text"
+                  value={form.event_type}
+                  onChange={handleChange}
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label" htmlFor="capacity">
+                  Capacity
+                </label>
+                <input
+                  className="field__control"
+                  id="capacity"
+                  type="number"
+                  value={event.capacity}
+                  disabled
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label" htmlFor="venue_id">
+                  Venue
+                </label>
+                <div className="venue-row">
+                  <select
+                    className="field__control"
+                    id="venue_id"
+                    name="venue_id"
+                    value={form.venue_id}
+                    onChange={handleChange}
+                    disabled={loading || submitting}
+                    required
+                  >
+                    <option value="">
+                      {loading ? "Loading venues…" : "Select a venue"}
                     </option>
-                  ))}
+                    {venues.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} — {v.city}, {v.country}
+                        {v.capacity != null ? ` (cap. ${v.capacity})` : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span
+                    className="venue-info-icon"
+                    title="Venue capacity must be ≥ event capacity"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <circle
+                        cx="7.5"
+                        cy="7.5"
+                        r="6.5"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                      />
+                      <path
+                        d="M7.5 6.5v4M7.5 4.5v.5"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <div className="field field--full">
+                <label className="field__label" htmlFor="categories">
+                  Categories
+                </label>
+                <select
+                  className="field__control"
+                  id="categories"
+                  onChange={handleCategoryAdd}
+                  disabled={loading || submitting}
+                >
+                  <option value="">
+                    {loading ? "Loading categories…" : "Add a category"}
+                  </option>
+                  {categories
+                    .filter((c) => !form.category_ids.includes(c.id))
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
                 </select>
-                <span className="venue-info-icon" title="Venue capacity must be ≥ event capacity">
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" strokeWidth="1" />
-                    <path d="M7.5 6.5v4M7.5 4.5v.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+
+                {form.category_ids.length > 0 && (
+                  <div className="chip-list">
+                    {form.category_ids.map((id) => (
+                      <div key={id} className="chip">
+                        <span>{getCategoryName(id)}</span>
+                        <button
+                          type="button"
+                          className="chip__remove"
+                          onClick={() => handleCategoryRemove(id)}
+                          disabled={submitting}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="field field--full">
+                <label className="field__label" htmlFor="description">
+                  Description
+                </label>
+                <textarea
+                  className="field__control"
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  rows={4}
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label">Start Date & Time</label>
+                <input
+                  className="field__control"
+                  type="text"
+                  value={formatDatetime(event.start_datetime)}
+                  disabled
+                />
+              </div>
+
+              <div className="field">
+                <label className="field__label">End Date & Time</label>
+                <input
+                  className="field__control"
+                  type="text"
+                  value={formatDatetime(event.end_datetime)}
+                  disabled
+                />
+              </div>
+
+              <div className="field field--full">
+                <label className="field__label">Photos</label>
+                <label className="upload-zone" htmlFor="photo-upload">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 16V8M8 12l4-4 4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="4"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                    />
                   </svg>
-                </span>
+                  <span>Click to upload photos</span>
+                  <small>PNG, JPG up to 10MB</small>
+                </label>
+
+                <input
+                  id="photo-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={handlePhotoAdd}
+                  disabled={submitting}
+                />
+
+                {photoPreviews.length > 0 && (
+                  <div className="upload-previews">
+                    {photoPreviews.map((src, i) => (
+                      <div key={i} className="upload-thumb">
+                        <img
+                          className="upload-thumb__img"
+                          src={src}
+                          alt={`photo ${i + 1}`}
+                        />
+                        <button
+                          type="button"
+                          className="upload-thumb__remove"
+                          onClick={() => handlePhotoRemove(i)}
+                          disabled={submitting}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
- 
-            <div className="field full-width">
-              <label htmlFor="categories">Categories</label>
-              <select
-                id="categories"
-                onChange={handleCategoryAdd}
+
+            <div className="dialog__actions dialog__actions--with-divider">
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={onClose}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="btn btn--primary"
                 disabled={loading || submitting}
               >
-                <option value="">{loading ? 'Loading categories…' : 'Add a category'}</option>
-                {categories
-                  .filter(c => !form.category_ids.includes(c.id))
-                  .map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-              </select>
-              {form.category_ids.length > 0 && (
-                <div className="selected-categories">
-                  {form.category_ids.map(id => (
-                    <div key={id} className="category-tag">
-                      <span>{getCategoryName(id)}</span>
-                      <button
-                        type="button"
-                        className="remove-tag"
-                        onClick={() => handleCategoryRemove(id)}
-                        disabled={submitting}
-                      >×</button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {submitting ? "Saving…" : "Save Changes"}
+              </button>
             </div>
- 
-            <div className="field full-width">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows={4}
-                required
-                disabled={submitting}
-              />
-            </div>
- 
-            <div className="field">
-              <label>Start Date & Time</label>
-              <input type="text" value={formatDatetime(event.start_datetime)} disabled />
-            </div>
- 
-            <div className="field">
-              <label>End Date & Time</label>
-              <input type="text" value={formatDatetime(event.end_datetime)} disabled />
-            </div>
- 
-            <div className="field full-width">
-              <label>Photos</label>
-              <label className="media-upload-zone" htmlFor="photo-upload">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 16V8M8 12l4-4 4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                  <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="1.2" />
-                </svg>
-                <span>Click to upload photos</span>
-                <small>PNG, JPG up to 10MB</small>
-              </label>
-              <input
-                id="photo-upload"
-                type="file"
-                accept="image/*"
-                multiple
-                style={{ display: 'none' }}
-                onChange={handlePhotoAdd}
-                disabled={submitting}
-              />
-              {photoPreviews.length > 0 && (
-                <div className="media-previews">
-                  {photoPreviews.map((src, i) => (
-                    <div key={i} className="media-thumb">
-                      <img src={src} alt={`photo ${i + 1}`} />
-                      <button
-                        type="button"
-                        className="media-remove"
-                        onClick={() => handlePhotoRemove(i)}
-                        disabled={submitting}
-                      >×</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
- 
-          <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={onClose} disabled={submitting}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-submit" disabled={loading || submitting}>
-              {submitting ? 'Saving…' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
-  )
+  );
 }

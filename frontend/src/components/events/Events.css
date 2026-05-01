@@ -1,704 +1,358 @@
+/* ==========================================================================
+   EVENTS — Component-specific styles only.
+   Reusable patterns (.card, .btn, .badge, .overlay, .dialog, .label,
+   .section, .icon-text, .media) come from utilities.css.
+   ========================================================================== */
 
-/*1=============OrganizerCardStyle==============*/
-.ec-card {
-  background: var(--color-background-primary, #fff);
-  border: 0.5px solid var(--color-border-tertiary, #e8e8e8);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: border-color 0.15s;
-}
- 
-.ec-card:hover {
-  border-color: var(--color-border-secondary, #ccc);
-}
- 
-.ec-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+/* ==========================================================================
+   01. ORGANIZER EVENT CARD
+   Compose: <article class="card card--hoverable organizer-event-card">
+   ========================================================================== */
+.organizer-event-card__toggle {
   cursor: pointer;
   user-select: none;
 }
- 
-.ec-header:hover {
-  background: var(--color-background-secondary, #fafafa);
+
+.organizer-event-card__toggle:hover {
+  background: var(--syn-bg-hover);
 }
- 
-.ec-chevron {
+
+.organizer-event-card__chevron {
   width: 16px;
   height: 16px;
-  color: var(--color-text-tertiary, #aaa);
+  color: var(--syn-text-muted);
   transition: transform 0.2s;
   flex-shrink: 0;
 }
- 
-.ec-chevron--open {
+
+.organizer-event-card__chevron.is-open {
   transform: rotate(180deg);
 }
- 
-.ec-main {
-  flex: 1;
-  min-width: 0;
-}
- 
-.ec-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
- 
-.ec-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary, #111);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
- 
-.ec-badge {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 20px;
-  flex-shrink: 0;
-}
- 
-.badge-draft {
-  background: var(--color-background-secondary, #f5f5f5);
-  color: var(--color-text-secondary, #666);
-  border: 0.5px solid var(--color-border-secondary, #ddd);
-}
- 
-.badge-published {
-  background: #EAF3DE;
-  color: #27500A;
-}
- 
-.badge-cancelled {
-  background: #FCEBEB;
-  color: #791F1F;
-}
- 
-.badge-completed {
-  background: #E6F1FB;
-  color: #0C447C;
-}
- 
-.ec-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--color-text-secondary, #888);
-  flex-wrap: wrap;
-}
- 
-.ec-sep {
-  color: var(--color-border-secondary, #ddd);
-}
- 
-.ec-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  margin-left: 8px;
-}
- 
-.ec-btn {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  color: var(--color-text-tertiary, #aaa);
-  transition: background 0.15s, color 0.15s;
-}
- 
-.ec-btn:hover {
-  background: var(--color-background-secondary, #f5f5f5);
-  color: var(--color-text-primary, #111);
-}
- 
-.ec-btn--success:hover {
-  background: #EAF3DE;
-  color: #3B6D11;
-}
- 
-.ec-btn--danger:hover {
-  background: #FCEBEB;
-  color: #A32D2D;
-}
- 
-.ec-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
- 
-.ec-body {
-  border-top: 0.5px solid var(--color-border-tertiary, #e8e8e8);
-  padding: 16px;
-}
- 
-.ec-grid {
+
+/* Body grid for expanded details */
+.organizer-event-card__details {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--syn-space-3);
 }
- 
-.ec-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
- 
-.ec-detail--full {
+
+.organizer-event-card__details > .field--full {
   grid-column: 1 / -1;
 }
- 
-.ec-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-tertiary, #aaa);
-}
- 
-.ec-value {
-  font-size: 13px;
-  color: var(--color-text-primary, #111);
-  line-height: 1.5;
-}
- 
-.ec-venue {
-  background: var(--color-background-secondary, #fafafa);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-top: 2px;
-}
- 
-.ec-venue-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-primary, #111);
-  display: block;
-}
- 
-.ec-venue-addr {
-  font-size: 12px;
-  color: var(--color-text-secondary, #888);
-  display: block;
-  margin-top: 2px;
-}
- 
-.ec-cats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 4px;
-}
- 
-.ec-cat {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 20px;
-  background: var(--color-background-tertiary, #f0f0f0);
-  color: var(--color-text-secondary, #666);
-  border: 0.5px solid var(--color-border-tertiary, #e8e8e8);
-}
 
-.ec-btn--tickets:hover {
-  background: #E6F1FB;
-  color: #0C447C;
-}
- 
 @media (max-width: 540px) {
-  .ec-grid {
-    grid-template-columns: 1fr;
-  }
- 
-  .ec-detail--full {
-    grid-column: 1;
-  }
- 
-  .ec-meta {
-    gap: 6px;
-  }
-}
-/*2==========Map Style ==========================*/
-.event-map {
-  height: 300px;
-  width: 100%;
-  border-radius: 8px;
+  .organizer-event-card__details { grid-template-columns: 1fr; }
 }
 
-
-/*=============== 3.BrowserCard==================*/
-/* ── Browse card ── */
-.browse-card {
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-.browse-card:hover {
-  border-color: var(--text);
+.organizer-event-card__venue-box {
+  background: var(--syn-bg-surface);
+  border-radius: var(--syn-radius);
+  padding: var(--syn-space-3);
 }
 
-.browse-card__img {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
+.organizer-event-card__venue-name {
+  font-size: var(--syn-text-sm);
+  font-weight: 500;
+  color: var(--syn-text-primary);
   display: block;
 }
-.browse-card__placeholder {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #6e6a6a;
-  color: var(--text);
-  opacity: 0.4;
+
+.organizer-event-card__venue-addr {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-secondary);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   02. BROWSE CARD (small thumbnail card in rows / grid)
+   Compose: <div class="card card--hoverable browse-card">
+   Uses .media .media--16x10 for the image area.
+   ========================================================================== */
+.browse-card {
+  cursor: pointer;
 }
 
 .browse-card__body {
-  padding: 10px 12px;
+  padding: var(--syn-space-3);
 }
+
 .browse-card__title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-h);
+  font-size: var(--syn-text-sm);
+  font-weight: 500;
+  color: var(--syn-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
 }
+
 .browse-card__meta {
-  font-size: 0.78rem;
-  color: var(--text);
-  margin-top: 4px;
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-secondary);
+  margin-top: var(--syn-space-1);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--syn-space-2);
 }
+
 .browse-card__dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--text);
+  background: var(--syn-text-muted);
   flex-shrink: 0;
 }
 
-/* ── Detail overlay ── */
-.browse-detail-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
+/* ==========================================================================
+   03. BROWSE SECTION (horizontal scroll row of cards on home page)
+   ========================================================================== */
+.browse-section {
+  margin-top: var(--syn-space-8);
 }
 
+.browse-section__title {
+  font-size: var(--syn-text-xl);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+  margin-bottom: var(--syn-space-3);
+}
+
+.browse-section__row {
+  display: flex;
+  gap: var(--syn-space-4);
+  overflow-x: auto;
+  padding-bottom: var(--syn-space-2);
+  align-items: flex-start;
+}
+
+.browse-section__row .browse-card {
+  min-width: 220px;
+  max-width: 260px;
+  flex-shrink: 0;
+}
+
+.browse-section__sentinel {
+  min-width: 1px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   04. BROWSE DETAIL (sectioned dialog with hero image + content)
+   Compose: <div class="overlay"><div class="dialog dialog--medium browse-detail">
+   Uses .section blocks internally; .dialog--medium provides the surface.
+   The browse-detail itself just resets dialog padding so .section blocks
+   can manage their own padding.
+   ========================================================================== */
 .browse-detail {
   position: relative;
-  width: 90%;
-  max-width: 540px;
-  max-height: 85vh;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  padding: 0;
 }
 
+/* Hero is a positioning context for the close button overlay */
+.browse-detail__hero {
+  position: relative;
+}
+
+/* Round close button overlaying the hero — distinct from .btn--icon
+   because it sits on top of an image and needs dark translucent bg. */
 .browse-detail__close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: var(--syn-space-3);
+  right: var(--syn-space-3);
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  font-size: 1.2rem;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
   z-index: 1;
+  transition: background var(--syn-transition);
 }
 
-.browse-detail__img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  display: block;
-}
-.browse-detail__placeholder {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--border);
-  color: var(--text);
-  opacity: 0.35;
+.browse-detail__close:hover {
+  background: rgba(0, 0, 0, 0.75);
 }
 
-.browse-detail__content {
-  padding: 1.25rem;
-}
-
+/* Title — bigger than .dialog__title since it sits in a hero header */
 .browse-detail__title {
-  font-size: 1.25rem;
+  font-size: var(--syn-text-2xl);
   font-weight: 600;
-  color: var(--text-h);
-  margin: 0;
+  color: var(--syn-text-primary);
+  margin: 0 0 var(--syn-space-3);
+  line-height: 1.2;
 }
 
+/* Info row: list of icon-text items wrapping */
 .browse-detail__info {
-  margin-top: 10px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.82rem;
-  color: var(--text);
-}
-.browse-detail__info span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: var(--syn-space-3) var(--syn-space-4);
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-secondary);
 }
 
 .browse-detail__desc {
-  margin-top: 12px;
-  font-size: 0.88rem;
-  color: var(--text);
+  font-size: var(--syn-text-base);
+  color: var(--syn-text-secondary);
   line-height: 1.6;
+  margin: 0;
 }
 
-/* ── Tickets section ── */
-.browse-detail__section-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-h);
-  margin: 20px 0 10px;
-}
-
-.browse-detail__tickets-loading,
-.browse-detail__tickets-empty {
-  font-size: 0.82rem;
-  color: var(--text);
-}
-
-.browse-detail__ticket-list {
+/* Ticket row — composes with .card */
+.ticket-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.browse-detail__ticket {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  align-items: center;
+  gap: var(--syn-space-3);
+  padding: var(--syn-space-3) var(--syn-space-4);
 }
 
-.browse-detail__ticket-info {
+.ticket-row.is-selected {
+  border-color: var(--syn-accent);
+  background: var(--syn-accent-bg);
+  box-shadow: 0 0 0 1px var(--syn-accent);
+}
+
+.ticket-row.is-sold-out {
+  opacity: 0.55;
+}
+
+.ticket-row__main {
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-.browse-detail__ticket-name {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-h);
-}
-.browse-detail__ticket-avail {
-  font-size: 0.75rem;
-  color: var(--text);
+  min-width: 0;
 }
 
-.browse-detail__ticket-right {
+.ticket-row__name {
+  font-size: var(--syn-text-base);
+  font-weight: 500;
+  color: var(--syn-text-primary);
+}
+
+.ticket-row__avail {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+}
+
+.ticket-row__right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--syn-space-3);
+  flex-shrink: 0;
 }
-.browse-detail__ticket-price {
-  font-size: 0.9rem;
+
+.ticket-row__price {
+  font-size: var(--syn-text-base);
   font-weight: 600;
-  color: var(--text-h);
-}
-/*Button */
-.browse-detail__btn {
-  font-size: 0.82rem;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #333;
-  cursor: pointer;
-  font-family: inherit;
-  display: inline-flex;
-  align-items: center;
-}
-.browse-detail__btn:hover {
-  background: #f0f0f0;
-}
-.browse-detail__btn.browse-detail__btn--primary {
-  background: var(--accent);
-  color: #2735d2;
-  border-color: var(--accent);
-}
-.browse-detail__btn.browse-detail__btn--primary:hover {
-  opacity: 0.85;
-}
-.browse-detail__map-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  padding: 6px 16px;
-  font-size: 0.82rem;
-  font-family: inherit;
-  color: #fff;
-  background: #3b82f6;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-}
-.browse-detail__map-toggle:hover {
-  background: #2563eb;
+  color: var(--syn-text-primary);
 }
 
-/* ── Guest note ── */
-.browse-detail__guest-note {
-  font-size: 0.8rem;
-  color: #856404;
-  background: #fff3cd;
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-top: 12px;
-}
-
-/* ── Map spacing ── */
-.browse-detail .event-map {
-  margin-top: 16px;
-}
-
-/* --view bookiings button*/
-.ec-btn-bookings {
-  font-size: 11px;
-  font-weight: 500;
-  font-family: inherit;
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: none;
-  background: #3b82f6;
-  color: #fff;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.ec-btn-bookings:hover {
-  background: #2563eb;
-}
-
-
-/* ── Selected ticket highlight ── */
-.browse-detail__ticket--selected {
-  border-color: #3b82f6;
-  background: #f0f7ff;
-}
-
-/* ── Booking form ── */
-.browse-detail__booking-form {
-  margin-top: 16px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg);
-}
-
-.browse-detail__qty-row {
+/* Quantity stepper — separate buttons, no enclosing shell */
+.qty-stepper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--syn-space-3);
 }
 
-.browse-detail__qty-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-.browse-detail__qty-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.browse-detail__qty-btn {
+.qty-stepper__btn {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: #fff;
+  border-radius: var(--syn-radius-sm);
+  border: 1px solid var(--syn-border);
+  background: var(--syn-bg-card);
+  color: var(--syn-text-primary);
   font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-h);
   font-family: inherit;
+  transition: background var(--syn-transition), border-color var(--syn-transition);
 }
 
-.browse-detail__qty-btn:hover:not(:disabled) {
-  background: #f0f0f0;
+.qty-stepper__btn:hover:not(:disabled) {
+  background: var(--syn-bg-hover);
+  border-color: var(--syn-border-hover);
 }
 
-.browse-detail__qty-btn:disabled {
+.qty-stepper__btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-.browse-detail__qty-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-h);
+.qty-stepper__value {
   min-width: 24px;
   text-align: center;
+  font-size: var(--syn-text-base);
+  font-weight: 600;
+  color: var(--syn-text-primary);
 }
 
-.browse-detail__total-row {
+/* ── Booking form (gray surface card popping inside the dialog) ── */
+.booking-form {
+  padding: var(--syn-space-4);
+  border: 1px solid var(--syn-border);
+  border-radius: var(--syn-radius);
+  background: var(--syn-bg-surface);
+}
+
+.booking-form__qty-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  margin-bottom: var(--syn-space-3);
 }
 
-.browse-detail__total-label {
-  font-size: 0.85rem;
-  color: var(--text);
+.booking-form__total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: var(--syn-space-3);
+  margin-bottom: var(--syn-space-4);
+  border-top: 1px solid var(--syn-border);
 }
 
-.browse-detail__total-value {
-  font-size: 1.1rem;
+.booking-form__total-value {
+  font-size: var(--syn-text-xl);
   font-weight: 600;
-  color: var(--text-h);
-}
-
-.browse-detail__book-btn {
-  width: 100%;
-  margin-top: 14px;
-  padding: 10px;
-  font-size: 0.88rem;
-  font-weight: 500;
-  font-family: inherit;
-  border: none;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: #fff;
-  cursor: pointer;
-}
-
-.browse-detail__book-btn:hover {
-  background: #2563eb;
-}
-
-/* ── Confirmation dialog ── */
-.browse-detail__confirm {
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: 10px;
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
+  color: var(--syn-accent-text);
 }
 
 .browse-detail__confirm-text {
-  font-size: 0.88rem;
-  color: var(--text-h);
-  margin: 0;
+  font-size: var(--syn-text-base);
+  color: var(--syn-text-primary);
+  line-height: 1.6;
+  margin: 0 0 var(--syn-space-3);
 }
 
-.browse-detail__confirm-warning {
-  font-size: 0.78rem;
-  color: #92400e;
-  margin: 6px 0 0;
+@media (max-width: 540px) {
+  .browse-detail__title {
+    font-size: var(--syn-text-xl);
+  }
+
+  .ticket-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--syn-space-2);
+  }
+
+  .ticket-row__right {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
-.browse-detail__confirm-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-  justify-content: flex-end;
-}
-
-.browse-detail__confirm-btn {
-  padding: 8px 20px;
-  font-size: 0.82rem;
-  font-weight: 500;
-  font-family: inherit;
-  border: none;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: #fff;
-  cursor: pointer;
-}
-
-.browse-detail__confirm-btn:hover {
-  background: #2563eb;
-}
-
-.browse-detail__confirm-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* ── Success / Error messages ── */
-.browse-detail__success {
-  font-size: 0.82rem;
-  color: #166534;
-  background: #dcfce7;
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-top: 12px;
-}
-
-.browse-detail__error {
-  font-size: 0.82rem;
-  color: #991b1b;
-  background: #fee2e2;
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-top: 12px;
-}
-
-/*Deletion dialogue*/
-.delete-modal {
-  max-width: 400px;
-}
-
-.browse-detail__confirm-btn--danger {
-  background: #ef4444;
-}
-
-.browse-detail__confirm-btn--danger:hover {
-  background: #dc2626;
+/* ==========================================================================
+   05. EVENT MAP
+   ========================================================================== */
+.event-map {
+  height: 300px;
+  width: 100%;
+  border-radius: var(--syn-radius);
+  overflow: hidden;
 }

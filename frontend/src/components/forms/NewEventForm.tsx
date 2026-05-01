@@ -88,183 +88,304 @@ export function CreateEventForm({ onClose, onSuccess }: CreateEventFormProps) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Create New Event</h2>
-          <button className="close-btn" onClick={onClose} type="button">
+    <div className="overlay" onClick={onClose}>
+      <div
+        className="dialog dialog--wide"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="dialog__header">
+          <h2 className="dialog__title">Create New Event</h2>
+
+          <button
+            className="btn btn--icon"
+            onClick={onClose}
+            type="button"
+          >
             <FiX size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="event-form">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          <div className="form-grid">
-            <div className="field">
-              <label htmlFor="title">Event Title </label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                value={form.title}
-                onChange={handleChange}
-                required
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor="event_type">Event Type </label>
-              <input
-                id="event_type"
-                name="event_type"
-                type="text"
-                value={form.event_type}
-                onChange={handleChange}
-                required
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor="capacity">Capacity </label>
-              <input
-                id="capacity"
-                name="capacity"
-                type="number"
-                value={form.capacity}
-                onChange={handleChange}
-                placeholder="e.g., 100"
-                min="1"
-                required
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor="venue_id">Venue</label>
-              <div className="venue-row">
-                <select id="venue_id" name="venue_id" value={form.venue_id} onChange={handleChange} disabled={loading || submitting} required>
-                  <option value="">{loading ? 'Loading venues…' : 'Select a venue'}</option>
-                  {venues.map(v => (
-                    <option key={v.id} value={v.id}>
-                      {v.name} — {v.city}, {v.country}{v.capacity != null ? ` (cap. ${v.capacity})` : ''}
-                    </option>
-                  ))}
-                </select>
-                <span className="venue-info-icon" title="Venue capacity must be ≥ your event capacity">
-                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" strokeWidth="1"/>
-                    <path d="M7.5 6.5v4M7.5 4.5v.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                  </svg>
-                </span>
+        <div className="dialog__body">
+          <form onSubmit={handleSubmit} className="event-form">
+            {error && (
+              <div className="alert alert--error">
+                {error}
               </div>
+            )}
+
+            <div className="form-grid">
+
+              <div className="field">
+                <label
+                  className="field__label"
+                  htmlFor="title"
+                >
+                  Event Title
+                </label>
+
+                <input
+                  className="field__control"
+                  id="title"
+                  name="title"
+                  type="text"
+                  value={form.title}
+                  onChange={handleChange}
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label
+                  className="field__label"
+                  htmlFor="event_type"
+                >
+                  Event Type
+                </label>
+
+                <input
+                  className="field__control"
+                  id="event_type"
+                  name="event_type"
+                  type="text"
+                  value={form.event_type}
+                  onChange={handleChange}
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label
+                  className="field__label"
+                  htmlFor="capacity"
+                >
+                  Capacity
+                </label>
+
+                <input
+                  className="field__control"
+                  id="capacity"
+                  name="capacity"
+                  type="number"
+                  value={form.capacity}
+                  onChange={handleChange}
+                  placeholder="e.g., 100"
+                  min="1"
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label
+                  className="field__label"
+                  htmlFor="venue_id"
+                >
+                  Venue
+                </label>
+
+                <div className="venue-row">
+                  <select
+                    className="field__control"
+                    id="venue_id"
+                    name="venue_id"
+                    value={form.venue_id}
+                    onChange={handleChange}
+                    disabled={loading || submitting}
+                    required
+                  >
+                    <option value="">
+                      {loading
+                        ? "Loading venues…"
+                        : "Select a venue"}
+                    </option>
+
+                    {venues.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} — {v.city}, {v.country}
+                        {v.capacity != null
+                          ? ` (cap. ${v.capacity})`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span
+                    className="venue-info-icon"
+                    title="Venue capacity must be ≥ your event capacity"
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 15 15"
+                      fill="none"
+                    >
+                      <circle
+                        cx="7.5"
+                        cy="7.5"
+                        r="6.5"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                      />
+                      <path
+                        d="M7.5 6.5v4M7.5 4.5v.5"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <div className="field field--full">
+                <label
+                  className="field__label"
+                  htmlFor="categories"
+                >
+                  Categories
+                </label>
+
+                <select
+                  className="field__control"
+                  id="categories"
+                  onChange={handleCategoryAdd}
+                  disabled={loading || submitting}
+                >
+                  <option value="">
+                    {loading
+                      ? "Loading categories..."
+                      : "Add a category"}
+                  </option>
+
+                  {categories
+                    .filter(
+                      (cat) =>
+                        !form.category_ids.includes(cat.id)
+                    )
+                    .map((category) => (
+                      <option
+                        key={category.id}
+                        value={category.id}
+                      >
+                        {category.name}
+                      </option>
+                    ))}
+                </select>
+
+                {form.category_ids.length > 0 && (
+                  <div className="chip-list">
+                    {form.category_ids.map((catId) => (
+                      <div
+                        key={catId}
+                        className="chip"
+                      >
+                        <span>
+                          {getCategoryName(catId)}
+                        </span>
+
+                        <button
+                          type="button"
+                          className="chip__remove"
+                          onClick={() =>
+                            handleCategoryRemove(catId)
+                          }
+                          disabled={submitting}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="field field--full">
+                <label
+                  className="field__label"
+                  htmlFor="description"
+                >
+                  Description
+                </label>
+
+                <textarea
+                  className="field__control"
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Describe your event..."
+                  rows={4}
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label
+                  className="field__label"
+                  htmlFor="start_datetime"
+                >
+                  Start Date & Time
+                </label>
+
+                <input
+                  className="field__control"
+                  id="start_datetime"
+                  name="start_datetime"
+                  type="datetime-local"
+                  value={form.start_datetime}
+                  onChange={handleChange}
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="field">
+                <label
+                  className="field__label"
+                  htmlFor="end_datetime"
+                >
+                  End Date & Time
+                </label>
+
+                <input
+                  className="field__control"
+                  id="end_datetime"
+                  name="end_datetime"
+                  type="datetime-local"
+                  value={form.end_datetime}
+                  onChange={handleChange}
+                  required
+                  disabled={submitting}
+                />
+              </div>
+
             </div>
 
-              <div className="field full-width">
-              <label htmlFor="categories">Categories</label>
-              <select
-                id="categories"
-                onChange={handleCategoryAdd}
+            <div className="dialog__actions dialog__actions--with-divider">
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={onClose}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="btn btn--primary"
                 disabled={loading || submitting}
               >
-                <option value="">
-                  {loading ? 'Loading categories...' : 'Add a category'}
-                </option>
-                {categories
-                  .filter(cat => !form.category_ids.includes(cat.id))  // Only show unselected
-                  .map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))
-                }
-              </select>
-
-              {/* Selected categories list */}
-              {form.category_ids.length > 0 && (
-                <div className="selected-categories">
-                  {form.category_ids.map((catId) => (
-                    <div key={catId} className="category-tag">
-                      <span>{getCategoryName(catId)}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleCategoryRemove(catId)}
-                        disabled={submitting}
-                        className="remove-tag"
-                      >
-                             ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {submitting
+                  ? "Creating..."
+                  : "Create Draft Event"}
+              </button>
             </div>
-
-            <div className="field full-width">
-              <label htmlFor="description">Description </label>
-              <textarea
-                id="description"
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                placeholder="Describe your event..."
-                rows={4}
-                required
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor="start_datetime">Start Date & Time </label>
-              <input
-                id="start_datetime"
-                name="start_datetime"
-                type="datetime-local"
-                value={form.start_datetime}
-                onChange={handleChange}
-                required
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor="end_datetime">End Date & Time </label>
-              <input
-                id="end_datetime"
-                name="end_datetime"
-                type="datetime-local"
-                value={form.end_datetime}
-                onChange={handleChange}
-                required
-                disabled={submitting}
-              />
-            </div>
-          </div>
-
-          <div className="form-actions">
-            <button 
-              type="button" 
-              className="btn-cancel" 
-              onClick={onClose}
-              disabled={submitting}
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              className="btn-submit" 
-              disabled={loading || submitting}
-            >
-              {submitting ? 'Creating...' : 'Create Draft Event'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   )
