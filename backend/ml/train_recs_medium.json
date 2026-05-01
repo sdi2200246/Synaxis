@@ -1,0 +1,36 @@
+{
+  "users": [
+    "user_0","user_1","user_2","user_3",
+    "user_4","user_5","user_6","user_7"
+  ],
+  "events": [
+    "rock_1","rock_2","rock_3",
+    "sport_1","sport_2","sport_3",
+    "food_1","food_2"
+  ],
+  "visits": [
+    ["user_0","rock_2",1.0],
+    ["user_1","rock_1",1.0],
+    ["user_2","rock_3",1.0],
+    ["user_3","rock_1",1.0],
+
+    ["user_4","sport_2",1.0],
+    ["user_5","sport_1",1.0],
+    ["user_6","sport_3",1.0],
+    ["user_7","sport_1",1.0],
+
+    ["user_0","food_1",1.0],
+    ["user_4","food_2",1.0]
+  ],
+  "bookings": [
+    ["user_0","rock_1",4.0],
+    ["user_1","rock_2",4.0],
+    ["user_2","rock_1",4.0],
+    ["user_3","rock_3",4.0],
+
+    ["user_4","sport_1",4.0],
+    ["user_5","sport_2",4.0],
+    ["user_6","sport_1",4.0],
+    ["user_7","sport_3",4.0]
+  ]
+}

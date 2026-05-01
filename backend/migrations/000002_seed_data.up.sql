@@ -141,3 +141,94 @@ INSERT INTO tickettype (id, event_id, name, price, quantity, available) VALUES
     ('f0000000-0000-0000-0000-000000000015', 'e0000000-0000-0000-0000-000000000009', 'Entry', 5.00, 2000, 2000),
     ('f0000000-0000-0000-0000-000000000016', 'e0000000-0000-0000-0000-000000000010', 'Standing', 25.00, 5000, 5000),
     ('f0000000-0000-0000-0000-000000000017', 'e0000000-0000-0000-0000-000000000010', 'Seated', 45.00, 3000, 3000);
+
+
+    -- ============================================================
+-- EXTRA USERS FOR RECOMMENDATION TESTING
+-- ============================================================
+
+-- alice: music lover (password: user123)
+INSERT INTO "user" (id, username, password_hash, first_name, last_name, email, phone, address, city, country, tax_id, role, status)
+VALUES (
+    'a0000000-0000-0000-0000-000000000005',
+    'alice',
+    '$2a$10$nrb/rZ08vT5Eky1bMXxSd.6qTPepKX0YdHqYpA2iE3ZYUyC1qEBbq',
+    'Alice', 'Music', 'alice@example.com', '2101111111',
+    'Kifisias 1', 'Athens', 'Greece', '111111111', 'user', 'approved'
+);
+
+-- carol: sports + tech (password: user123)
+INSERT INTO "user" (id, username, password_hash, first_name, last_name, email, phone, address, city, country, tax_id, role, status)
+VALUES (
+    'a0000000-0000-0000-0000-000000000006',
+    'carol',
+    '$2a$10$nrb/rZ08vT5Eky1bMXxSd.6qTPepKX0YdHqYpA2iE3ZYUyC1qEBbq',
+    'Carol', 'Tech', 'carol@example.com', '2102222222',
+    'Patision 5', 'Athens', 'Greece', '222222222', 'user', 'approved'
+);
+
+-- ============================================================
+-- VISITS  (implicit rating = 1)
+-- ============================================================
+
+-- john (002): music + tech
+INSERT INTO visit (id, user_id, event_id, visited_at) VALUES
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000001', now()), -- Jazz Night
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000004', now()), -- Tech Conf
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000005', now()), -- Electronic Fest
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000007', now()); -- Piano Recital
+
+-- jake (004): sports + music overlap with john
+INSERT INTO visit (id, user_id, event_id, visited_at) VALUES
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000001', now()), -- Jazz Night  (overlap with john)
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000003', now()), -- Marathon
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000006', now()), -- Basketball
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000007', now()); -- Piano Recital (overlap with john)
+
+-- alice (005): music + theatre
+INSERT INTO visit (id, user_id, event_id, visited_at) VALUES
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000001', now()), -- Jazz Night  (overlap with john+jake)
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000002', now()), -- Hamlet
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000007', now()), -- Piano Recital (overlap with john+jake)
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000010', now()); -- Rock Night
+
+-- carol (006): tech + sports
+INSERT INTO visit (id, user_id, event_id, visited_at) VALUES
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000003', now()), -- Marathon     (overlap with jake)
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000004', now()), -- Tech Conf    (overlap with john)
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000006', now()), -- Basketball   (overlap with jake)
+    (gen_random_uuid(), 'a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000008', now()); -- React Workshop
+
+-- ============================================================
+-- BOOKINGS  (implicit rating = 4, stronger signal)
+-- ============================================================
+
+-- john booked Jazz Night VIP + Tech Conf Regular
+INSERT INTO booking (id, user_id, ticket_type_id, number_of_tickets, total_cost, status, booked_at) VALUES
+    ('b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000002', 1, 80.00,  'ACTIVE', now()),
+    ('b0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000007', 1, 50.00,  'ACTIVE', now());
+
+-- jake booked Marathon + Basketball Upper Tier
+INSERT INTO booking (id, user_id, ticket_type_id, number_of_tickets, total_cost, status, booked_at) VALUES
+    ('b0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000004', 'f0000000-0000-0000-0000-000000000005', 1, 15.00,  'ACTIVE', now()),
+    ('b0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000004', 'f0000000-0000-0000-0000-000000000011', 2, 40.00,  'ACTIVE', now());
+
+-- alice booked Piano Recital + Hamlet Premium
+INSERT INTO booking (id, user_id, ticket_type_id, number_of_tickets, total_cost, status, booked_at) VALUES
+    ('b0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000005', 'f0000000-0000-0000-0000-000000000013', 1, 40.00,  'ACTIVE', now()),
+    ('b0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000005', 'f0000000-0000-0000-0000-000000000004', 1, 60.00,  'ACTIVE', now());
+
+-- carol booked React Workshop + Tech Conf Early Bird
+INSERT INTO booking (id, user_id, ticket_type_id, number_of_tickets, total_cost, status, booked_at) VALUES
+    ('b0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000006', 'f0000000-0000-0000-0000-000000000014', 1, 100.00, 'ACTIVE', now()),
+    ('b0000000-0000-0000-0000-000000000008', 'a0000000-0000-0000-0000-000000000006', 'f0000000-0000-0000-0000-000000000006', 1, 0.00,   'ACTIVE', now());
+
+-- keep available counts consistent
+UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000002';
+UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000007';
+UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000005';
+UPDATE tickettype SET available = available - 2 WHERE id = 'f0000000-0000-0000-0000-000000000011';
+UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000013';
+UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000004';
+UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000014';
+UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000006';

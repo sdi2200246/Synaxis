@@ -1,7 +1,9 @@
 DROP TABLE IF EXISTS eventcategory;
 DROP TABLE IF EXISTS media;
 DROP TABLE IF EXISTS visit;
+DROP TABLE IF EXISTS recommendation;
 DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS conversation_participant;
 DROP TABLE IF EXISTS conversation;
 DROP TABLE IF EXISTS booking;
 DROP TABLE IF EXISTS tickettype;
@@ -9,4 +11,3 @@ DROP TABLE IF EXISTS event;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS venue;
 DROP TABLE IF EXISTS "user";
-DROP TABLE IF EXISTS conversation_participant;
