@@ -19,15 +19,19 @@ func main() {
 
     godotenv.Load()
 
-    pool, err := pgxpool.New(context.Background(), os.Getenv("REC_DATABASE_URL"))
+    if len(os.Args) < 2{
+    	log.Fatalf("usage:main.go [YOUR DB ENV URL] ")
+	}
+
+    dbEnvVariable := os.Args[1]
+    pool, err := pgxpool.New(context.Background(), os.Getenv(dbEnvVariable))
     if err != nil {
         log.Fatal(err)
     }
     defer pool.Close()
 
     eventBus := infastructure.NewEventBus();
-
-
+    
     categoryRepo := repos.NewCategoryRepo(pool)
     userRepo     := repos.NewUserRepo(pool)
     eventRepo    := repos.NewEventRepo(pool)
@@ -36,13 +40,15 @@ func main() {
     ticketsRepo  := repos.NewTicketTypeRepo(pool)
     messagesRepo := repos.NewMessagesRepo(pool)
     visitsRepo   := repos.NewVisitsRepo(pool)
+    mediaRepo    := repos.NewMediaRepo(pool)
 
     userService  := services.NewUserService(userRepo)
     authService  := services.NewAuthService(userRepo, "jason_derullo")
     venueService := services.NewVenueService(venueRepo)
     visitsService := services.NewVisitService(visitsRepo)
+    mediaService  := services.NewMediaService(mediaRepo , eventRepo)
 
-    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo ,eventBus , venueRepo)
+    eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo ,eventBus , venueRepo , mediaRepo)
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
     ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
     messagesService := services.NewMessageService(messagesRepo , bookingRepo , eventRepo)
@@ -59,10 +65,13 @@ func main() {
     bookingHandler     := controllers.NewBookingHandler(bookingService , baseHandler)
     messagesHandler    := controllers.NewMessagesHandler(messagesService , baseHandler)
     visitsHandler      := controllers.NewVisitsHandler(visitsService , baseHandler)
+    mediaHandler      :=  controllers.NewMediaHandler(mediaService , baseHandler)
     // adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
 
 
     r := gin.Default()
+
+    r.Static("/media/events", "./uploads/events")
 
     r.POST("/users", userHandler.Register)
     r.POST("/auth/login", authHandler.Login)
@@ -109,6 +118,8 @@ func main() {
         auth.GET("/bookings", bookingHandler.GetUserBookings)
 
         auth.POST("events/:id/visits" , visitsHandler.Record)
+        auth.POST("/events/:id/media", mediaHandler.Upload)
+        auth.DELETE("/events/:id/media/:media_id", mediaHandler.Delete)
 
 
         auth.POST("/conversations" , messagesHandler.CreateConversation)

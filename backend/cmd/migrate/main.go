@@ -12,13 +12,14 @@ import (
 
 func main() {
 
-	if len(os.Args) < 2 {
-    	log.Fatalf("usage: migrate [up|down]")
+	if len(os.Args) < 3 {
+    	log.Fatalf("usage: migrate [up|down] [YOUR DB ENV URL]")
 	}
 
 	migration := os.Args[1];
+	dbEnvVariable := os.Args[2];
 	godotenv.Load() 
-	dbURL := os.Getenv("REC_DATABASE_URL")
+	dbURL := os.Getenv(dbEnvVariable)
 	if dbURL == "" {
 		log.Fatalf("Failed to fetch DATABASE_URL from the .env file",)
 	}

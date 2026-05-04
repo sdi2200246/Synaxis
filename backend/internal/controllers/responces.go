@@ -22,18 +22,24 @@ type CategoryResponse struct{
     Name string   `json:"name"`
 }
 
+type EventMediaResponse struct {
+	ID  uuid.UUID `json:"id"`
+	URL string    `json:"url"`
+}
+
 type EventResponse struct {
-	ID            uuid.UUID `json:"id"`
-	OrganizerID   uuid.UUID `json:"organizer_id"`
-	VenueID       uuid.UUID `json:"venue_id"`
-	Title         string    `json:"title"`
-	EventType     string    `json:"event_type"`
-	Status        string    `json:"status"`
-	Description   string    `json:"description"`
-	Capacity      int       `json:"capacity"`
-	StartDatetime time.Time `json:"start_datetime"`
-	EndDatetime   time.Time `json:"end_datetime"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            uuid.UUID            `json:"id"`
+	OrganizerID   uuid.UUID            `json:"organizer_id"`
+	VenueID       uuid.UUID            `json:"venue_id"`
+	Title         string               `json:"title"`
+	EventType     string               `json:"event_type"`
+	Status        string               `json:"status"`
+	Description   string               `json:"description"`
+	Capacity      int                  `json:"capacity"`
+	StartDatetime time.Time            `json:"start_datetime"`
+	EndDatetime   time.Time            `json:"end_datetime"`
+	CreatedAt     time.Time            `json:"created_at"`
+	Media         []EventMediaResponse `json:"media"`
 }
 
 type AdminUserResponse struct {
@@ -129,8 +135,14 @@ func ToVenueResponse(v services.DetailedVenue) VenueResponse {
 	}
 }
 
-
 func ToEventResponse(ev services.Event) EventResponse {
+	media := make([]EventMediaResponse, len(ev.Media))
+	for i, m := range ev.Media {
+		media[i] = EventMediaResponse{
+			ID:  m.ID,
+			URL: m.Url,
+		}
+	}
 	return EventResponse{
 		ID:            ev.ID,
 		OrganizerID:   ev.OrganizerID,
@@ -143,6 +155,7 @@ func ToEventResponse(ev services.Event) EventResponse {
 		StartDatetime: ev.StartDatetime,
 		EndDatetime:   ev.EndDatetime,
 		CreatedAt:     ev.CreatedAt,
+		Media:         media,
 	}
 }
 

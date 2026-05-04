@@ -147,7 +147,14 @@ export function BrowsePage() {
           style={{ opacity: heroOpacity }}
           aria-hidden={heroOpacity < 0.1}
         >
-          <div className="browse-hero__bg" />
+          <div
+              className="browse-hero__bg"
+              style={heroEvent.media?.length ? {
+                backgroundImage: `url(${heroEvent.media[0].url})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              } : undefined}
+            />
           <div className="browse-hero__content">
             <span className="browse-hero__eyebrow">Featured · Upcoming</span>
             <h1 className="browse-hero__title">{heroEvent.title}</h1>

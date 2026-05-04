@@ -27,8 +27,6 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
   const [submitting, setSubmitting] = useState(false)
   const [bookingError, setBookingError] = useState('')
   const [bookingSuccess, setBookingSuccess] = useState('')
-
-  const hasImage = false
   const hasCoords = event.venue.latitude != null && event.venue.longitude != null
 
   const dateLabel = new Date(event.start_datetime).toLocaleDateString('en-US', {
@@ -88,8 +86,8 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
       {/* ── Card ─────────────────────────────────────────────────── */}
       <div className="card card--hoverable browse-card" onClick={() => setOpen(true)}>
         <div className="media media--16x10">
-          {hasImage ? (
-            <img className="media__img" src="" alt={event.title} />
+          {event.media?.length ? (
+            <img className="media__img" src={event.media[0].url} alt={event.title} />
           ) : (
             <div className="media__placeholder">
               <FiCalendar size={28} />
@@ -116,8 +114,8 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
             {/* Hero */}
             <div className="browse-detail__hero">
               <div className="media media--16x7">
-                {hasImage ? (
-                  <img className="media__img" src="" alt={event.title} />
+                {event.media?.length ? (
+                  <img className="media__img" src={event.media[0].url} alt={event.title} />
                 ) : (
                   <div className="media__placeholder">
                     <FiCalendar size={42} />

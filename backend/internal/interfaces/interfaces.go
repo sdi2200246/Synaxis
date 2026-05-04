@@ -81,3 +81,10 @@ type EventBus interface{
 	Publish(topic string, event any)
 	Subscribe(topic string) chan any
 }
+
+type MediaRepository interface {
+	Create(ctx context.Context, media entities.Media) error
+	GetByEventID(ctx context.Context, eventID uuid.UUID) ([]entities.Media, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetByEventIDs(ctx context.Context, eventIDs []uuid.UUID) (map[uuid.UUID][]entities.Media, error)
+}

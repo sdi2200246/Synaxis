@@ -32,6 +32,11 @@ type EventCategory struct {
 	ParentID *uuid.UUID
 }
 
+type EventMedia struct{
+	ID uuid.UUID
+	Url string
+}
+
 type UpdateEventInput struct{
 	Title       *string
 	EventType   *string
@@ -54,6 +59,7 @@ type Event struct {
     StartDatetime time.Time
     EndDatetime   time.Time
     CreatedAt     time.Time
+	Media	  	  []EventMedia	
 }
 
 type EventFilterInput struct{
@@ -79,16 +85,26 @@ type EventService struct{
     bookingsProvider interfaces.BookingRepository
 	ticketsProvider interfaces.TicketTypeRepository
 	venuesProvider interfaces.VenuesRepository
+	mediaProvider interfaces.MediaRepository
 	eventBus 		interfaces.EventBus
 }
 
-func NewEventService(r interfaces.EventRepository ,cr interfaces.CategoriesRepo   ,br  interfaces.BookingRepository , tr interfaces.TicketTypeRepository , eb interfaces.EventBus , vr interfaces.VenuesRepository)*EventService{
-	return  &EventService{
+func NewEventService(
+		r interfaces.EventRepository ,
+		cr interfaces.CategoriesRepo   ,
+		br  interfaces.BookingRepository , 
+		tr interfaces.TicketTypeRepository ,
+		eb interfaces.EventBus , 
+		vr interfaces.VenuesRepository ,
+		mr interfaces.MediaRepository,
+	)*EventService{
+		return  &EventService{
 				eventRepo:r,
 				categoryProvider: cr,
 				bookingsProvider: br,
 				ticketsProvider: tr,
 				venuesProvider: vr,
+				mediaProvider: mr,
 				eventBus: eb,
 			}
 }
@@ -197,41 +213,62 @@ func (s*EventService) GetEventOrganizer(ctx context.Context , id uuid.UUID)(uuid
 	return event.OrganizerID , nil
 }
 
-func (s *EventService) List(ctx context.Context, callerID *uuid.UUID , input EventFilterInput) ([]Event, bool, error) {
-
+func (s *EventService) List(ctx context.Context, callerID *uuid.UUID, input EventFilterInput) ([]Event, bool, error) {
 	if callerID == nil {
 		s := "PUBLISHED"
 		input.Status = &s
-	}	
-	
-    filter := entities.EventFilter{
-        OrganizerID: input.OrganizerID,
-        Status:      input.Status,
-        CategoryIDs: input.CategoryIDs,
-        Title:       input.Title,
-        Description: input.Description,
-        City:        input.City,
-        Country:     input.Country,
-        StartAfter:  input.StartAfter,
-        StartBefore: input.StartBefore,
-        MinPrice:    input.MinPrice,
-        MaxPrice:    input.MaxPrice,
-        Limit:       input.Limit,
-        Offset:      input.Offset,
-    }
+	}
 
-    events, hasMore, err := s.eventRepo.GetbyFilter(ctx, filter)
-    if err != nil {
-        return nil, false, err
-    }
+	filter := entities.EventFilter{
+		OrganizerID: input.OrganizerID,
+		Status:      input.Status,
+		CategoryIDs: input.CategoryIDs,
+		Title:       input.Title,
+		Description: input.Description,
+		City:        input.City,
+		Country:     input.Country,
+		StartAfter:  input.StartAfter,
+		StartBefore: input.StartBefore,
+		MinPrice:    input.MinPrice,
+		MaxPrice:    input.MaxPrice,
+		Limit:       input.Limit,
+		Offset:      input.Offset,
+	}
 
-    result := make([]Event, len(events))
-    for i, e := range events {
-        result[i] = toEvent(e)
-    }
-    return result, hasMore, nil
+	events, hasMore, err := s.eventRepo.GetbyFilter(ctx, filter)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if len(events) == 0 {
+		return []Event{}, false, nil
+	}
+
+	eventIDs := make([]uuid.UUID, len(events))
+	for i, e := range events {
+		eventIDs[i] = e.ID
+	}
+
+	mediaByEvent, err := s.mediaProvider.GetByEventIDs(ctx, eventIDs)
+	if err != nil {
+		return nil, false, err
+	}
+
+	result := make([]Event, len(events))
+	for i, e := range events {
+		evt := toEvent(e)
+		evt.Media = make([]EventMedia , 0)
+		for _, m := range mediaByEvent[e.ID] {
+			evt.Media = append(evt.Media,
+				EventMedia{
+					ID:m.ID,
+					Url:fmt.Sprintf("/media/events/%s/%s", e.ID, m.Filename),
+				})
+		}
+		result[i] = evt
+	}
+	return result, hasMore, nil
 }
-
 func (s *EventService) GetAllEvents(ctx context.Context) ([]Event, error) {
 	events, err := s.eventRepo.GetAll(ctx)
 	if err != nil {
