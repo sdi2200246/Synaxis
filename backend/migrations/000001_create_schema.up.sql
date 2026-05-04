@@ -113,6 +113,7 @@ CREATE TABLE "media" (
   "id" uuid PRIMARY KEY,
   "event_id" uuid NOT NULL,
   "filename" varchar NOT NULL,
+  "size_bytes" bigint NOT NULL DEFAULT 0,
   "uploaded_at" timestamp NOT NULL DEFAULT (now())
 );
 

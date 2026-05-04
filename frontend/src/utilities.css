@@ -255,7 +255,7 @@
 }
 
 .dialog__title {
-  font-size: var(--syn-text-md);
+  font-size: var(--syn-text-lg);
   font-weight: 500;
   color: var(--syn-text-primary);
   margin: 0 0 var(--syn-space-3);
@@ -335,7 +335,19 @@ textarea.field__control {
 .field__hint {
   font-size: var(--syn-text-xs);
   color: var(--syn-text-muted);
-  margin-top: 2px;
+  font-weight: 450;
+  line-height: 1.4;
+  margin-top: var(--syn-space-2);
+  opacity: 0.7;
+}
+
+.field__hintp {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+  font-weight: 450;
+  line-height: 1.4;
+  margin-top: var(--syn-space-2);
+  opacity: 0.7;
 }
 
 .field__error {

@@ -709,7 +709,7 @@
 }
 
 .browse-row__title {
-  font-size: var(--syn-text-lg);
+  font-size: var(--syn-text-xl);
   font-weight: 600;
   color: var(--syn-text-primary);
   margin: 0;
@@ -835,4 +835,50 @@
     min-width: 180px;
     max-width: 200px;
   }
+}
+
+/*=========================================
+  PHOTO EDITTING IN THE EVENT FORM 
+  ==================================*/
+.photo-edit__preview {
+  position: relative;
+  display: inline-block;
+}
+
+.photo-edit__img {
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--syn-radius-md);
+  border: 1px solid var(--syn-border);
+  display: block;
+}
+
+.photo-edit__remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--syn-accent-dark);
+  color: var(--syn-bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--syn-bg-card);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform var(--syn-transition), background var(--syn-transition);
+}
+
+.photo-edit__remove:hover {
+  background: var(--syn-danger-text);
+  transform: scale(1.1);
+}
+
+.photo-edit__remove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }

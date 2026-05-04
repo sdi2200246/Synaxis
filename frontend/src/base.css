@@ -29,12 +29,16 @@ body {
   flex-direction: column;
 }
 
+h1 { font-size: 3rem;     font-weight: 600; line-height: 1.15; letter-spacing: -0.025em; }
+h2 { font-size: 2.25rem;  font-weight: 600; line-height: 1.2;  letter-spacing: -0.02em; }
+h3 { font-size: 1.75rem;  font-weight: 500; line-height: 1.25; letter-spacing: -0.015em; }
+h4 { font-size: 1.375rem; font-weight: 500; line-height: 1.3;  letter-spacing: -0.01em; }
+h5 { font-size: 1.125rem; font-weight: 500; line-height: 1.35; }
+h6 { font-size: 0.9375rem; font-weight: 500; line-height: 1.4; letter-spacing: 0.04em; text-transform: uppercase; }
+
 h1, h2, h3, h4, h5, h6 {
   color: var(--syn-text-primary);
-  font-weight: 500;
-  line-height: 1.3;
 }
-
 a {
   color: var(--syn-accent-text);
   text-decoration: none;

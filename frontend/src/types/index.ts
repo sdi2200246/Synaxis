@@ -47,6 +47,11 @@ export interface Venue {
   capacity?:number
 }
 
+export interface EventMedia {
+  id: string
+  url: string
+}
+
 export interface Event {
   id: string
   organizer_id: string
@@ -63,6 +68,7 @@ export interface Event {
   booking_count?:number
   categories?:Category[]
   category_ids?:string[]
+  media?:EventMedia[]
 }
 
 export interface TicketType {
