@@ -68,6 +68,12 @@ export function LoginPage() {
         </button>
       </form>
 
+        <div className="auth-page__divider">or</div>
+
+        <Link to="/browse" className="btn btn--ghost btn--block">
+          Continue as guest
+        </Link>
+        
       <p className="auth-page__footer">
         Don't have an account? <Link to="/register">Register</Link>
       </p>

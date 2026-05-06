@@ -12,6 +12,7 @@ import {
 import type { ConversationWithParticipants, Message } from '../types'
 import '../components/messages/Messages.css'
 
+
 async function fetchUserName(userId: string): Promise<string> {
   const { default: api } = await import('../api/client')
   const res = await api.get<{ first_name: string; last_name: string }>(`/users/${userId}`)
@@ -31,7 +32,6 @@ export function MessagesPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Load conversations
   useEffect(() => {
     getConversations().then(setConversations)
   }, [])

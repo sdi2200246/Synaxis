@@ -2,14 +2,19 @@ import { useState, useEffect, useCallback } from 'react'
 import { UserCard } from '../../components/UserCard'
 import { getPendingUsers, approveUser, rejectUser } from '../../api/users'
 import type { UserSummary } from '../../types'
+import { useAuth } from '../../context/AuthContext'
 
 export function PendingRegistrations() {
   const [users, setUsers] = useState<UserSummary[]>([])
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [actionInFlight, setActionInFlight] = useState<string | null>(null)
+  const {userRole} = useAuth()
 
   const loadUsers = useCallback(async () => {
+    if (userRole != 'admin')
+      return
+      
     try {
       const data = await getPendingUsers()
       setUsers(data.users)

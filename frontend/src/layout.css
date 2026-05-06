@@ -286,6 +286,27 @@
   color: var(--syn-text-secondary);
 }
 
+.auth-page__divider {
+  display: flex;
+  align-items: center;
+  margin: var(--syn-space-4) 0;
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.auth-page__divider::before,
+.auth-page__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--syn-border);
+}
+
+.auth-page__divider::before { margin-right: var(--syn-space-3); }
+.auth-page__divider::after  { margin-left: var(--syn-space-3); }
+
 /* ==========================================================================
    06. PAGE CONTAINERS
    ========================================================================== */
@@ -893,4 +914,193 @@
   display: flex;
   gap: var(--syn-space-2);
   margin-top: var(--syn-space-2);
+}
+
+/* ==========================================================================
+   GUEST GATE — Playful auth prompt for unauthenticated users.
+   Dropped in place of any restricted action to nudge toward sign-up.
+   ========================================================================== */
+ 
+/* ── Entrance: the whole card slides up + fades in ── */
+@keyframes guest-gate-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+ 
+/* ── Lock wiggle: quick left-right shake ── */
+@keyframes guest-gate-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15%      { transform: rotate(-12deg); }
+  30%      { transform: rotate(10deg); }
+  45%      { transform: rotate(-8deg); }
+  60%      { transform: rotate(5deg); }
+  75%      { transform: rotate(-2deg); }
+}
+ 
+/* ── Shimmer sweep across the primary CTA ── */
+@keyframes guest-gate-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+ 
+/* ── Container ── */
+.guest-gate {
+  width: min(100%, 520px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--syn-space-3);
+  padding: var(--syn-space-6) var(--syn-space-5);
+  border: 1px dashed var(--syn-border-hover);
+  border-radius: var(--syn-radius-lg);
+  background: var(--syn-bg-surface);
+  text-align: center;
+  animation: guest-gate-enter 0.45s ease-out both;
+}
+.guest-gate-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--syn-space-6);
+}
+ 
+/* ── Icon circle ── */
+.guest-gate__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--syn-accent-bg);
+  color: var(--syn-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: guest-gate-wiggle 0.7s ease-in-out 0.3s both;
+}
+ 
+/* ── Copy ── */
+.guest-gate__title {
+  font-size: var(--syn-text-md);
+  font-weight: 600;
+  color: var(--syn-text-primary);
+  margin: 0;
+  animation: guest-gate-enter 0.45s ease-out 0.1s both;
+}
+ 
+.guest-gate__subtitle {
+  font-size: var(--syn-text-sm);
+  color: var(--syn-text-secondary);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.5;
+  animation: guest-gate-enter 0.45s ease-out 0.18s both;
+}
+ 
+/* ── Button row ── */
+.guest-gate__actions {
+  display: flex;
+  gap: var(--syn-space-3);
+  margin-top: var(--syn-space-2);
+  animation: guest-gate-enter 0.45s ease-out 0.26s both;
+}
+ 
+/* Shimmer on the primary button */
+.guest-gate__actions .btn--primary {
+  background-image: linear-gradient(
+    110deg,
+    var(--syn-accent) 0%,
+    var(--syn-accent) 40%,
+    rgba(255, 255, 255, 0.25) 50%,
+    var(--syn-accent) 60%,
+    var(--syn-accent) 100%
+  );
+  background-size: 200% 100%;
+  animation: guest-gate-shimmer 2.5s ease-in-out 1s;
+}
+ 
+/* ── Compact variant (inline within ticket rows, etc.) ── */
+.guest-gate--compact {
+  flex-direction: row;
+  padding: var(--syn-space-4);
+  margin-top: var(--syn-space-4);
+  margin-bottom: var(--syn-space-4);
+  gap: var(--syn-space-4);
+  text-align: left;
+}
+ 
+.guest-gate--compact .guest-gate__icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+ 
+.guest-gate--compact .guest-gate__copy {
+  flex: 1;
+  min-width: 0;
+}
+ 
+.guest-gate--compact .guest-gate__title {
+  font-size: var(--syn-text-sm);
+}
+ 
+.guest-gate--compact .guest-gate__subtitle {
+  font-size: var(--syn-text-xs);
+}
+ 
+.guest-gate--compact .guest-gate__actions {
+  margin-top: var(--syn-space-1);
+}
+ 
+
+.guest-gate--embedded {
+  width: 100%;
+  min-height: unset;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: var(--syn-space-3);
+
+  padding: var(--syn-space-5);
+
+  border: 1px dashed var(--syn-border-hover);
+  border-radius: var(--syn-radius-lg);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.015) 0%,
+      rgba(255,255,255,0.03) 100%
+    ),
+    var(--syn-bg-surface);
+
+  text-align: center;
+
+  animation: guest-gate-enter 0.45s ease-out both;
+}
+
+/* Slightly smaller icon for embedded usage */
+.guest-gate--embedded .guest-gate__icon {
+  width: 46px;
+  height: 46px;
+}
+
+/* Tighter copy */
+.guest-gate--embedded .guest-gate__subtitle {
+  max-width: 420px;
+}
+
+/* Buttons wrap nicely on narrow containers */
+.guest-gate--embedded .guest-gate__actions {
+  flex-wrap: wrap;
+  justify-content: center;
 }
