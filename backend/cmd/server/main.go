@@ -52,9 +52,9 @@ func main() {
     bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
     ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
     messagesService := services.NewMessageService(messagesRepo , bookingRepo , eventRepo)
+    exportService := services.NewExportService(eventRepo , venueRepo , categoryRepo , ticketsRepo , bookingRepo)
     eventCancelationService := services.NewCancelEventService(eventRepo , bookingRepo , messagesRepo , eventBus)
     eventCancelationService.Subscribe()
-
 
     baseHandler        := &controllers.BaseHandler{}
     userHandler        := controllers.NewUserHandler(userService)
@@ -65,14 +65,12 @@ func main() {
     bookingHandler     := controllers.NewBookingHandler(bookingService , baseHandler)
     messagesHandler    := controllers.NewMessagesHandler(messagesService , baseHandler)
     visitsHandler      := controllers.NewVisitsHandler(visitsService , baseHandler)
-    mediaHandler      :=  controllers.NewMediaHandler(mediaService , baseHandler)
-    // adminExportHandler := controllers.NewAdminExportHandler(eventsService, bookingService)
-
+    mediaHandler       :=  controllers.NewMediaHandler(mediaService , baseHandler)
+    adminExportHandler := controllers.NewAdminExportHandler(exportService)
 
     r := gin.Default()
 
     r.Static("/media/events", "./uploads/events")
-
     r.POST("/users", userHandler.Register)
     r.POST("/auth/login", authHandler.Login)
 
@@ -99,7 +97,7 @@ func main() {
             admin.GET("/users", userHandler.GetUsers)
             admin.POST("/users/:id/approve", userHandler.ApproveUser)
             admin.POST("/users/:id/reject", userHandler.RejectUser)
-            // admin.GET("/events" , adminExportHandler.Export)
+            admin.GET("/events" , adminExportHandler.ExportByOrganizer)
         }
         auth.GET("/users/:id", userHandler.GetByID)
 
@@ -121,7 +119,6 @@ func main() {
         auth.POST("/events/:id/media", mediaHandler.Upload)
         auth.DELETE("/events/:id/media/:media_id", mediaHandler.Delete)
 
-
         auth.POST("/conversations" , messagesHandler.CreateConversation)
         auth.GET("/conversations" , messagesHandler.ListUserConversations)
         auth.PATCH("/conversations/:id/read", messagesHandler.MarkConversationAsRead)
@@ -129,7 +126,6 @@ func main() {
         auth.GET("/conversations/:id/messages" , messagesHandler.GetConversationMessages)
         auth.PATCH("/messages/:id", messagesHandler.UpdateMessage)
     }
-    
-    // start server
+
     r.Run(":8080")
 }

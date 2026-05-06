@@ -882,3 +882,15 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.user-card__export {
+  margin-top: var(--syn-space-4);
+  padding-top: var(--syn-space-4);
+  border-top: 1px solid var(--syn-border);
+}
+
+.user-card__export-actions {
+  display: flex;
+  gap: var(--syn-space-2);
+  margin-top: var(--syn-space-2);
+}

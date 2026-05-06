@@ -1,5 +1,8 @@
+// frontend/src/components/UserCard.tsx
 import { useState } from 'react'
-import type { UserSummary } from "../types"
+import { FiDownload } from 'react-icons/fi'
+import type { UserSummary } from '../types'
+import { exportUserEvents, type ExportFormat } from '../api/users'
 
 type UserCardProps = {
   user: UserSummary
@@ -9,7 +12,17 @@ type UserCardProps = {
 
 export function UserCard({ user, variant = 'full', actions }: UserCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const [busy, setBusy] = useState<ExportFormat | null>(null)
   const clickable = variant === 'full'
+
+  async function handleExport(format: ExportFormat) {
+    setBusy(format)
+    try {
+      await exportUserEvents(user.id, format)
+    } finally {
+      setBusy(null)
+    }
+  }
 
   return (
     <div
@@ -77,6 +90,31 @@ export function UserCard({ user, variant = 'full', actions }: UserCardProps) {
                 <span>{new Date(user.updated_at).toLocaleString('en-US', { dateStyle: 'long' })}</span>
               </div>
             )}
+          </div>
+
+          <div className="user-card__export" onClick={(e) => e.stopPropagation()}>
+            <span className="label">Export Organized Events</span>
+            <div className="user-card__export-actions">
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => handleExport('xml')}
+                disabled={busy !== null}
+              >
+                <FiDownload size={14} />
+                {busy === 'xml' ? 'Exporting…' : 'XML'}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => handleExport('json')}
+                disabled={busy !== null}
+              >
+                <FiDownload size={14} />
+                {busy === 'json' ? 'Exporting…' : 'JSON'}
+              </button>
+            </div>
+            <span className="field__hint">Download all events this user created, including bookings and ticket data.</span>
           </div>
         </div>
       )}
