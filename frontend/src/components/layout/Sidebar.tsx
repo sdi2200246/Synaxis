@@ -17,7 +17,7 @@ export function Sidebar({ collapsed, onToggle }: Props) {
   const [pendingUsersCount, setPendingCount] = useState<number>(0)
   const [hasUnread, setHasUnread] = useState(false)
 
-  const { logout, userRole } = useAuth()
+  const { logout, userRole , isAuthenticated} = useAuth()
   const navigate = useNavigate()
 
   function handleLogout() {
@@ -26,6 +26,9 @@ export function Sidebar({ collapsed, onToggle }: Props) {
   }
 
   useEffect(() => {
+    if (userRole != 'admin')
+        return
+
     async function loadPendingUsers() {
       const data = await getPendingUsers()
       setPendingCount(data.count)
@@ -37,9 +40,11 @@ export function Sidebar({ collapsed, onToggle }: Props) {
   }, [])
 
   useEffect(() => {
-    if (userRole === 'admin') return
+    if (userRole === 'admin' || !isAuthenticated) 
+        return
 
     async function checkUnread() {
+      
       try {
         const convs = await getConversations()
         setHasUnread(convs.some(c => c.conversation.unseen_count > 0))

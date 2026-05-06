@@ -3,10 +3,12 @@ import { UserCard } from '../../components/UserCard'
 import { getUsers} from '../../api/users'
 import type { UserSummary } from '../../types'
 
+
 export function Users() {
   const [users, setUsers] = useState<UserSummary[]>([])
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(true)
+ 
 
   const loadUsers = useCallback(async () => {
     try {

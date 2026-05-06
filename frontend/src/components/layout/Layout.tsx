@@ -15,7 +15,6 @@ export function Layout() {
     localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0')
   }, [collapsed])
 
-  if (isAuthenticated) {
     return (
       <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
@@ -24,7 +23,6 @@ export function Layout() {
         </main>
       </div>
     )
-  }
 
   return (
     <div className="app">

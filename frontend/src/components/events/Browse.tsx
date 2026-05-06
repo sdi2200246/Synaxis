@@ -7,8 +7,10 @@ import type { Event } from '../../types'
 import type { TicketType } from '../../api/tickets'
 import { createBooking } from '../../api/bookings'
 import { recordVisit } from '../../api/visits'
-import './Events.css'
+import { GuestGate } from '../GuestGate'
 
+
+import './Events.css'
 interface BrowseEventCardProps {
   event: Event
 }
@@ -34,7 +36,8 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
   })
 
   useEffect(() => {
-    if (!open) return
+    if (!open || !isAuthenticated)
+        return
     setLoadingTickets(true)
     getTicketTypes(event.id)
       .then(setTickets)
@@ -303,13 +306,14 @@ export function BrowseEventCard({ event }: BrowseEventCardProps) {
               </section>
             )}
 
-            {/* Guest note */}
             {!isAuthenticated && (
-              <section className="section">
-                <div className="alert alert--warning">
-                  Sign up and get approved to book tickets and contact organizers.
-                </div>
-              </section>
+              <GuestGate
+                className="guest-gate--compact"
+                loginHref="/login"
+                registerHref="/register"
+                title="Log in or Register to buy tickets"
+                subtitle="You need an account before accessing this feature."
+              />
             )}
           </div>
         </div>
