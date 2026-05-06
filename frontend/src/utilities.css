@@ -495,11 +495,11 @@ textarea.field__control {
   position: absolute;
   top: -2px;
   right: -2px;
-  width: 6px;
-  height: 6px;
+  width: 9px;
+  height: 9px;
   background: var(--syn-danger);
   border-radius: 50%;
-  border: 1px solid var(--syn-bg-card);
+  border: 2px solid var(--syn-bg-card);
 }
 
 .icon-badge__count {

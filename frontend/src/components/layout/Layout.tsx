@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Link, Outlet } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import {Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 
 const SIDEBAR_KEY = 'synaxis-sidebar-collapsed'
 
 export function Layout() {
-  const { isAuthenticated } = useAuth()
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     return localStorage.getItem(SIDEBAR_KEY) === '1'
   })
@@ -23,21 +21,4 @@ export function Layout() {
         </main>
       </div>
     )
-
-  return (
-    <div className="app">
-      <nav className="navbar">
-        <Link to="/home" className="navbar__brand">Synaxis</Link>
-
-        <div className="navbar__links">
-          <Link to="/login" className="navbar__link">Login</Link>
-          <Link to="/register" className="navbar__link">Register</Link>
-        </div>
-      </nav>
-
-      <main className="public-content">
-        <Outlet />
-      </main>
-    </div>
-  )
 }

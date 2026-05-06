@@ -5,8 +5,8 @@ import {
   FiMessageSquare, FiChevronLeft, FiChevronRight, FiLogOut,
 } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
+import { useMessages } from '../../context/MessagesContext'
 import { getPendingUsers } from '../../api/users'
-import { getConversations } from '../../api/messages'
 
 interface Props {
   collapsed: boolean
@@ -15,10 +15,9 @@ interface Props {
 
 export function Sidebar({ collapsed, onToggle }: Props) {
   const [pendingUsersCount, setPendingCount] = useState<number>(0)
-  const [hasUnread, setHasUnread] = useState(false)
-
-  const { logout, userRole , isAuthenticated} = useAuth()
+  const { logout, userRole} = useAuth()
   const navigate = useNavigate()
+  const { hasUnread } = useMessages()
 
   function handleLogout() {
     logout()
@@ -38,25 +37,6 @@ export function Sidebar({ collapsed, onToggle }: Props) {
     const interval = setInterval(loadPendingUsers, 30000)
     return () => clearInterval(interval)
   }, [])
-
-  useEffect(() => {
-    if (userRole === 'admin' || !isAuthenticated) 
-        return
-
-    async function checkUnread() {
-      
-      try {
-        const convs = await getConversations()
-        setHasUnread(convs.some(c => c.conversation.unseen_count > 0))
-      } catch {
-        /* silent — sidebar badge is non-critical */
-      }
-    }
-
-    checkUnread()
-    const interval = setInterval(checkUnread, 15000)
-    return () => clearInterval(interval)
-  }, [userRole])
 
   return (
     <aside className={`sidebar ${collapsed ? 'is-collapsed' : ''}`}>
