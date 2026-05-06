@@ -1,15 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useMessages } from '../context/MessagesContext'
 import { ConversationList } from '../components/messages/ConversationList'
 import { ChatBubble } from '../components/messages/ChatBubble'
 import {
-  getConversations,
   getConversationMessages,
   sendMessage,
-  markConversationAsRead,
 } from '../api/messages'
-import type { ConversationWithParticipants, Message } from '../types'
+import type { Message } from '../types'
 import '../components/messages/Messages.css'
 
 
@@ -24,17 +23,14 @@ export function MessagesPage() {
   const navigate = useNavigate()
   const { userId } = useAuth()
 
-  const [conversations, setConversations] = useState<ConversationWithParticipants[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [userNames, setUserNames] = useState<Record<string, string>>({})
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { conversations, markAsRead } = useMessages()
 
-  useEffect(() => {
-    getConversations().then(setConversations)
-  }, [])
 
   // Resolve participant names
   useEffect(() => {
@@ -65,32 +61,22 @@ export function MessagesPage() {
     })
   }, [conversations, userId])
 
-  // Load messages when active conversation changes
   useEffect(() => {
-    if (!conversationId) {
-      setMessages([])
-      return
-    }
+      if (!conversationId) {
+        setMessages([])
+        return
+      }
 
-    getConversationMessages(conversationId).then(msgs => {
-      setMessages(msgs)
-      scrollToBottom()
-    })
-
-    // Mark as read
-    const conv = conversations.find(c => c.conversation.id === conversationId)
-    if (conv && conv.conversation.unseen_count > 0) {
-      markConversationAsRead(conversationId).then(() => {
-        setConversations(prev =>
-          prev.map(c =>
-            c.conversation.id === conversationId
-              ? { ...c, conversation: { ...c.conversation, unseen_count: 0 } }
-              : c
-          )
-        )
+      getConversationMessages(conversationId).then(msgs => {
+        setMessages(msgs)
+        scrollToBottom()
       })
-    }
-  }, [conversationId])
+
+      const conv = conversations.find(c => c.conversation.id === conversationId)
+      if (conv && conv.conversation.unseen_count > 0) {
+        markAsRead(conversationId)
+      }
+  }, [conversationId, conversations, markAsRead])
 
   function scrollToBottom() {
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
