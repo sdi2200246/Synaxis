@@ -232,3 +232,36 @@ UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0
 UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000004';
 UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000014';
 UPDATE tickettype SET available = available - 1 WHERE id = 'f0000000-0000-0000-0000-000000000006';
+
+
+-- john (002): music + tech profile
+INSERT INTO recommendation (user_id, event_id, score) VALUES
+    ('a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000010', 4.82),  -- Rock Night        (music, alice signal)
+    ('a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000008', 4.31),  -- React Workshop    (tech, carol signal)
+    ('a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000002', 3.74),  -- Hamlet            (alice signal)
+    ('a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000009', 3.15),  -- Street Food Fest
+    ('a0000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000006', 2.43);  -- Basketball
+
+-- jake (004): sports + music profile
+INSERT INTO recommendation (user_id, event_id, score) VALUES
+    ('a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000010', 4.55),  -- Rock Night        (music, alice signal)
+    ('a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000005', 4.12),  -- Electronic Fest   (music, john signal)
+    ('a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000002', 3.68),  -- Hamlet            (alice signal)
+    ('a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000004', 2.91),  -- Tech Conf
+    ('a0000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000009', 2.34);  -- Street Food Fest
+
+-- alice (005): music + theatre profile
+INSERT INTO recommendation (user_id, event_id, score) VALUES
+    ('a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000005', 4.71),  -- Electronic Fest   (john signal)
+    ('a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000004', 3.45),  -- Tech Conf         (john signal)
+    ('a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000009', 3.08),  -- Street Food Fest
+    ('a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000008', 2.62),  -- React Workshop
+    ('a0000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000006', 2.19);  -- Basketball
+
+-- carol (006): tech + sports profile
+INSERT INTO recommendation (user_id, event_id, score) VALUES
+    ('a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000001', 4.63),  -- Jazz Night        (john+jake signal)
+    ('a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000007', 4.27),  -- Piano Recital     (john+jake signal)
+    ('a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000005', 3.81),  -- Electronic Fest   (john signal)
+    ('a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000010', 3.24),  -- Rock Night
+    ('a0000000-0000-0000-0000-000000000006', 'e0000000-0000-0000-0000-000000000009', 2.58);  -- Street Food Fest

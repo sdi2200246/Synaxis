@@ -332,3 +332,53 @@ func (r *EventRepo) GetByTicketTypeID(ctx context.Context, ticketTypeID uuid.UUI
 
 	return e, nil
 }
+
+func (r *EventRepo) GetRecommendedByUserID(ctx context.Context, userID uuid.UUID, limit, offset int) ([]entities.Event, bool, error) {
+	if limit == 0 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	rows, err := r.db.Query(ctx, `
+		SELECT 
+			e.id, e.organizer_id, e.venue_id, e.title, e.event_type,
+			e.status, e.description, e.capacity,
+			e.start_datetime, e.end_datetime, e.created_at
+		FROM event e
+		JOIN recommendation rec ON rec.event_id = e.id
+		WHERE rec.user_id = $1
+		  AND e.status = 'PUBLISHED'
+		  AND e.start_datetime > now()
+		ORDER BY rec.score DESC
+		LIMIT $2 OFFSET $3
+	`, userID, limit, offset)
+	if err != nil {
+		slog.Error("EventRepo.GetRecommendedByUserID failed", "error", err)
+		return nil, false, apperr.ErrInternal
+	}
+	defer rows.Close()
+
+	var results []entities.Event
+	for rows.Next() {
+		var e entities.Event
+		if err := rows.Scan(
+			&e.ID, &e.OrganizerID, &e.VenueID, &e.Title, &e.EventType,
+			&e.Status, &e.Description, &e.Capacity,
+			&e.StartDatetime, &e.EndDatetime, &e.CreatedAt,
+		); err != nil {
+			slog.Error("EventRepo.GetRecommendedByUserID scan failed", "error", err)
+			return nil, false, apperr.ErrInternal
+		}
+		results = append(results, e)
+	}
+
+	if err := rows.Err(); err != nil {
+		slog.Error("EventRepo.GetRecommendedByUserID iteration failed", "error", err)
+		return nil, false, apperr.ErrInternal
+	}
+
+	hasMore := len(results) == limit
+	return results, hasMore, nil
+}

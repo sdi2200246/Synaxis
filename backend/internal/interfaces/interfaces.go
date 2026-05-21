@@ -42,6 +42,7 @@ type EventRepository interface {
 	GetbyFilter(ctx context.Context, filter entities.EventFilter) ([]entities.Event, bool, error)
 	GetAll(ctx context.Context) ([]entities.Event, error)
 	Delete(ctx context.Context, eventID uuid.UUID) error
+	GetRecommendedByUserID(ctx context.Context, userID uuid.UUID, limit, offset int) ([]entities.Event, bool, error)
 }
 
 

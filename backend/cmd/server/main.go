@@ -104,6 +104,7 @@ func main() {
         auth.POST("/events", eventsHandler.Create)
         auth.PATCH("/events/:id", eventsHandler.UpdateEvent)
         auth.DELETE("/events/:id" , eventsHandler.Delete)
+        auth.GET("/events/recommendations", eventsHandler.Recommendations)
        
         auth.POST("/events/:id/tickets", ticketsHandler.Create)
         auth.GET("/events/:id/tickets", ticketsHandler.GetByEventID)
