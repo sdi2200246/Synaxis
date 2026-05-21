@@ -347,3 +347,39 @@ func (s *EventService) GetEventCategories(ctx context.Context, eventID uuid.UUID
 	}
 	return result, nil
 }
+
+func (s *EventService) GetRecommendations(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Event, bool, error) {
+	events, hasMore, err := s.eventRepo.GetRecommendedByUserID(ctx, userID, limit, offset)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if len(events) == 0 {
+		return []Event{}, false, nil
+	}
+
+	eventIDs := make([]uuid.UUID, len(events))
+	for i, e := range events {
+		eventIDs[i] = e.ID
+	}
+
+	mediaByEvent, err := s.mediaProvider.GetByEventIDs(ctx, eventIDs)
+	if err != nil {
+		return nil, false, err
+	}
+
+	result := make([]Event, len(events))
+	for i, e := range events {
+		evt := toEvent(e)
+		evt.Media = make([]EventMedia, 0)
+		for _, m := range mediaByEvent[e.ID] {
+			evt.Media = append(evt.Media,
+				EventMedia{
+					ID:  m.ID,
+					Url: fmt.Sprintf("/media/events/%s/%s", e.ID, m.Filename),
+				})
+		}
+		result[i] = evt
+	}
+	return result, hasMore, nil
+}

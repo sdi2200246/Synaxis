@@ -11,7 +11,6 @@ import (
 	"github.com/sdi2200246/synaxis/internal/services"
 )
 
-
 type CreateEventRequest struct {
     Title       string    `json:"title"        binding:"required"`
     EventType   string    `json:"event_type"   binding:"required"`
@@ -46,6 +45,11 @@ type SearchEventRequest struct {
     MaxPrice    *float64    `form:"max_price"`
     Limit       int         `form:"limit,default=20"`
     Offset      int         `form:"offset,default=0"`
+}
+
+type RecommendationsRequest struct {
+	Limit  int `form:"limit,default=20"`
+	Offset int `form:"offset,default=0"`
 }
 
 type EventsHandler struct {
@@ -231,6 +235,31 @@ func (h *EventsHandler) GetByID(c *gin.Context) {
 	}
 
 	c.JSON(200, ToEventResponse(event))
+}
+
+func (h *EventsHandler) Recommendations(c *gin.Context) {
+	userID, err := h.baseHandler.getUserIDFromContext(c)
+	if err != nil {
+		apperr.Handle(c, err)
+		return
+	}
+
+	var req RecommendationsRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	events, hasMore, err := h.eventsService.GetRecommendations(c.Request.Context(), userID, req.Limit, req.Offset)
+	if err != nil {
+		apperr.Handle(c, err)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"events":   ToEventListResponse(events),
+		"has_more": hasMore,
+	})
 }
 
 func (h *EventsHandler) handleError(c *gin.Context, err error) {

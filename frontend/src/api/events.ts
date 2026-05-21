@@ -25,6 +25,11 @@ export interface SearchEventsResponse {
   has_more: boolean
 }
 
+export interface RecommendedEventsParams{
+  limit?:number
+  offset?:number
+}
+
 async function hydrateEvent(bare: BareEvent): Promise<Event> {
   const [venue, categories] = await Promise.all([
     api.get<Venue>(`/venues/${bare.venue_id}`).then(r => r.data),
@@ -59,6 +64,18 @@ export async function searchEvents(params: SearchEventsParams): Promise<SearchEv
 export async function getOrganizerEvents(organizerID: string): Promise<Event[]> {
   const { events } = await searchEvents({ organizer_id: organizerID })
   return events
+}
+
+export async function getRecommendedEvents(params: RecommendedEventsParams = {}): Promise<SearchEventsResponse> {
+  const query = new URLSearchParams()
+  if (params.limit) query.append('limit', String(params.limit))
+  if (params.offset) query.append('offset', String(params.offset))
+
+  const res = await api.get<{ events: BareEvent[]; has_more: boolean }>(
+    `/events/recommendations?${query.toString()}`
+  )
+  const events = await Promise.all(res.data.events.map(hydrateEvent))
+  return { events, has_more: res.data.has_more }
 }
 
 export async function getEvent(id: string): Promise<Event> {

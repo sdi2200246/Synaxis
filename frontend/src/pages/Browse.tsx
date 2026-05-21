@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback} from 'react'
 import { useStaticData } from '../context/StaticData'
-import { searchEvents } from '../api/events'
+import { searchEvents , getRecommendedEvents } from '../api/events'
 import { BrowseEventCard } from '../components/events/Browse'
 import type { Event } from '../types'
 import { FiCalendar, FiMapPin, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { useAuth } from '../context/AuthContext'
 
 interface CategoryRow {
   id: string
@@ -16,15 +17,17 @@ interface CategoryRow {
 
 const ROW_LIMIT = 10
 const HERO_LIMIT = 5
-const HERO_INTERVAL_MS = 6000
+const HERO_INTERVAL_MS = 4000
 
 export function BrowsePage() {
   const { categories } = useStaticData()
   const [rows, setRows] = useState<CategoryRow[]>([])
   const [initialLoading, setInitialLoading] = useState(true)
+  const [recommendedRow, setRecommendedRow] = useState<CategoryRow | null>(null)
   const [heroEvents, setHeroEvents] = useState<Event[]>([])
   const [heroIndex, setHeroIndex] = useState(0)
   const [scrollY, setScrollY] = useState(0)
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     const main = document.querySelector('.main-content') as HTMLElement | null
@@ -85,6 +88,25 @@ export function BrowsePage() {
   }, [])
 
   useEffect(() => {
+    if (!isAuthenticated) return
+
+    getRecommendedEvents({ limit: ROW_LIMIT, offset: 0 })
+      .then(res => {
+        if (res.events.length === 0) return
+        setRecommendedRow({
+          id: 'recommendations',
+          name: 'Recommended for You',
+          events: res.events,
+          loading: false,
+          hasMore: res.has_more,
+          offset: ROW_LIMIT,
+        })
+      })
+      .catch(() => {
+      })
+  }, [])
+
+  useEffect(() => {
     if (heroEvents.length <= 1) return
 
     const id = setInterval(() => {
@@ -130,6 +152,32 @@ export function BrowsePage() {
       )
     }
   }, [rows]) 
+
+  const loadMoreRecommended = useCallback(async () => {
+    if (!recommendedRow || !recommendedRow.hasMore || recommendedRow.loading) return
+
+    setRecommendedRow(prev => (prev ? { ...prev, loading: true } : prev))
+
+    try {
+      const res = await getRecommendedEvents({
+        limit: ROW_LIMIT,
+        offset: recommendedRow.offset,
+      })
+      setRecommendedRow(prev =>
+        prev
+          ? {
+              ...prev,
+              events: [...prev.events, ...res.events],
+              hasMore: res.has_more,
+              loading: false,
+              offset: prev.offset + ROW_LIMIT,
+            }
+          : prev
+      )
+    } catch {
+      setRecommendedRow(prev => (prev ? { ...prev, loading: false } : prev))
+    }
+  }, [recommendedRow])
 
   if (initialLoading) {
     return <div className="page"><p>Loading events…</p></div>
@@ -190,6 +238,10 @@ export function BrowsePage() {
 
       <div className="browse-rows">
         <h1 className="browse-rows__title">Browse Events</h1>
+
+        {recommendedRow && (
+          <CategoryRowView row={recommendedRow} onLoadMore={loadMoreRecommended} />
+        )}
 
         {nonEmptyRows.length === 0 ? (
           <p className="empty-state">No events to show yet.</p>
