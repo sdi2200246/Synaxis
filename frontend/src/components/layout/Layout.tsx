@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import {Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
+import { Topbar } from './Topbar'
 
 const SIDEBAR_KEY = 'synaxis-sidebar-collapsed'
 
@@ -14,11 +15,14 @@ export function Layout() {
   }, [collapsed])
 
     return (
-      <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
+     <> 
+        <Topbar/>
+        <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
+          <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+          <main className="main-content">
+            <Outlet />
+          </main>
+        </div>
+      </>
     )
 }
