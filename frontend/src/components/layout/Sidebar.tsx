@@ -15,7 +15,7 @@ interface Props {
 
 export function Sidebar({ collapsed, onToggle }: Props) {
   const [pendingUsersCount, setPendingCount] = useState<number>(0)
-  const { logout, userRole} = useAuth()
+  const { logout, userRole } = useAuth()
   const navigate = useNavigate()
   const { hasUnread } = useMessages()
 
@@ -25,8 +25,7 @@ export function Sidebar({ collapsed, onToggle }: Props) {
   }
 
   useEffect(() => {
-    if (userRole != 'admin')
-        return
+    if (userRole != 'admin') return
 
     async function loadPendingUsers() {
       const data = await getPendingUsers()
@@ -39,84 +38,83 @@ export function Sidebar({ collapsed, onToggle }: Props) {
   }, [])
 
   return (
-    <aside className={`sidebar ${collapsed ? 'is-collapsed' : ''}`}>
-      <div className="sidebar__header">
-        <h2 className="sidebar__brand">{collapsed ? 'S' : 'Synaxis'}</h2>
-        <button
-          type="button"
-          className="sidebar__toggle"
-          onClick={onToggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          title={collapsed ? 'Expand' : 'Collapse'}
-        >
-          {collapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
-        </button>
-      </div>
+    <>
+      <aside className={`sidebar ${collapsed ? 'is-collapsed' : ''}`}>
+        <nav className="sidebar__nav">
+          {userRole === 'admin' ? (
+            <>
+              <NavLink to="/admin/users" className="sidebar__link" title="Users">
+                <FiUsers size={20} />
+                <span className="sidebar__label">Users</span>
+              </NavLink>
+              <NavLink to="/admin/registrations" className="sidebar__link" title="Registrations">
+                <span className="icon-badge">
+                  <FiBell size={20} />
+                  {pendingUsersCount > 0 && <span className="icon-badge__dot" />}
+                </span>
+                <span className="sidebar__label">Registrations</span>
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/browse" className="sidebar__link" title="Home">
+                <FiHome size={20} />
+                <span className="sidebar__label">Home</span>
+              </NavLink>
 
-      <nav className="sidebar__nav">
-        {userRole === 'admin' ? (
-          <>
-            <NavLink to="/admin/users" className="sidebar__link" title="Users">
-              <FiUsers size={20} />
-              <span className="sidebar__label">Users</span>
-            </NavLink>
-            <NavLink to="/admin/registrations" className="sidebar__link" title="Registrations">
-              <span className="icon-badge">
-                <FiBell size={20} />
-                {pendingUsersCount > 0 && <span className="icon-badge__dot" />}
-              </span>
-              <span className="sidebar__label">Registrations</span>
-            </NavLink>
-          </>
-        ) : (
-          <>
-            <NavLink to="/browse" className="sidebar__link" title="Home">
-              <FiHome size={20} />
-              <span className="sidebar__label">Home</span>
-            </NavLink>
+              <NavLink to="/search" className="sidebar__link" title="Search">
+                <FiSearch size={20} />
+                <span className="sidebar__label">Search</span>
+              </NavLink>
 
-            <NavLink to="/search" className="sidebar__link" title="Search">
-              <FiSearch size={20} />
-              <span className="sidebar__label">Search</span>
-            </NavLink>
+              <NavLink to="/my-events" className="sidebar__link" title="My Events">
+                <FiCalendar size={20} />
+                <span className="sidebar__label">My Events</span>
+              </NavLink>
 
-            <NavLink to="/my-events" className="sidebar__link" title="My Events">
-              <FiCalendar size={20} />
-              <span className="sidebar__label">My Events</span>
-            </NavLink>
+              <NavLink to="/attending" className="sidebar__link" title="Attending">
+                <FiCheckSquare size={20} />
+                <span className="sidebar__label">Attending</span>
+              </NavLink>
 
-            <NavLink to="/attending" className="sidebar__link" title="Attending">
-              <FiCheckSquare size={20} />
-              <span className="sidebar__label">Attending</span>
-            </NavLink>
+              <NavLink to="/messages" className="sidebar__link" title="Messages">
+                <span className="icon-badge">
+                  <FiMessageSquare size={20} />
+                  {hasUnread && <span className="icon-badge__dot" />}
+                </span>
+                <span className="sidebar__label">Messages</span>
+              </NavLink>
 
-            <NavLink to="/messages" className="sidebar__link" title="Messages">
-              <span className="icon-badge">
-                <FiMessageSquare size={20} />
-                {hasUnread && <span className="icon-badge__dot" />}
-              </span>
-              <span className="sidebar__label">Messages</span>
-            </NavLink>
+              <NavLink to="/profile" className="sidebar__link" title="Profile">
+                <FiUser size={20} />
+                <span className="sidebar__label">Profile</span>
+              </NavLink>
+            </>
+          )}
+        </nav>
 
-            <NavLink to="/profile" className="sidebar__link" title="Profile">
-              <FiUser size={20} />
-              <span className="sidebar__label">Profile</span>
-            </NavLink>
-          </>
-        )}
-      </nav>
+        <div className="sidebar__footer">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="sidebar__link sidebar__logout"
+            title="Logout"
+          >
+            <FiLogOut size={20} />
+            <span className="sidebar__label">Logout</span>
+          </button>
+        </div>
+      </aside>
 
-      <div className="sidebar__footer">
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="sidebar__link sidebar__logout"
-          title="Logout"
-        >
-          <FiLogOut size={20} />
-          <span className="sidebar__label">Logout</span>
-        </button>
-      </div>
-    </aside>
+      <button
+        type="button"
+        className="sidebar-toggle-edge"
+        onClick={onToggle}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        title={collapsed ? 'Expand' : 'Collapse'}
+      >
+        {collapsed ? <FiChevronRight size={14} /> : <FiChevronLeft size={14} />}
+      </button>
+    </>
   )
 }

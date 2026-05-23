@@ -789,3 +789,61 @@ textarea.field__control {
   color: var(--syn-text-muted);
   background: linear-gradient(135deg, var(--syn-bg-surface), var(--syn-bg-hover));
 }
+
+
+/* ── 20. TABS (horizontal underline tabs) ──
+   Used for switching between filtered views of the same list.
+   Compose:
+     <div class="tabs">
+       <button class="tabs__item is-active">All <span class="tabs__count">12</span></button>
+       <button class="tabs__item">Draft <span class="tabs__count">3</span></button>
+     </div>
+*/
+.tabs {
+  display: flex;
+  gap: var(--syn-space-1);
+  border-bottom: 1px solid var(--syn-border);
+  margin-bottom: var(--syn-space-5);
+  overflow-x: auto;
+}
+
+.tabs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--syn-space-2);
+  padding: var(--syn-space-3) var(--syn-space-4);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--syn-text-secondary);
+  font-size: var(--syn-text-sm);
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: -1px;
+  transition: color var(--syn-transition), border-color var(--syn-transition);
+}
+
+.tabs__item:hover {
+  color: var(--syn-text-primary);
+}
+
+.tabs__item.is-active {
+  color: var(--syn-accent-text);
+  border-bottom-color: var(--syn-accent);
+}
+
+.tabs__count {
+  font-size: var(--syn-text-xs);
+  color: var(--syn-text-muted);
+  background: var(--syn-bg-surface);
+  padding: 1px var(--syn-space-2);
+  border-radius: var(--syn-radius-pill);
+  font-weight: 500;
+}
+
+.tabs__item.is-active .tabs__count {
+  background: var(--syn-accent-bg);
+  color: var(--syn-accent-text);
+}
