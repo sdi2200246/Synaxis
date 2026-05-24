@@ -59,9 +59,10 @@ This project was built with four explicit goals beyond just making things work:
 ## Architecture Overview
  
 The backend follows a strict layered architecture where each layer depends only inward. No layer is skipped and no concerns leak across boundaries.
- 
-<img height="600" alt="synaxis_architecture_diagram" src="https://github.com/user-attachments/assets/ed6f8cd1-8ad2-40dc-b9a8-9fff4bf974a3" />
 
+ <p align="center">
+     <img height="600" alt="synaxis_architecture_fixed" src="https://github.com/user-attachments/assets/ff14702c-60f9-4fc1-98b1-4341ced5cd46" />
+</p>
  
 **Entities and interfaces** run vertically through all backend layers. Entities carry domain validation methods (`ApproveCreate()`, `ApproveCancellation()`, `HasCapacityFor()`). Interfaces are consumer-defined and narrow — no layer takes a fat dependency on another layer's concrete type.
  
