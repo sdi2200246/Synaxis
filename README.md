@@ -10,12 +10,8 @@
 
 ---
 
-## What is Synaxis?
-
-Synaxis is a platform where organizers can create and manage events, define ticket types with real availability tracking, and communicate directly with attendees — while attendees can discover events, make bookings, and receive automatic notifications when something changes.
-
-The app supports the full event lifecycle: from drafting and publishing an event, through accepting bookings, all the way to cancellation with automatic attendee notification. A personalized recommendation engine surfaces events based on each user's browsing and booking history.
-
+Synaxis is a platform where organizers can create and manage events, define ticket types with real availability tracking, and communicate directly with attendees — while attendees can discover events, make bookings, and receive automatic notifications when something changes. Guest users can browse and explore the full event catalog without creating an account, with contextual prompts guiding them to register only when they want to take action.
+ 
 ---
 
 ## Engineering Goals
