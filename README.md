@@ -84,7 +84,7 @@ The backend follows a strict layered architecture where each layer depends only 
 > The recommendation engine is a completely separate Python process with no runtime coupling to the Go backend. It reads interaction data (visits and bookings) directly from PostgreSQL, trains the Biased Matrix Factorization model, and writes scored recommendations back to the `recommendation` table. The Go backend reads from that table at query time — the two sides share only the database, never a function call or network request. The pipeline is re-run manually after new interaction data accumulates, making the recommendation layer independently deployable and updatable without touching the application server.
 
 
-## API Design Decisions 
+## REST API Design Decisions 
 <details>
 <summary><strong>Plural nouns for every resource</strong></summary>
 <blockquote>All endpoints use plural nouns: <code>/events</code>, <code>/bookings</code>, <code>/conversations</code>, <code>/venues</code>, <code>/categories</code>, <code>/users</code>, <code>/tickets</code>. No singular forms, no verb-based routes. The HTTP method communicates the operation; the URL identifies the resource.</blockquote>
