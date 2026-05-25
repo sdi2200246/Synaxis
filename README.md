@@ -16,7 +16,7 @@ Synaxis is a platform where organizers can create and manage events, define tick
 
 ## Engineering Goals
 
-This project was built with four explicit goals beyond just making things work:
+This project was built with explicit goals beyond just making things work:
 
 **Clean Architecture**
 > The backend is strictly layered: entities → repositories → services → handlers. Each layer depends only inward. Service interfaces are defined at the boundary so implementations are swappable without touching business logic.
@@ -259,3 +259,117 @@ Authentication uses `Authorization: Bearer <token>`.
 <blockquote><strong>1NF:</strong> All 13 tables pass. No multi-valued columns anywhere. The many-to-many relationship between events and categories is handled through the <code>eventcategory</code> junction table — no comma-separated lists.<br><br><strong>2NF:</strong> All tables pass. Single-UUID-PK tables satisfy 2NF automatically. Junction tables (<code>eventcategory</code>, <code>conversation_participant</code>, <code>recommendation</code>) have no non-key columns that depend on only part of their composite key.<br><br><strong>3NF:</strong> All tables pass. The original transitive dependency in <code>conversation</code> (attendee/organizer derivable via booking) was identified and fixed. <code>total_cost</code> on <code>booking</code> is a documented intentional denormalization for price snapshot purposes.</blockquote>
 </details>
 
+
+# Backend Layers
+ 
+### Entities
+ 
+Entities are pure data structs mapped 1:1 to database tables. They carry no JSON tags — serialization belongs to the controller layer. What they do carry is domain validation logic as named methods:
+ 
+| Method | Entity | Guards |
+|--------|--------|--------|
+| `ApproveCreate()` | Event | Required fields, future start date, end > start |
+| `ApproveCancellation()` | Event | Must be in PUBLISHED status |
+| `ApproveDeletion()` | Event | Must not be CANCELLED |
+| `IsBookingAvailable()` | Event | Must be PUBLISHED |
+| `AllowsTicketModification()` | Event | Must be DRAFT or PUBLISHED |
+| `HasCapacityFor(current, add)` | Event | Sum of ticket quantities vs event capacity |
+| `HasAvailability(requested)` | TicketType | Available seats vs requested quantity |
+| `ApproveCreate()` | Media | 5MB cap, extension whitelist |
+| `CanEditContent()` | Message | Only sender, not deleted |
+| `CanTransitionTo(status)` | Message | Valid status transitions, no reversal |
+| `ValidateContent()` | Message | No empty or whitespace-only messages |
+ 
+The service layer orchestrates; the entity decides whether an operation is valid. If a business rule can be expressed as a boolean on the entity's own fields, it lives on the entity — not in the service.
+ 
+### Services
+ 
+Each service is describable in a single sentence with no "and". If "and" appears, the service gets split.
+ 
+<details>
+ 
+<summary><strong>All services and responsibilities</strong></summary>
+
+<br>
+ 
+| Service | One-sentence responsibility |
+|---------|---------------------------|
+| `AuthService` | Handles registration, login, password hashing, and JWT token generation. |
+| `UserService` | Manages user retrieval, filtering, and admin approve/reject workflows. |
+| `EventService` | Owns event CRUD, status transitions (publish/cancel), and emits domain events via the EventBus. |
+| `CancelEventService` | Subscribes to `EventCancelled` events and notifies all affected attendees via messaging. |
+| `TicketTypeService` | Owns ticket type creation and updates with capacity validation against the parent event. |
+| `BookingService` | Creates bookings with atomic availability decrement inside a single transaction. |
+| `MessageService` | Manages conversations, messages, read state, and enforces messaging domain rules. |
+| `MediaService` | Validates and tracks photo uploads/deletes with ownership checks (file I/O stays in the handler). |
+| `VenueService` | Lists and filters venues by name and capacity. |
+| `VisitService` | Records event view interactions with in-memory 10-second cooldown deduplication. |
+| `ExportService` | Assembles full event data (with tickets and bookings) for admin XML/JSON export. |
+ 
+</details>
+
+## Service layer decisions
+ 
+<details>
+<summary><strong>Services never call other services</strong></summary>
+<br>
+<blockquote>Early versions had services calling other services through interfaces like <code>EventsProvider</code>. This was removed — it risks exploiting gaps in the called service's authorization logic and creates hidden coupling. Cross-aggregate reads go directly to repos through narrow, consumer-defined interfaces (<code>EventCapacityProvider</code>, <code>VenueOwnershipChecker</code>). Each service depends only on the repos it needs.</blockquote>
+</details>
+<details>
+<summary><strong>TicketTypeService split from BookingService</strong></summary>
+<br>
+<blockquote>BookingService originally owned ticket types, bookings, and capacity validation — three responsibilities. It was split into <code>BookingService</code> (booking creation only) and <code>TicketTypeService</code> (ticket lifecycle and capacity invariant). The capacity check lives in <code>TicketTypeService</code> because ticket quantity is the invariant being protected, even though bookings consume the availability.</blockquote>
+</details>
+<details>
+<summary><strong>File I/O kept out of services</strong></summary>
+<br>
+<blockquote><code>MediaService</code> handles ownership verification, conflict checks, and domain validation (<code>ApproveCreate()</code>). The actual file write to disk and <code>os.Remove</code> happen in the handler. File bytes never cross the service boundary — the service works only with metadata. This keeps services testable without a filesystem.</blockquote>
+</details>
+<details>
+<summary><strong>Ownership checks at the service layer, role checks at middleware</strong></summary>
+<br>
+<blockquote>Middleware handles role-based access (<code>AdminOnly()</code>, <code>AuthMiddleware()</code>). The service layer handles ownership — "is this user the organizer of this event?" — because only the service has access to the repos needed to answer that question. Controllers never make authorization decisions.</blockquote>
+</details>
+<details>
+<summary><strong>Handlers orchestrate cross-domain concerns</strong></summary>
+<br>
+<blockquote>When a booking requires verifying that an event is <code>PUBLISHED</code>, the handler fetches the event and checks status before delegating to <code>BookingService</code>. The handler is the orchestrator — it coordinates between domains without containing business logic itself. This avoids making <code>BookingService</code> depend on <code>EventService</code>.</blockquote>
+</details>
+<details>
+<summary><strong>ExportService bypasses service-layer auth</strong></summary>
+<br>
+<blockquote>The admin export endpoint needs data across all organizers. <code>ExportService</code> calls repos directly rather than going through domain services, which would reject the request due to ownership checks. This is intentional — the admin middleware has already verified the caller is an admin before the handler is reached.</blockquote>
+</details>
+
+### Controllers
+ 
+Controllers are thin — they parse requests, call the appropriate service, and map the result to a response DTO. Three rules:
+ 
+1. **All DTOs and marshalling tags live here** — services return bare Go structs, controllers add `json` and `xml` tags via separate response types
+2. **Mapper functions** (`ToEventResponse`, `ToBookingListResponse`) convert service output to the transport shape
+3. **No business logic** — if a controller needs an `if` that isn't about request parsing or response format, the logic belongs in a service or entity method
+
+## ML Recommendation Pipeline
+ 
+The recommendation engine uses **Biased Matrix Factorization** to predict user-event affinity scores from two interaction signals: visits (weak interest) and bookings (strong interest).
+ 
+The pipeline is a standalone Python process — no runtime coupling to the Go backend. It reads interaction data from PostgreSQL, trains the model, and writes scored recommendations back to the `recommendation` table. The Go backend reads from that table at query time.
+ 
+### DataLoader interface
+ 
+The model accepts any data source through a `DataLoader` interface with three implementations:
+ 
+| Implementation | Purpose |
+|----------------|---------|
+| `MockDataLoader` | Synthetic data for unit testing and rapid iteration |
+| `FileDataLoader` | JSON datasets for reproducible offline evaluation |
+| `DatabaseDataLoader` | Live PostgreSQL data for production training |
+ 
+This made it possible to develop and tune the model entirely offline, then swap to the real database for final training without changing the model code.
+ 
+### Evaluation
+ 
+Training includes a train/test split with the following metrics tracked per run: RMSE, MAE, Precision@K, Recall@K, and NDCG@K.
+ 
+
+ 
