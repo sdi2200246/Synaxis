@@ -372,4 +372,35 @@ This made it possible to develop and tune the model entirely offline, then swap 
 Training includes a train/test split with the following metrics tracked per run: RMSE, MAE, Precision@K, Recall@K, and NDCG@K.
  
 
+
+## Frontend Architecture
+ 
+### Decisions
+ 
+<details>
+<summary><strong>StaticDataProvider — fetch once, share globally</strong></summary>
+<br>
+<blockquote>Venues and categories are reference data that rarely changes. <code>StaticDataProvider</code> fetches both once at app mount and exposes them via <code>useStaticData()</code>. Every form that needs a venue dropdown or category picker consumes the same cached data — no per-component <code>useEffect</code> fetches, no duplicate requests, no stale copies.</blockquote>
+</details>
+<details>
+<summary><strong>MessagesContext — centralized polling and unread state</strong></summary>
+<br>
+<blockquote>Before this context existed, the sidebar, the messages page, and the layout all independently polled for conversations and tracked unread state — three components, three fetch loops, three sources of truth. <code>MessagesProvider</code> replaced all of them with a single 15-second polling loop that exposes <code>conversations</code>, <code>hasUnread</code>, <code>refresh()</code>, and <code>markAsRead()</code>. Polling is skipped for guests and admins. Read-state updates propagate instantly across every component that consumes the context.</blockquote>
+</details>
+<details>
+<summary><strong>GuestGate — inline prompts instead of hard redirects</strong></summary>
+<br>
+<blockquote>Unauthenticated users are never forcefully redirected to <code>/login</code>. Instead, a reusable <code>GuestGate</code> component renders in-place with a contextual prompt ("Log in to book tickets", "Register to message the organizer") and direct login/register CTAs. This lets guests browse the full platform naturally — restricted actions guide them toward authentication rather than blocking them. Three variants exist: full-page, compact (inside dialogs), and embedded (inline within cards).</blockquote>
+</details>
+<details>
+<summary><strong>Client-side hydration for bare API responses</strong></summary>
+<br>
+<blockquote>The backend returns bare responses with foreign key IDs. The frontend API layer hydrates the full shape via parallel fan-out: <code>getUserBookings</code> fetches bookings, then batch-fetches ticket types and events in parallel, then hydrates each event with its venue. The result matches the component contract without the backend needing to compose multi-table responses. Trade-off accepted: <code>1 + 2N</code> round trips per list — acceptable at this scale, batch endpoints can follow if needed.</blockquote>
+</details>
+<details>
+<summary><strong>CSS architecture — tokens, utilities, component-scoped files</strong></summary>
+<br>
+<blockquote>No inline styles anywhere. CSS is organized into four layers: <code>tokens.css</code> (color, spacing, typography variables), <code>base.css</code> (resets and element defaults), <code>utilities.css</code> (reusable single-purpose classes), and component-scoped files (<code>Events.css</code>, <code>Tickets.css</code>, <code>Bookings.css</code>, <code>Messages.css</code>). Class names follow BEM-style conventions with component prefixes. Page-level layout lives in <code>layout.css</code>. No bare element selectors in shared files — every rule is scoped to a class.</blockquote>
+</details>
+ 
  
