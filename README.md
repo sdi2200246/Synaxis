@@ -403,4 +403,75 @@ Training includes a train/test split with the following metrics tracked per run:
 <blockquote>No inline styles anywhere. CSS is organized into four layers: <code>tokens.css</code> (color, spacing, typography variables), <code>base.css</code> (resets and element defaults), <code>utilities.css</code> (reusable single-purpose classes), and component-scoped files (<code>Events.css</code>, <code>Tickets.css</code>, <code>Bookings.css</code>, <code>Messages.css</code>). Class names follow BEM-style conventions with component prefixes. Page-level layout lives in <code>layout.css</code>. No bare element selectors in shared files — every rule is scoped to a class.</blockquote>
 </details>
  
+
+
+ ## Getting Started
+ 
+The fastest way to run Synaxis end-to-end is with Docker Compose for the backend stack and a local Vite dev server for the frontend.
+ 
+### Prerequisites
+ 
+- Docker (with Docker Compose v2)
+- Node.js 18+ and npm
+### 1. Start the backend stack
+ 
+From the repository root:
+ 
+```bash
+docker-compose up
+```
+ 
+This boots three containers in order:
+ 
+1. **`db`** — PostgreSQL 16 with healthcheck (`pg_isready`)
+2. **`migrate`** — runs all migrations and exits
+3. **`backend`** — Go API server on `http://localhost:8080`
+Wait until you see the backend container logging Gin routes — that means everything is up.
+ 
+### 2. Start the frontend
+ 
+In a separate terminal:
+ 
+```bash
+cd frontend
+npm install
+npm run dev
+```
+ 
+The dev server starts on `http://localhost:5173` and proxies API requests to the backend.
+ 
+### 3. Seed accounts
+ 
+The migrations seed the database with a handful of demo accounts for each role:
+ 
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| Organizer | `user` | `user123` |
+| Attendee | `atendee` | `user124` |
+ 
+### 4. Training the recommendation model (optional)
+ 
+The recommendation engine runs as an opt-in Compose service under the `ml` profile. Default boots skip it for speed; training is a one-off command:
+ 
+```bash
+docker-compose --profile ml run --rm ml
+```
+ 
+This builds the Python container if needed, connects to the running database, trains the Biased Matrix Factorization model on the seeded visits and bookings, and writes scored rows to the `recommendation` table. The backend picks them up automatically on the next `GET /events/recommendations`.
+ 
+### Useful commands
+ 
+| Command | What it does |
+|---------|--------------|
+| `docker-compose up` | Boot db + migrate + backend |
+| `docker-compose up -d` | Same, but in the background |
+| `docker-compose down` | Stop and remove containers (no data persistence — every boot is fresh) |
+| `docker-compose logs -f backend` | Follow backend logs |
+| `docker-compose --profile ml run --rm ml` | Train the recommendation model once |
+| `docker-compose build` | Rebuild images after changing Dockerfile or source |
+ 
+### Data persistence
+ 
+By design, **no data is persisted to your host machine.** PostgreSQL data lives inside the container and is destroyed on `docker-compose down`. Every fresh boot re-runs migrations and re-seeds the database — clean state guaranteed, zero hidden files left behind.
  
