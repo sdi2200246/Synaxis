@@ -175,7 +175,7 @@ class BiasedMF:
         return results[:n]
     
 
-    def recomendations(self , k :int , bookings:list[tuple[str , str , float] , clicks: list[tuple[str, str, float]]]) -> list[tuple[str , str , float]]:
+    def recomendations(self , k :int , bookings:list[tuple[str , str , float]]) -> list[tuple[str , str , float]]:
         all_recomendations = []
         for u in self.users:
             previous_bookings = set([e for user , e , _ in bookings if  user == u])
