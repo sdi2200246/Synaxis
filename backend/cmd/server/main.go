@@ -116,7 +116,7 @@ func main() {
         auth.POST("/events/:id/bookings", bookingHandler.Create)
         auth.GET("/bookings", bookingHandler.GetUserBookings)
 
-        auth.POST("events/:id/visits" , visitsHandler.Record)
+        auth.POST("/events/:id/visits" , visitsHandler.Record)
         auth.POST("/events/:id/media", mediaHandler.Upload)
         auth.DELETE("/events/:id/media/:media_id", mediaHandler.Delete)
 
