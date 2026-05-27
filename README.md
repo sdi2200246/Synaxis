@@ -1,6 +1,6 @@
 # Synaxis
 
-> A full-stack event management and booking platform built with Go, React, and PostgreSQL.
+> A full-stack event management and booking platform built with Go, React, and PostgreSQL.(uni project)
 
 ![Go](https://img.shields.io/badge/Go-1.22-00ADD8?style=for-the-badge&logo=go)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
