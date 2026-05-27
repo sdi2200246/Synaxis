@@ -2,7 +2,6 @@
 
 > A full-stack event management and booking platform built with Go, React, and PostgreSQL.
 
-[![Demo Video](https://img.shields.io/badge/Demo-Watch%20Video-red?style=for-the-badge&logo=youtube)](<!-- DEMO_LINK -->)
 ![Go](https://img.shields.io/badge/Go-1.22-00ADD8?style=for-the-badge&logo=go)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)
@@ -11,6 +10,8 @@
 ---
 
 Synaxis is a platform where organizers can create and manage events, define ticket types with real availability tracking, and communicate directly with attendees — while attendees can discover events, make bookings, and receive automatic notifications when something changes. Guest users can browse and explore the full event catalog without creating an account, with contextual prompts guiding them to register only when they want to take action.
+
+https://github.com/user-attachments/assets/b580fb72-a621-41a9-b2ac-d57ca22d5034
  
 ---
 
