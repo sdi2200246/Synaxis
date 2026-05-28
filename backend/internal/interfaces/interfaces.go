@@ -54,6 +54,7 @@ type BookingRepository interface{
 	GetForExport(ctx context.Context, eventID uuid.UUID) ([]entities.ExportBooking, error) 
 	CountByEventID(ctx context.Context, eventID uuid.UUID) (int, error)
 	Create(ctx context.Context, booking entities.Booking) error 
+	CancelByEventID(ctx context.Context, eventID uuid.UUID) error
 }
 
 type MessagesRepository interface {
