@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -39,10 +40,12 @@ type BookingService struct {
 	ticketTypeRepo 	interfaces.TicketTypeRepository
 	bookingRepo 	interfaces.BookingRepository
 	eventsRepo 		interfaces.EventRepository
+	eventBus    interfaces.EventBus
 }
 
-func NewBookingService(r interfaces.TicketTypeRepository , rb interfaces.BookingRepository , er interfaces.EventRepository) *BookingService {
-	return &BookingService{ticketTypeRepo: r , bookingRepo: rb , eventsRepo: er}
+func NewBookingService(r interfaces.TicketTypeRepository , rb interfaces.BookingRepository , er interfaces.EventRepository,
+						eb interfaces.EventBus) *BookingService {
+	return &BookingService{ticketTypeRepo: r , bookingRepo: rb , eventsRepo: er , eventBus: eb}
 }
 
 func (s *BookingService) CreateBooking(ctx context.Context, input CreateBookingInput) error {
@@ -137,4 +140,24 @@ func (s *BookingService) GetExportBookings(ctx context.Context, eventID uuid.UUI
 		}
 	}
 	return result, nil
+}
+
+func (s *BookingService) Subscribe() {
+	ch := s.eventBus.Subscribe("EventCancelled")
+	go func() {
+		for event := range ch {
+			cancelled, ok := event.(EventCancelled)
+			if !ok {
+				slog.Error("CancelEventService: unexpected event type")
+				continue
+			}
+			if err := s.bookingRepo.CancelByEventID(context.Background(), cancelled.EventID); err != nil {
+				slog.Error("BookingService: BookingsCancelation failed",
+					"error", err,
+					"event_id", cancelled.EventID,
+				)
+			}
+			slog.Info("BookingService: Booking Cancelation completed succesfully",)
+		}
+	}()
 }

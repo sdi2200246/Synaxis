@@ -116,6 +116,11 @@
   background: var(--syn-bg-hover);
   color: var(--syn-text-primary);
 }
+
+.sidebar__logout:hover {
+  background: var(--syn-accent);
+  color: #fff;
+}
  
 .sidebar__link.is-active,
 .sidebar__link.active {
@@ -815,8 +820,8 @@
 
 .browse-row__track > .browse-card,
 .browse-row__track > .card {
-  min-width: 240px;
-  max-width: 240px;
+  min-width: 300px;
+  max-width: 300px;
   flex-shrink: 0;
   scroll-snap-align: start;
 

@@ -84,11 +84,6 @@ export function Sidebar({ collapsed, onToggle }: Props) {
                 </span>
                 <span className="sidebar__label">Messages</span>
               </NavLink>
-
-              <NavLink to="/profile" className="sidebar__link" title="Profile">
-                <FiUser size={20} />
-                <span className="sidebar__label">Profile</span>
-              </NavLink>
             </>
           )}
         </nav>
@@ -101,7 +96,7 @@ export function Sidebar({ collapsed, onToggle }: Props) {
             title="Logout"
           >
             <FiLogOut size={20} />
-            <span className="sidebar__label">Logout</span>
+            <span className="sidebar__label"> {userRole ? "Logout" : "Login"} </span>
           </button>
         </div>
       </aside>

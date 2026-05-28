@@ -49,12 +49,13 @@ func main() {
     mediaService  := services.NewMediaService(mediaRepo , eventRepo)
 
     eventsService := services.NewEventService(eventRepo, categoryRepo, bookingRepo , ticketsRepo ,eventBus , venueRepo , mediaRepo)
-    bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo)
+    bookingService := services.NewBookingService(ticketsRepo, bookingRepo , eventRepo , eventBus)
     ticketTypeService := services.NewTicketTypeService(ticketsRepo, eventRepo)
     messagesService := services.NewMessageService(messagesRepo , bookingRepo , eventRepo)
     exportService := services.NewExportService(eventRepo , venueRepo , categoryRepo , ticketsRepo , bookingRepo)
     eventCancelationService := services.NewCancelEventService(eventRepo , bookingRepo , messagesRepo , eventBus)
     eventCancelationService.Subscribe()
+    bookingService.Subscribe()
 
     baseHandler        := &controllers.BaseHandler{}
     userHandler        := controllers.NewUserHandler(userService)

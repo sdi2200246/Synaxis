@@ -214,3 +214,15 @@ func (r *BookingsRepo) GetForExport(ctx context.Context, eventID uuid.UUID) ([]e
 	}
 	return bookings, nil
 }
+
+func (r *BookingsRepo) CancelByEventID(ctx context.Context, eventID uuid.UUID) error {
+    _, err := r.db.Exec(ctx, `
+        UPDATE booking
+        SET status = 'CANCELLED'
+        WHERE status = 'ACTIVE'
+          AND ticket_type_id IN (
+              SELECT id FROM tickettype WHERE event_id = $1
+          )
+    `, eventID)
+    return err
+}

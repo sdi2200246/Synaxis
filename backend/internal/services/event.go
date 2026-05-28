@@ -214,7 +214,8 @@ func (s*EventService) GetEventOrganizer(ctx context.Context , id uuid.UUID)(uuid
 }
 
 func (s *EventService) List(ctx context.Context, callerID *uuid.UUID, input EventFilterInput) ([]Event, bool, error) {
-	if callerID == nil {
+	isOwnerQuery := callerID != nil && input.OrganizerID != nil && *callerID == *input.OrganizerID
+	if !isOwnerQuery {
 		s := "PUBLISHED"
 		input.Status = &s
 	}

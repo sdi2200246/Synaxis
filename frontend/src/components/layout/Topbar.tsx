@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/client'
 import type { User } from '../../types'
+import { GuestGate } from '../GuestGate'
 
 export function Topbar() {
   const { userId } = useAuth()
@@ -50,7 +51,7 @@ export function Topbar() {
               </div>
             </>
           ) : (
-            <div className="topbar__menu-loading">Loading…</div>
+            <div className="topbar__menu-loading">Synaxis Welcomes you</div>
           )}
         </div>
       </div>
