@@ -38,7 +38,7 @@ services:
   ml:
     build: ./backend/ml
     environment:
-      REC_DATABASE_URL: postgres://synaxis:synaxis@db:5432/synaxis?sslmode=disable
+      DATABASE_URL: postgres://synaxis:synaxis@db:5432/synaxis?sslmode=disable
     depends_on:
       migrate:
         condition: service_completed_successfully
