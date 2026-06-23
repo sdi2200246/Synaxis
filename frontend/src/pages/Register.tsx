@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export function RegisterPage() {
   const [form, setForm] = useState({
     username: '',
     password: '',
+    confirmPassword: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -20,7 +21,6 @@ export function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { register } = useAuth()
-  const navigate = useNavigate()
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -30,6 +30,12 @@ export function RegisterPage() {
     e.preventDefault()
     setError('')
     setIsSubmitting(true)
+
+    if (form.password !== form.confirmPassword){
+      setError("Passwords do not match.")
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       await register(form)
@@ -82,6 +88,19 @@ export function RegisterPage() {
             name="password"
             type="password"
             value={form.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="field">
+          <label className="field__label" htmlFor="confirmPassword">Confirm Password</label>
+          <input
+            className="field__control"
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            value={form.confirmPassword}
             onChange={handleChange}
             required
           />

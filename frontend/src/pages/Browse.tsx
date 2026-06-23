@@ -104,7 +104,7 @@ export function BrowsePage() {
       })
       .catch(() => {
       })
-  }, [])
+  }, [isAuthenticated])
 
   useEffect(() => {
     if (heroEvents.length <= 1) return
@@ -154,28 +154,30 @@ export function BrowsePage() {
   }, [rows]) 
 
   const loadMoreRecommended = useCallback(async () => {
-    if (!recommendedRow || !recommendedRow.hasMore || recommendedRow.loading) return
+    if (!recommendedRow || recommendedRow.loading || !recommendedRow.hasMore) return
 
-    setRecommendedRow(prev => (prev ? { ...prev, loading: true } : prev))
+    const currentOffset = recommendedRow.offset
+
+    setRecommendedRow(prev => prev ? { ...prev, loading: true } : null)
 
     try {
       const res = await getRecommendedEvents({
         limit: ROW_LIMIT,
-        offset: recommendedRow.offset,
+        offset: currentOffset,
       })
-      setRecommendedRow(prev =>
-        prev
-          ? {
-              ...prev,
-              events: [...prev.events, ...res.events],
-              hasMore: res.has_more,
-              loading: false,
-              offset: prev.offset + ROW_LIMIT,
-            }
-          : prev
-      )
-    } catch {
-      setRecommendedRow(prev => (prev ? { ...prev, loading: false } : prev))
+
+      setRecommendedRow(prev => {
+        if (!prev) return null
+        return {
+          ...prev,
+          events: [...prev.events, ...res.events],
+          hasMore: res.has_more,
+          loading: false,
+          offset: prev.offset + ROW_LIMIT,
+        }
+      })
+    } catch (err) {
+      setRecommendedRow(prev => prev ? { ...prev, loading: false } : null)
     }
   }, [recommendedRow])
 

@@ -34,14 +34,6 @@ function App() {
                   {/* Protected routes */}
           
                   <Route
-                    path="/home"
-                    element={
-                      <ProtectedRoute>
-                        <HomePage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
                     path="/browse"
                     element={
                         <BrowsePage/>
