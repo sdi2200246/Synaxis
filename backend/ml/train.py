@@ -1,84 +1,121 @@
-from dataloader import DataLoader , Database
+import argparse
+import random
+from collections import defaultdict, Counter
+
+from dataloader import DataLoader, Database, CsvDataLoader
 from model import BiasedMF
 from eval import evaluate_model
-import matplotlib.pyplot as plt
-from collections import defaultdict
-import random
- 
- 
-def train(loader : DataLoader ,k =10, alpha=0.00001, lam=0.5, epochs=200):
-    
-    ratings = loader.load_ratings()
-    
-    print("── merged ratings (visit + booking) ─────────────────")
-    for u, e, r in sorted(ratings)[:20]:
-        print(f"  {u}  {e}  {r:.1f}")
- 
-    model = BiasedMF(k=k, alpha=alpha, lam=lam, epochs=epochs)
-    history = model.fit(ratings)
-    print(f"\nfinal loss: {history[-1]:.6f}")
 
-    plt.figure(figsize=(8,5))
-    plt.plot(history, linewidth=2)
-    plt.title("Training Loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.grid(True, alpha=0.3)
-    plt.show()
 
-    return model, ratings
-    
 def train_test_split_userwise(ratings, test_ratio=0.2):
     by_user = defaultdict(list)
-
     for row in ratings:
         by_user[row[0]].append(row)
 
-    train = []
-    test = []
-
+    train, test = [], []
     for u, rows in by_user.items():
         random.shuffle(rows)
-
         cut = max(1, int(len(rows) * test_ratio))
         test.extend(rows[:cut])
         train.extend(rows[cut:])
-
     return train, test
 
 
- 
-if __name__ == "__main__":
-    db = Database()
-    users = db.load_users()
-    bookings = db.load_bookings()
+def run_local_test():
+    """
+    Pipeline 1: Local validation using CSV files.
+    Splits data into train/test sets and evaluates model accuracy.
+    """
+    print("🚀 Starting Local Test Pipeline (CSV)...")
+    random.seed(42)
+
+    db = CsvDataLoader("rel_event_csvs")
     ratings = db.load_ratings()
-    clicks = db.load_visits()
 
-    train_ratings, test_ratings = train_test_split_userwise(ratings)
+    print("ratings before filter:", len(ratings))
+    uc = Counter(u for u, _, _ in ratings)
+    ec = Counter(e for _, e, _ in ratings)
+    ratings = [(u, e, r) for u, e, r in ratings if uc[u] >= 7 and ec[e] >= 7]
+    print("ratings after filter: ", len(ratings))
 
-    model = BiasedMF(
-        k=15,
-        alpha=0.07,
-        lam=0.02,
-        epochs=200,
-        seed=42,
-        shuffle=True
-    )
+    train_ratings, test_ratings = train_test_split_userwise(ratings, test_ratio=0.2)
+
+    model = BiasedMF(k=15, alpha=0.01, lam=0.02, epochs=700, seed=42, shuffle=True)
     model.fit(train_ratings)
-    all_recs = model.recomendations(20 , bookings)
 
-    first_user = users[1]
-    user_id = first_user
+    print("\ntest relevant count:", sum(1 for _, _, r in test_ratings if r >= 4.0))
 
-    user_recs = [r for r in all_recs if r[0] == user_id]
-    user_booked_events = {e for u, e, r in bookings if u == user_id}
-    user_visited_events = {e for u , e , r in clicks if u == user_id}
+    results = evaluate_model(model, train_ratings, test_ratings, k=20, relevance_threshold=4.0)
+    print("── metrics ─────────────────")
+    for metric, value in results.items():
+        print(f"  {metric}: {value:.4f}")
 
-    print("User:", user_id)
-    print("Bookings made by this user:", user_booked_events)
-    print("clicks made by this user " , user_visited_events)
-    print("Recommendations:")
-    for _, event_id, score in user_recs:
-        mark = "BOOKED" if event_id in user_booked_events else ""
-        print(event_id, score, mark)
+
+def run_production():
+    """
+    Pipeline 2: Production execution using Postgres.
+    Trains on 100% of available data, generates recommendations for ALL
+    system users (including cold-starts), and writes results back to the database.
+    """
+    print("🔥 Starting Production Pipeline (Postgres DB)...")
+    random.seed(42)
+
+    db = Database()
+    ratings = db.load_ratings()
+    
+    if not ratings:
+        print("❌ Error: No ratings loaded from the database. Exiting.")
+        return
+
+    print(f"Total production ratings pulled: {len(ratings)}")
+    
+    uc = Counter(u for u, _, _ in ratings)
+    ec = Counter(e for _, e, _ in ratings)
+    filtered_ratings = [(u, e, r) for u, e, r in ratings]
+    print(f"Ratings remaining after density filters: {len(filtered_ratings)}")
+
+    model = BiasedMF(k=15, alpha=0.01, lam=0.02, epochs=700, seed=42, shuffle=True)
+    model.fit(filtered_ratings)
+
+    all_db_users = db.load_users()
+    bookings = db.load_bookings()
+
+    user_bookings_map = defaultdict(set)
+    for user_id, event_id, _ in bookings:
+        user_bookings_map[user_id].add(event_id)
+
+
+    print(f"Generating recommendations for {len(all_db_users)} users...")
+    all_recommendations = []
+    
+    for user_id in all_db_users:
+        previous_bookings = user_bookings_map[user_id]
+        
+
+        user_top_n = model.top_n(user_id, n=20, exclude=previous_bookings)
+        
+        for event_id, score in user_top_n:
+            all_recommendations.append((user_id, event_id, score))
+
+    # 6. Push calculations straight into PostgreSQL
+    print(f"Saving {len(all_recommendations)} recommendations to the database...")
+    db.save_recommendations(all_recommendations)
+    print("✅ Production pipeline complete. Recommendations synced successfully.")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Biased Matrix Factorization Pipeline Execution Router"
+    )
+    parser.add_argument(
+        "mode",
+        choices=["test", "prod"],
+        help="Run 'test' for local evaluation via CSVs, or 'prod' to execute against live Postgres storage."
+    )
+
+    args = parser.parse_args()
+
+    if args.mode == "test":
+        run_local_test()
+    elif args.mode == "prod":
+        run_production()

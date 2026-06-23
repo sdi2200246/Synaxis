@@ -70,8 +70,6 @@ def precision_recall_hit_ndcg_at_k(model, train_ratings, test_ratings, k=10, rel
             continue
 
         seen = train_seen.get(u, set())
-
-        # rank all candidate events except ones already seen in training
         scores = []
         for event_id in model.event_index.keys():
             if event_id in seen:

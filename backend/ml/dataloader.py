@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import csv
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Tuple
@@ -147,7 +148,7 @@ class Database(DataLoader):
     def __init__(self):
         try:
             load_dotenv("../.env")
-            self.conn = psycopg2.connect(os.getenv("REC_DATABASE_URL"))
+            self.conn = psycopg2.connect(os.getenv("DATABASE_URL"))
             self.cur = self.conn.cursor()
             self.bookings = None
 
@@ -221,17 +222,71 @@ class Database(DataLoader):
             return []
 
 
-    def save_recommendations(self, recommendations: list[tuple[str, str, float]]) -> None:
-        rows = [(UUID(u), UUID(e), s) for u, e, s in recommendations]
-        execute_values(self.cur, """
-            INSERT INTO recommendation (user_id, event_id, score)
-            VALUES %s
-            ON CONFLICT (user_id, event_id)
-            DO UPDATE SET score = EXCLUDED.score, created_at = now()
-        """, rows)
-        self.conn.commit()
+    def save_recommendations(self, all_recommendations):
+        cleaned_recs = [
+            (str(rec[0]), str(rec[1]), float(rec[2])) 
+            for rec in all_recommendations
+        ]
+        
+        try:
+            print("🧹 Clearing old recommendations...")
+            self.cur.execute("TRUNCATE TABLE recommendation;")
+            
+            print(f"📥 Saving {len(cleaned_recs)} fresh recommendations to the database...")
+            query = """
+                INSERT INTO recommendation (user_id, event_id, score)
+                VALUES %s;
+            """
+            execute_values(self.cur, query, cleaned_recs)
+            self.conn.commit()
+            
+        except Exception as e:
+            self.conn.rollback()
+            raise e
+
+    
+class CsvDataLoader(DataLoader):
+    def __init__(self, data_dir: str | Path):
+        self.data_dir = Path(data_dir)
+
+    # status string -> rating
+    ATTEND_SCALE = {"yes": 5.0, "maybe": 3.0, "invited": 2.0, "no": 0.5}
+
+    def load_visits(self) -> list[tuple[str, str, float]]:
+        # all positive/negative interest signals EXCEPT yes (that's a booking)
+        out = []
+        with open(self.data_dir / "event_interest.csv") as f:
+            for row in csv.DictReader(f):
+                if row["interested"] == "1":
+                    out.append((row["user"], row["event"], 3.0))
+                elif row["interested"] == "0":
+                    out.append((row["user"], row["event"], 1.0))  # not_interested
+        with open(self.data_dir / "event_attendees.csv") as f:
+            for row in csv.DictReader(f):
+                if not row["user_id"].strip():
+                    continue
+                s = row["status"]
+                if s in ("maybe", "invited", "no"):
+                    out.append((row["user_id"], row["event"], self.ATTEND_SCALE[s]))
+        return out
+
+    def load_bookings(self) -> list[tuple[str, str, float]]:
+        out = []
+        with open(self.data_dir / "event_attendees.csv") as f:
+            for row in csv.DictReader(f):
+                if row["status"] == "yes" and row["user_id"].strip():
+                    out.append((row["user_id"], row["event"], 5.0))
+        return out
+
+    def load_users(self) -> list[str]:
+        return list({u for u, _, _ in self.load_visits()} |
+                    {u for u, _, _ in self.load_bookings()})
+
+    def load_events(self) -> list[str]:
+        return list({e for _, e, _ in self.load_visits()} |
+                    {e for _, e, _ in self.load_bookings()})
 
 if __name__ == "__main__":
-    db = Database()
-    results = db.load_visits()
+    db = CsvDataLoader("rel_event_csvs")
+    results = len(db.load_users())
     print(results)
