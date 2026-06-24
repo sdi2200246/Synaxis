@@ -2,14 +2,12 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/client'
 import type { User } from '../../types'
-import { GuestGate } from '../GuestGate'
 
 export function Topbar() {
   const { userId } = useAuth()
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
-    if (!userId) return
     api
       .get<User>(`/users/${userId}`)
       .then((res) => setUser(res.data))
