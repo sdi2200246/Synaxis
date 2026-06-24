@@ -52,6 +52,18 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  ml:
+    build: ./backend/ml
+    environment:
+      DATABASE_URL: postgres://synaxis:synaxis@db:5432/synaxis?sslmode=disable
+    networks:
+      - synaxis-network
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    profiles: ["ml"]
+    restart: "no"
+
   frontend:
     build: ./frontend
     networks:
