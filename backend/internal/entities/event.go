@@ -34,6 +34,12 @@ func (e Event) IsBookingAvailable() error {
     if e.Status != "PUBLISHED" {
         return fmt.Errorf("bookings are not available for %s events: %w", e.Status, apperr.ErrConflict)
     }
+
+    if time.Now().After(e.StartDatetime) {
+        return fmt.Errorf("event starts at %s which is in the past: %w",
+            e.StartDatetime.Format(time.RFC3339), apperr.ErrUnprocessable)
+    }
+
     return nil
 }
 

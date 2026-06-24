@@ -9,6 +9,7 @@ var (
     ErrConflict      = errors.New("conflict")
     ErrBadInput      = errors.New("bad input")
     ErrInternal      = errors.New("internal server error")
+    ErrUnprocessable = errors.New("unprocessable entity")
 )
 
 

@@ -19,6 +19,8 @@ func Handle(c *gin.Context, err error) {
         c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
     case errors.Is(err, ErrBadInput):
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    case errors.Is(err, ErrUnprocessable):
+        c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
     default:
         c.JSON(http.StatusInternalServerError, gin.H{"error": ErrInternal.Error()})
     }
