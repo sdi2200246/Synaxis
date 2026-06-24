@@ -8,7 +8,7 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   
-  const { login , userRole } = useAuth()
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -17,18 +17,16 @@ export function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      await login({ username, password })
-      if (userRole == "admin"){
-          navigate('/admin/users')
-      }
-      else{ 
+      const claims = await login({ username, password })
+      if (claims?.role === "admin") {
+        navigate('/admin/users')
+      } else {
         navigate('/browse')
       }
-
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed')
-    } finally {
-      setIsSubmitting(false)
+      } catch (err: any) {
+        setError(err.response?.data?.error || 'Login failed')
+      } finally {
+        setIsSubmitting(false)
     }
   }
 

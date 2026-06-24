@@ -9,7 +9,7 @@ interface AuthContextType {
   isLoading: boolean
   userRole : "admin" | "user" | null,
   userId : string|null,
-  login: (credentials: LoginCredentials) => Promise<void>
+  login: (credentials: LoginCredentials) => Promise<TokenClaims | null>
   register: (payload: RegisterPayload) => Promise<void>
   logout: () => void
 }
@@ -39,10 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(credentials: LoginCredentials) {
     const newToken = await apiLogin(credentials)
     localStorage.setItem('token', newToken)
-    const claims = parseToken(newToken);
-    console.log(claims?.role)
-
     setToken(newToken)
+    return parseToken(newToken)
   }
 
   async function register(payload: RegisterPayload) {
