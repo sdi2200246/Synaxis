@@ -1,0 +1,20 @@
+localhost {
+    tls internal
+
+    # Route API traffic to the Go backend
+    # Strips /api so Go receives /venues instead of /api/venues
+    handle_path /api/* {
+        reverse_proxy backend:8080
+    }
+
+    # Route media traffic to the Go backend
+    # Keeps /media in the path as Go expects it
+    handle /media/* {
+        reverse_proxy backend:8080
+    }
+
+    # Route everything else to your frontend container
+    handle {
+        reverse_proxy frontend:5173
+    }
+}
