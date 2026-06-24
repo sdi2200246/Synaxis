@@ -1,4 +1,18 @@
 services:
+  caddy:
+    image: caddy:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+    networks:
+      - synaxis-network
+    depends_on:
+      - backend
+      - frontend
+
   db:
     image: postgres:16-alpine
     environment:
@@ -7,6 +21,8 @@ services:
       POSTGRES_DB: synaxis
     ports:
       - "5432:5432"
+    networks:
+      - synaxis-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U synaxis -d synaxis"]
       interval: 3s
@@ -18,6 +34,8 @@ services:
     command: ["migrate", "up", "DATABASE_URL"]
     environment:
       DATABASE_URL: postgres://synaxis:synaxis@db:5432/synaxis?sslmode=disable
+    networks:
+      - synaxis-network
     depends_on:
       db:
         condition: service_healthy
@@ -28,19 +46,22 @@ services:
     command: ["server", "DATABASE_URL"]
     environment:
       DATABASE_URL: postgres://synaxis:synaxis@db:5432/synaxis?sslmode=disable
-    ports:
-      - "8080:8080"
+    networks:
+      - synaxis-network
     depends_on:
       migrate:
         condition: service_completed_successfully
 
-  
-  ml:
-    build: ./backend/ml
-    environment:
-      DATABASE_URL: postgres://synaxis:synaxis@db:5432/synaxis?sslmode=disable
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    profiles: ["ml"]
-    restart: "no"
+  frontend:
+    build: ./frontend
+    networks:
+      - synaxis-network
+    expose:
+      - "5173"
+
+networks:
+  synaxis-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
