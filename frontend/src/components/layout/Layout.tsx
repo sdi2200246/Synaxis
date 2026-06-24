@@ -11,7 +11,7 @@ export function Layout() {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     return localStorage.getItem(SIDEBAR_KEY) === '1'
   })
- const hideSidebar = pathname === "/login" || pathname === "/register";
+ const hideSidebar = pathname === "/login" || pathname === "/register" || pathname === "/welcome";
   useEffect(() => {
     localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0')
   }, [collapsed])
