@@ -7,7 +7,6 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { 
   LoginPage,
   RegisterPage,
-  HomePage,
   MyEventsPage,
   PendingRegistrations,
   Users,
@@ -16,7 +15,8 @@ import {
   SearchPage,
   AttendingPage,
   EventBookingsPage ,
-  MessagesPage
+  MessagesPage,
+  WelcomePage,
 } from './pages'
 
 function App() {
@@ -26,11 +26,13 @@ function App() {
         <StaticDataProvider>
           <MessagesProvider>
               <Routes>
+                <Route path="/" element={<WelcomePage/>} />
                 <Route element={<Layout />}>
                   {/* Public routes */}
+                  <Route path="/welcome" element = {<WelcomePage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
-
+                 
                   {/* Protected routes */}
           
                   <Route
@@ -98,7 +100,7 @@ function App() {
                   <Route path="/messages/:conversationId" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
 
                   {/* Default redirect */}
-                  <Route path="*" element={<LoginPage />} />
+                  <Route path="*" element={<WelcomePage />} />
                 </Route>
               </Routes>
             </MessagesProvider>

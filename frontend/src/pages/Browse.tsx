@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback} from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useStaticData } from '../context/StaticData'
-import { searchEvents , getRecommendedEvents } from '../api/events'
+import { searchEvents, getRecommendedEvents } from '../api/events'
 import { BrowseEventCard } from '../components/events/Browse'
 import type { Event } from '../types'
 import { FiCalendar, FiMapPin, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
@@ -28,6 +28,19 @@ export function BrowsePage() {
   const [heroIndex, setHeroIndex] = useState(0)
   const [scrollY, setScrollY] = useState(0)
   const { isAuthenticated } = useAuth()
+
+  const rowRefs = useRef<Map<string, HTMLElement>>(new Map())
+
+  const registerRowRef = useCallback((id: string) => (el: HTMLElement | null) => {
+    if (el) rowRefs.current.set(id, el)
+    else rowRefs.current.delete(id)
+  }, [])
+
+  const scrollToRow = useCallback((id: string) => {
+    const el = rowRefs.current.get(id)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
 
   useEffect(() => {
     const main = document.querySelector('.main-content') as HTMLElement | null
@@ -102,8 +115,7 @@ export function BrowsePage() {
           offset: ROW_LIMIT,
         })
       })
-      .catch(() => {
-      })
+      .catch(() => {})
   }, [isAuthenticated])
 
   useEffect(() => {
@@ -151,14 +163,14 @@ export function BrowsePage() {
         )
       )
     }
-  }, [rows]) 
+  }, [rows])
 
   const loadMoreRecommended = useCallback(async () => {
     if (!recommendedRow || recommendedRow.loading || !recommendedRow.hasMore) return
 
     const currentOffset = recommendedRow.offset
 
-    setRecommendedRow(prev => prev ? { ...prev, loading: true } : null)
+    setRecommendedRow(prev => (prev ? { ...prev, loading: true } : null))
 
     try {
       const res = await getRecommendedEvents({
@@ -177,7 +189,7 @@ export function BrowsePage() {
         }
       })
     } catch (err) {
-      setRecommendedRow(prev => prev ? { ...prev, loading: false } : null)
+      setRecommendedRow(prev => (prev ? { ...prev, loading: false } : null))
     }
   }, [recommendedRow])
 
@@ -188,6 +200,7 @@ export function BrowsePage() {
   const nonEmptyRows = rows.filter(r => r.events.length > 0)
   const heroOpacity = Math.max(0, 1 - scrollY / 280)
   const heroEvent = heroEvents[heroIndex]
+  const hasNav = recommendedRow || nonEmptyRows.length > 0
 
   return (
     <div className="browse-page">
@@ -198,13 +211,13 @@ export function BrowsePage() {
           aria-hidden={heroOpacity < 0.1}
         >
           <div
-              className="browse-hero__bg"
-              style={heroEvent.media?.length ? {
-                backgroundImage: `url(${heroEvent.media[0].url})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              } : undefined}
-            />
+            className="browse-hero__bg"
+            style={heroEvent.media?.length ? {
+              backgroundImage: `url(${heroEvent.media[0].url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            } : undefined}
+          />
           <div className="browse-hero__content">
             <span className="browse-hero__eyebrow">Featured · Upcoming</span>
             <h1 className="browse-hero__title">{heroEvent.title}</h1>
@@ -241,8 +254,36 @@ export function BrowsePage() {
       <div className="browse-rows">
         <h1 className="browse-rows__title">Browse Events</h1>
 
+        {hasNav && (
+          <nav className="browse-nav" aria-label="Jump to category">
+            {recommendedRow && (
+              <button
+                type="button"
+                className="browse-nav__chip"
+                onClick={() => scrollToRow(recommendedRow.id)}
+              >
+                {recommendedRow.name}
+              </button>
+            )}
+            {nonEmptyRows.map(row => (
+              <button
+                key={row.id}
+                type="button"
+                className="browse-nav__chip"
+                onClick={() => scrollToRow(row.id)}
+              >
+                {row.name}
+              </button>
+            ))}
+          </nav>
+        )}
+
         {recommendedRow && (
-          <CategoryRowView row={recommendedRow} onLoadMore={loadMoreRecommended} />
+          <CategoryRowView
+            row={recommendedRow}
+            onLoadMore={loadMoreRecommended}
+            sectionRef={registerRowRef(recommendedRow.id)}
+          />
         )}
 
         {nonEmptyRows.length === 0 ? (
@@ -253,6 +294,7 @@ export function BrowsePage() {
               key={row.id}
               row={row}
               onLoadMore={() => loadMore(row.id)}
+              sectionRef={registerRowRef(row.id)}
             />
           ))
         )}
@@ -261,14 +303,15 @@ export function BrowsePage() {
   )
 }
 
-const VISIBLE_COUNT = 5; 
+const VISIBLE_COUNT = 4
 
 interface CategoryRowProps {
   row: CategoryRow
   onLoadMore: () => void
+  sectionRef?: (el: HTMLElement | null) => void
 }
 
-function CategoryRowView({ row, onLoadMore }: CategoryRowProps) {
+function CategoryRowView({ row, onLoadMore, sectionRef }: CategoryRowProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
@@ -292,7 +335,7 @@ function CategoryRowView({ row, onLoadMore }: CategoryRowProps) {
   }
 
   const visibleEvents = row.events.slice(
-    currentIndex, 
+    currentIndex,
     currentIndex + VISIBLE_COUNT
   )
 
@@ -300,7 +343,7 @@ function CategoryRowView({ row, onLoadMore }: CategoryRowProps) {
   const isAtEnd = currentIndex + VISIBLE_COUNT >= row.events.length && !row.hasMore
 
   return (
-    <section className="browse-row">
+    <section ref={sectionRef} className="browse-row">
       <header className="browse-row__head">
         <h2 className="browse-row__title">{row.name}</h2>
 
